@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
-import { ModeChatViewProvider } from './browser/chatViewProvider';
-import { WelcomeViewProvider } from './browser/welcomeViewProvider';
-import { ApiKeyManager } from './common/apiKeyManager';
-import { AIModel } from './common/aiModel';
-import { AskModeCodeActionProvider } from './browser/askModeCodeActionProvider';
-import { ErrorMessages } from './common/errorMessages';
+import { ModeChatViewProvider } from './browser/chat/chatViewProvider';
+import { WelcomeViewProvider } from './browser/welcome/welcomeViewProvider';
+import { ApiKeyManager } from './common/llms/aiApiKeyManager';
+import { AIModel } from './common/llms/aiModel';
+import { AskModeCodeActionProvider } from './quickfix/askModeCodeActionProvider';
+import { ErrorMessages } from './common/user-messages/errorMessages';
 
 export function activate(context: vscode.ExtensionContext) {
 	// Create output channel

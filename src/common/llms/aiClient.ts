@@ -1,6 +1,6 @@
 import * as anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
-import { ModelProvider } from '../common/aiModel';
+import { ModelProvider } from './aiModel';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CohereClientV2 as Cohere } from 'cohere-ai';
 import { Mistral } from '@mistralai/mistralai';

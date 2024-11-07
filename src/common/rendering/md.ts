@@ -1,6 +1,6 @@
 import MarkdownIt = require('markdown-it');
 import hljs from 'highlight.js';
-import { detectFileNameUri } from './fileUtils';
+import { detectFileNameUri } from '../io/fileUtils';
 
 export function createMarkdownIt() {
     return new MarkdownIt({

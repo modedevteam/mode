@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
-import { ChatManager } from '../node/chatManager';
+import { ChatManager } from '../../chat/chatManager';
 import * as path from 'path';
 import hljs from 'highlight.js';
 import { ChatViewHtmlGenerator } from './chatViewHtmlGenerator';
-import { DiffManager } from './diffManager';
-import { ApiKeyManager } from '../common/apiKeyManager';
-import { AIModel } from '../common/aiModel';
-import { ErrorMessages } from '../common/errorMessages';
+import { DiffManager } from '../../diff/diffManager';
+import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
+import { AIModel } from '../../common/llms/aiModel';
+import { ErrorMessages } from '../../common/user-messages/errorMessages';
 
 export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 	public static readonly viewType = 'mode.chatView';

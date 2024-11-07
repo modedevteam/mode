@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import MarkdownIt = require('markdown-it');
 import hljs from 'highlight.js';
-import { detectFileNameUri } from '../common/fileUtils';
+import { detectFileNameUri } from '../common/io/fileUtils';
 
 // New StreamProcessor class
 export class StreamProcessor {

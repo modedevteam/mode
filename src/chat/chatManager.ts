@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 import MarkdownIt = require('markdown-it');
-import { createMarkdownIt as createMarkdown } from './../common/md';
+import { createMarkdownIt as createMarkdown } from '../common/rendering/md';
 import { SessionManager } from './chatSessionManager';
 import { MessageHandler } from './messageHandler';
-import { AIClientFactory } from './aiClientFactory';
-import { AIClient } from './aiClient';
-import { AIModel } from '../common/aiModel';
+import { AIClientFactory } from '../common/llms/aiClientFactory';
+import { AIClient } from '../common/llms/aiClient';
+import { AIModel } from '../common/llms/aiModel';
 
 export class ChatManager {
 	private aiClient: AIClient | null = null;

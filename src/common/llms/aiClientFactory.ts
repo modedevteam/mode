@@ -1,7 +1,7 @@
 import { AIClient, AIClientConfig } from './aiClient';
-import { ApiKeyManager } from '../common/apiKeyManager';
+import { ApiKeyManager } from './aiApiKeyManager';
 import * as vscode from 'vscode';
-import { ModelProvider } from '../common/aiModel';
+import { ModelProvider } from './aiModel';
 
 export class AIClientFactory {
     private static instances: Map<string, AIClient> = new Map();

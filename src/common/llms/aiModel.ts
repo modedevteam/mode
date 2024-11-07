@@ -1,4 +1,4 @@
-import type { AIClientConfig } from '../node/aiClient';
+import type { AIClientConfig } from './aiClient';
 import * as vscode from 'vscode';
 
 export type ModelProvider = 'openai' | 'anthropic' | 'google' | 'cohere' | 'mistral';

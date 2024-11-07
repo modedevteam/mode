@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { AIModel } from '../common/aiModel';
+import { AIModel } from '../../common/llms/aiModel';
 
 export class ChatViewHtmlGenerator {
 	constructor(private readonly _extensionUri: vscode.Uri) { }
