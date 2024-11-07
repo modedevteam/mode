@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { AIClientFactory } from './aiClientFactory';
 
 export interface ApiKeyProvider {
     id: string;
@@ -107,6 +108,7 @@ export class ApiKeyManager {
                 );
                 if (confirmDelete === 'Delete') {
                     await this.context.secrets.delete(selected.provider.secretKey);
+                    AIClientFactory.invalidateClientsForProvider(selected.provider.id);
                     vscode.window.showInformationMessage(
                         `${selected.provider.name} API key has been deleted.`
                     );

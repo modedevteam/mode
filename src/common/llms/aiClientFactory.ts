@@ -56,4 +56,13 @@ export class AIClientFactory {
         const instanceKey = `${provider}-${model || 'default'}`;
         return this.instances.get(instanceKey);
     }
+
+    public static invalidateClientsForProvider(provider: string): void {
+        // Remove all instances for the given provider
+        for (const [key, _] of this.instances) {
+            if (key.startsWith(`${provider}-`)) {
+                this.instances.delete(key);
+            }
+        }
+    }
 } 
