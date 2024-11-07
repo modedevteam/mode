@@ -10,7 +10,7 @@ import { DIFF_MESSAGES } from '../../common/user-messages/messages';
 import { ErrorMessages } from '../../common/user-messages/errorMessages';
 import { diffMergePrompt } from '../../common/llms/aiPrompts';
 import { FileChunker } from '../diff/fileChunker';
-import { getProgressMessage } from '../../common/user-messages/messages';
+import { getDiffProgress } from '../../common/user-messages/messages';
 
 export class DiffManager {
     private _applyChangesButton?: vscode.StatusBarItem;
@@ -37,7 +37,7 @@ export class DiffManager {
             await fs.promises.mkdir(tempDir, { recursive: true });
 
             // AI Client setup progress
-            progress.report({ message: getProgressMessage('WAKING_AI'), increment: 10 });
+            progress.report({ message: getDiffProgress('WAKING_AI'), increment: 10 });
             await new Promise(resolve => setTimeout(resolve, 100));
             const apiKey = await this._apiKeyManager.getApiKey(modelInfo.provider);
             if (!apiKey) {
@@ -83,7 +83,7 @@ export class DiffManager {
             let tokenCount = 0;
             const totalExpectedLines = chunks.length; // Rough estimate of expected lines
             const modifiedChunks = chunks;
-            const progressMessage = getProgressMessage('AI_PROCESSING');
+            const progressMessage = getDiffProgress('AI_PROCESSING');
             let lastReportedProgress = 10; // Start at 10 since we've already reported some progress
 
             // Call LLM to get modified chunks
