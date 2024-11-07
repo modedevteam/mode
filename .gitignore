@@ -1,0 +1,11 @@
+# Ignore node_modules folder
+node_modules/
+
+# Ignore build output folder
+out/
+
+# Ignore lockfile (optional)
+package-lock.json
+
+# Ignore distribution build output
+dist/

@@ -1,0 +1,92 @@
+{
+	"name": "mode",
+	"description": "Mode: Fully configurable AI copilot. Sleek. Personal. Powerful.",
+	"version": "0.0.1",
+	"private": true,
+	"engines": {
+		"vscode": "^1.74.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"main": "./out/extension.js",
+	"activationEvents": [
+		"onCommand:mode.openChat",
+		"onCommand:mode.showWelcomePage",
+		"onView:mode.chatView"
+	],
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "mode",
+					"title": "Mode",
+					"icon": "media/ModeTransparent.png"
+				}
+			]
+		},
+		"views": {
+			"mode": [
+				{
+					"type": "webview",
+					"id": "mode.chatView",
+					"name": "Chat"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "mode.openChat",
+				"title": "Mode: Open Chat"
+			},
+			{
+				"command": "mode.showWelcomePage",
+				"title": "Mode: Show Welcome Page"
+			},
+			{
+				"command": "mode.manageApiKeys",
+				"title": "Mode: Manage API Keys"
+			}
+		],
+		"keybindings": [
+			{
+				"command": "mode.openChat",
+				"key": "ctrl+l",
+				"mac": "cmd+l"
+			}
+		]
+	},
+	"scripts": {
+		"compile": "npm run check-types && node esbuild.js",
+		"check-types": "tsc --noEmit",
+		"watch": "npm-run-all -p watch:*",
+		"watch:esbuild": "node esbuild.js --watch",
+		"watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+		"vscode:prepublish": "npm run package",
+		"package": "npm run check-types && node esbuild.js --production"
+	},
+	"devDependencies": {
+		"@types/markdown-it": "^14.1.2",
+		"@types/node": "^20",
+		"@types/uuid": "^10.0.0",
+		"@types/vscode": "^1.73.0",
+		"@typescript-eslint/eslint-plugin": "^7.14.0",
+		"@typescript-eslint/parser": "^7.14.0",
+		"esbuild": "^0.24.0",
+		"eslint": "^8.26.0",
+		"typescript": "^5.6.2",
+		"npm-run-all": "^4.1.5"
+	},
+	"dependencies": {
+		"@anthropic-ai/sdk": "^0.30.1",
+		"@google/generative-ai": "^0.21.0",
+		"@mistralai/mistralai": "^1.1.0",
+		"@vscode/codicons": "0.0.36",
+		"cohere-ai": "^7.14.0",
+		"highlight.js": "^11.10.0",
+		"markdown-it": "^14.1.0",
+		"openai": "^4.68.4",
+		"uuid": "^10.0.0"
+	},
+	"type": "commonjs"
+}

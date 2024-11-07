@@ -1,0 +1,943 @@
+html {
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Demo Styles */
+
+body {
+    font-family: var(--vscode-font-family);
+    margin: 0;
+    padding: 10px 20px;
+    text-align: center;
+    color: var(--vscode-foreground);
+}
+
+#icons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+#icons .icon {
+    width: 140px;
+    padding: 20px;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+
+#icons .icon .codicon {
+    font-size: 32px;
+    padding-bottom: 16px;
+}
+
+/* Chat Styles */
+#chat-output {
+    height: calc(100vh - 140px);
+    overflow-y: auto;
+    margin-bottom: 5px;
+    position: absolute;
+    top: 10px;
+    bottom: 125px;
+    /* Reduced from 130px to account for smaller pills */
+    left: 18px;
+    right: 18px;
+    text-align: left;
+    width: calc(100% - 36px);
+    padding-bottom: 10px;
+}
+
+.message {
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    word-wrap: break-word;
+    word-break: break-word;
+    /* Add this line to ensure wrapping */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.message code,
+.message pre {
+    white-space: pre;
+    /* Ensure code containers maintain their formatting */
+    word-wrap: normal;
+    /* Prevent wrapping in code containers */
+    word-break: normal;
+    /* Prevent breaking in code containers */
+}
+
+#chat-input-container {
+    position: absolute;
+    bottom: 10px;
+    left: 18px;
+    right: 18px;
+    margin-bottom: 0;
+    width: calc(100% - 36px);
+    display: flex;
+    flex-direction: column;
+    background-color: var(--vscode-input-background);
+    border: none;
+    /* Remove the border */
+    border-radius: 4px;
+    transition: border-color 0.3s ease;
+    padding-top: 0;
+}
+
+#chat-input-container:focus-within {
+    border-color: transparent;
+    /* Remove the focus border */
+}
+
+#chat-input {
+    position: relative;
+    width: 100%;
+}
+
+#message-input {
+    width: 100%;
+    padding: 6px 10px;
+    border: none;
+    /* Remove the border */
+    border-radius: 4px;
+    /* Add border-radius to the input */
+    background-color: transparent;
+    color: var(--vscode-input-foreground);
+    resize: none;
+    overflow-y: hidden;
+    min-height: 20px;
+    max-height: 150px;
+    line-height: 1.4;
+    font-size: 13px;
+    font-family: var(--vscode-font-family);
+}
+
+#message-input::placeholder {
+    color: var(--vscode-input-placeholderForeground);
+}
+
+#message-input:focus {
+    outline: none;
+    border-color: var(--vscode-focusBorder);
+}
+
+#icon-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px;
+}
+
+/* New styles for the right-aligned buttons */
+.right-aligned-buttons {
+    display: flex;
+    margin-left: auto;
+}
+
+#search-button {
+    order: 2;
+    /* This will place it after the send button */
+}
+
+#send-button {
+    order: 1;
+    /* This will place it before the search button */
+}
+
+/* Remove the margin-left: auto from #send-button if present */
+#send-button {
+    color: var(--vscode-disabledForeground);
+    margin-left: auto;
+}
+
+#send-button:not(:disabled) {
+    color: var(--vscode-button-foreground);
+    opacity: 1;
+}
+
+#send-button .codicon {
+    font-size: 18px;
+}
+
+/* Remove any existing positioning styles for #send-button if present */
+
+#icon-container-top {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 10px;
+    align-items: center;
+}
+
+.left-icons {
+    display: flex;
+    align-items: center;
+}
+
+.left-icons>* {
+    margin-right: 8px;
+}
+
+.left-icons>*:last-child {
+    margin-right: 0;
+}
+
+.right-icons {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+
+.right-icons>* {
+    margin-left: 8px;
+}
+
+#icon-container-top .icon-button {
+    padding: 2px 4px;
+}
+
+/* Remove the margin-right from the general icon-button class */
+.icon-button {
+    margin-right: 0;
+}
+
+.icon-button,
+.dropdown-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--vscode-foreground);
+    opacity: 0.7;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+    padding: 2px 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+}
+
+.icon-button:hover,
+.dropdown-toggle:hover {
+    opacity: 1;
+    background-color: var(--vscode-toolbar-hoverBackground);
+}
+
+.icon-button:active {
+    transform: translateY(0);
+}
+
+.icon-button .codicon {
+    font-size: 16px;
+}
+
+/* Updated rule for the mention icon */
+.icon-button .codicon-mention {
+    transform: scale(1.4);
+    /* Adjust this value as needed */
+    display: inline-block;
+    vertical-align: middle;
+}
+
+#send-button {
+    color: var(--vscode-disabledForeground);
+    margin-left: auto;
+    /* Push the send button to the right */
+}
+
+#send-button:not(:disabled) {
+    color: var(--vscode-button-foreground);
+    opacity: 1;
+}
+
+#send-button .codicon {
+    font-size: 18px;
+}
+
+/* Remove the following styles as they're no longer needed */
+/* #send-button {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    ...
+} */
+
+/* ... rest of the existing styles ... */
+
+#context-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
+    min-height: 30px;
+    order: -1;
+    /* This ensures it appears before other flex items */
+}
+
+#context-container:empty {
+    display: none;
+}
+
+.file-pill,
+.image-pill,
+.code-pill {
+    color: var(--vscode-badge-foreground);
+    background-color: var(--vscode-editor-background);
+    border-radius: 2px;
+    border: 1px solid var(--vscode-dropdown-border);
+    padding: 3px 6px;
+    /* Increased top and bottom padding from 1px to 3px */
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    max-width: none;
+    overflow: hidden;
+}
+
+.file-pill {
+    cursor: pointer;
+}
+
+.image-pill,
+.code-pill {
+    cursor: default;
+}
+
+.file-pill .codicon-file,
+.image-pill .codicon-file-media,
+.code-pill .codicon-file-code {
+    margin-right: 3px;
+    font-size: 12px;
+}
+
+.file-pill span,
+.image-pill span,
+.code-pill span {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+.file-pill .remove-file,
+.image-pill .remove-file,
+.code-pill .remove-file {
+    background: none;
+    border: none;
+    color: var(--vscode-icon-foreground);
+    cursor: pointer;
+    padding: 0;
+    margin-left: 3px;
+    display: flex;
+    align-items: center;
+}
+
+.file-pill .remove-file:hover,
+.image-pill .remove-file:hover,
+.code-pill .remove-file:hover {
+    color: var(--vscode-errorForeground);
+}
+
+.file-pill .remove-file .codicon,
+.image-pill .remove-file .codicon,
+.code-pill .remove-file .codicon {
+    font-size: 12px;
+}
+
+/* Adjust the chat output to accommodate the new container */
+#chat-output {
+    bottom: 125px;
+    /* Reduced from 130px to account for smaller pills */
+}
+
+/* Dropdown styles */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: var(--vscode-dropdown-background);
+    min-width: 180px;
+    max-height: calc(4 * 36px);
+    /* Height of 4 items */
+    overflow-y: auto;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    /* Ensure it appears above other elements */
+    border-radius: 3px;
+    bottom: 100%;
+    /* Position above the trigger button */
+    left: 0;
+    border: 1px solid var(--vscode-dropdown-border);
+    margin-bottom: 5px;
+    width: max-content;
+    max-width: 300px;
+    /* Add these properties to ensure visibility */
+    opacity: 1;
+}
+
+.dropdown-content a {
+    color: var(--vscode-dropdown-foreground);
+    padding: 8px 8px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s ease;
+    font-size: 13px;
+    font-family: var(--vscode-font-family);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    height: 36px;
+    /* Fixed height for each item */
+    box-sizing: border-box;
+}
+
+.dropdown-content a:hover {
+    background-color: var(--vscode-list-hoverBackground);
+}
+
+.dropdown-content a i {
+    margin-right: 10px;
+    font-size: 13px;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Style for the selected mode text */
+.dropdown-toggle .selected-model {
+    margin-right: 2px;
+    /* Reduced from 4px to 2px */
+    font-size: 13px;
+}
+
+/* Hide the dropdown arrow when showing selected option */
+.dropdown-toggle.showing-selected .codicon-chevron-down {
+    display: none;
+}
+
+/* Show a different icon (e.g., chevron-right) when not expanded */
+.dropdown-toggle.showing-selected::after {
+    content: "\eab6";
+    /* Codicon for chevron-right */
+    font-family: codicon;
+    font-size: 14px;
+    margin-left: 4px;
+}
+
+/* Adjust the icon-container-top to accommodate the dropdown */
+#icon-container-top {
+    display: flex;
+    justify-content: flex-start;
+    padding: 5px 10px;
+    align-items: center;
+}
+
+#icon-container-top>* {
+    margin-right: 8px;
+}
+
+#icon-container-top>*:last-child {
+    margin-right: 0;
+}
+
+/* ... rest of the existing styles ... */
+
+/* Add this new style for the dropdown toggle */
+.dropdown-toggle {
+    display: flex;
+    align-items: center;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--vscode-foreground);
+    padding: 4px 6px;
+    /* Reduced right padding from 8px to 6px */
+    font-size: 13px;
+    font-family: var(--vscode-font-family);
+}
+
+.dropdown-toggle .codicon {
+    margin-left: 2px;
+    /* Reduced from 4px to 2px */
+}
+
+/* Adjust the chevron direction when the dropdown is open */
+.dropdown-toggle.open .codicon-chevron-down {
+    transform: rotate(180deg);
+}
+
+.message.user {
+    background-color: var(--vscode-editor-background);
+    border: 1px solid var(--vscode-input-border);
+    border-radius: 4px;
+    align-self: flex-end;
+}
+
+.message.assistant {
+    padding: 0;
+    /* Remove padding */
+    align-self: flex-start;
+}
+
+/* Updated processing animation styles */
+.message.assistant.processing {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+}
+
+.message.assistant.processing .codicon-loading {
+    font-size: 24px;
+    color: var(--vscode-foreground);
+    opacity: 0.7;
+}
+
+/* Add this keyframe animation for the spin effect */
+@keyframes codicon-spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Add this class to enable the spin animation */
+.codicon-modifier-spin {
+    animation: codicon-spin 1.5s linear infinite;
+}
+
+/* ... rest of the existing styles ... */
+
+#chat-output::after {
+    content: '';
+    display: block;
+    height: 10px;
+    /* Reduced from 20px */
+}
+
+#image-upload {
+    display: none !important;
+}
+
+.image-preview-container {
+    position: relative;
+    /* Ensure the container is positioned relative */
+    margin: 5px 10px;
+    max-width: calc(100% - 20px);
+    max-height: 150px;
+    overflow-y: auto;
+    border-radius: 4px;
+    background-color: var(--vscode-editor-background);
+    border: 1px solid var(--vscode-input-border);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    order: -1;
+    /* This ensures it appears before other flex items */
+}
+
+.image-preview {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    display: block;
+}
+
+.remove-image {
+    position: absolute;
+    /* Ensure the button is positioned absolutely */
+    top: 4px;
+    right: 4px;
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: none;
+    border-radius: 3px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    opacity: 0;
+    /* Hide the button by default */
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+    z-index: 1;
+}
+
+.remove-image:hover {
+    opacity: 1;
+    background-color: var(--vscode-button-hoverBackground);
+}
+
+.remove-image .codicon {
+    font-size: 14px;
+}
+
+.image-preview-container:hover .remove-image {
+    opacity: 1;
+}
+
+.image-pill i {
+    margin-right: 3px;
+}
+
+.highlighted-code-container {
+    text-align: left;
+    /* Add this line to left-align the text */
+    margin: 5px;
+    /* Center the container horizontally */
+    max-width: 100%;
+    /* Adjust the width as needed */
+    padding: 10px;
+    /* Add padding for better spacing */
+    max-height: 150px;
+    overflow-y: auto;
+    border-radius: 4px;
+    background-color: var(--vscode-editor-background);
+    border: 1px solid var(--vscode-input-border);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    font-size: var(--vscode-editor-font-size);
+    /* Match the regular chat text size */
+    font-family: var(--vscode-editor-font-family);
+    font-weight: var(--vscode-editor-font-weight);
+}
+
+.highlighted-code-container pre,
+.highlighted-code-container code {
+    margin: 0;
+    padding: 0;
+    background: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+}
+
+.image-preview-container,
+.highlighted-code-container {
+    position: relative;
+}
+
+.remove-code {
+    position: absolute;
+    /* Ensure the button is positioned absolutely */
+    top: 4px;
+    right: 4px;
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: none;
+    border-radius: 3px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    opacity: 0;
+    /* Hide the button by default */
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+    z-index: 1;
+}
+
+.remove-code:hover {
+    opacity: 1;
+    background-color: var(--vscode-button-hoverBackground);
+}
+
+.remove-code .codicon {
+    font-size: 14px;
+}
+
+.highlighted-code-container:hover .remove-code {
+    opacity: 1;
+}
+
+/* ... rest of the existing styles ... */
+
+ul,
+ol {
+    padding-left: 20px;
+    /* Adjust this value to align with paragraph */
+    margin-left: 0;
+    /* Ensure no additional margin */
+}
+
+li {
+    padding-left: 0;
+    /* Remove any additional padding */
+    margin-left: 0;
+    /* Ensure no additional margin */
+}
+
+/* Updated styles for the code header */
+.chat-code-header {
+    background-color: var(--vscode-editorGroupHeader-tabsBackground);
+    color: var(--vscode-editorGroupHeader-tabsForeground);
+    padding: 6px 10px;
+    font-size: 12px;
+    font-family: var(--vscode-font-family);
+    border: 1px solid var(--vscode-input-border);
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Updated styles for the buttons in the code header */
+.chat-code-header .buttons {
+    display: flex;
+    align-items: center;
+}
+
+.chat-code-header .buttons .icon-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--vscode-foreground);
+    opacity: 0.7;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+    padding: 2px 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+}
+
+.chat-code-header .buttons .icon-button:hover {
+    opacity: 1;
+    background-color: var(--vscode-toolbar-hoverBackground);
+}
+
+.chat-code-header .buttons .icon-button .codicon {
+    font-size: 16px;
+    margin-left: 0;
+    /* Remove any left margin */
+}
+
+.chat-code-header .filename {
+    flex-grow: 1;
+    /* Allow filename to take up available space */
+    text-align: left;
+    /* Ensure the filename is left-aligned */
+}
+
+.chat-code-header .codicon {
+    margin-left: 6px;
+    font-size: 14px;
+}
+
+/* Adjust the container for these buttons */
+.chat-code-header .buttons {
+    display: flex;
+    align-items: right;
+    margin-left: auto;
+}
+
+.chat-code-container {
+    text-align: left;
+    /* Align text to the left for code blocks */
+    max-width: 100%;
+    /* Ensure the container doesn't exceed its parent's width */
+    padding: 10px;
+    /* Add some space inside the container */
+    border-radius: 0 0 4px 4px;
+    /* Round bottom corners to match the header */
+    border: 1px solid var(--vscode-input-border) !important;
+    /* Force border visibility */
+    background-color: var(--vscode-editor-background);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    /* Add a subtle shadow for depth */
+    font-size: var(--vscode-editor-font-size);
+    /* Use VS Code's editor font size */
+    font-family: var(--vscode-editor-font-family);
+    /* Use VS Code's editor font family */
+    font-weight: var(--vscode-editor-font-weight);
+    /* Use VS Code's editor font weight */
+    overflow-x: auto;
+    /* Add horizontal scrollbar if content overflows */
+    word-wrap: normal;
+    /* Prevent word wrapping */
+    word-break: normal;
+    /* Prevent breaking words */
+    white-space: pre;
+    /* Preserve whitespace and line breaks */
+    max-height: 900px;
+    /* Limit the height of the container */
+    overflow-y: auto;
+    /* Add vertical scrollbar if content exceeds max-height */
+}
+
+.chat-code-container pre,
+.chat-code-container code {
+    margin: 0;
+    padding: 0;
+    background: none;
+}
+
+.chat-code-container:hover .remove-code {
+    opacity: 1;
+}
+
+code {
+    background-color: var(--vscode-input-background);
+    /* Use the editor background color */
+    border-radius: 3px;
+    padding: 2px 4px;
+    font-size: var(--vscode-editor-font-size);
+    font-family: var(--vscode-editor-font-family);
+    /* Use the editor font family */
+    color: var(--vscode-input-foreground);
+    /* Use the editor foreground color */
+}
+
+.current-file-pill {
+    color: var(--vscode-editor-selectionForeground);
+    /* Example text color */
+    border: 1px solid var(--vscode-focusBorder);
+    /* Example border color */
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 2px;
+    /* Reduced from 6px to 4px */
+}
+
+::-webkit-scrollbar-track {
+    background: var(--vscode-scrollbarSlider-background);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--vscode-scrollbarSlider-hoverBackground);
+    border-radius: 2px;
+    /* Reduced from 3px to 2px for a sleeker look */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--vscode-scrollbarSlider-activeBackground);
+}
+
+/* Apply custom scrollbar to specific elements */
+#chat-output,
+.image-preview-container,
+.highlighted-code-container,
+.chat-code-container {
+    scrollbar-width: thin;
+    /* For Firefox */
+    scrollbar-color: var(--vscode-scrollbarSlider-background) transparent;
+}
+
+.loading-animation {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--vscode-editor-background);
+    border-top: 2px solid var(--vscode-focusBorder);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 5px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.hidden {
+    display: none;
+}
+
+.right-icons>* {
+    margin-left: 0px;
+    /* Match the margin-right from left-icons */
+}
+
+.right-icons>*:first-child {
+    margin-left: 0;
+    /* Remove margin from first item */
+}
+
+/* Add scrollbar styles specifically for the dropdown */
+.dropdown-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.dropdown-content::-webkit-scrollbar-track {
+    background: var(--vscode-scrollbarSlider-background);
+}
+
+.dropdown-content::-webkit-scrollbar-thumb {
+    background: var(--vscode-scrollbarSlider-hoverBackground);
+    border-radius: 2px;
+}
+
+.dropdown-content::-webkit-scrollbar-thumb:hover {
+    background: var(--vscode-scrollbarSlider-activeBackground);
+}
+
+/* Add this to show the dropdown when it's open */
+.dropdown.open .dropdown-content {
+    display: block;
+}
+
+/* Update icon-button to ensure icons are visible */
+.icon-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--vscode-foreground) !important;
+    /* Force color inheritance */
+    opacity: 0.7;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+    padding: 2px 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    font-family: codicon !important;
+    /* Force codicon font */
+}
+
+/* Ensure code blocks have visible borders */
+.chat-code-container {
+    border: 1px solid var(--vscode-input-border) !important;
+    /* Force border visibility */
+    background-color: var(--vscode-editor-background);
+}
+
+.chat-code-header {
+    border: 1px solid var(--vscode-input-border) !important;
+    /* Force border visibility */
+    border-bottom: none !important;
+}
+
+/* Add explicit font loading for codicons */
+@font-face {
+    font-family: 'codicon';
+    src: url('../node_modules/@vscode/codicons/dist/codicon.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
