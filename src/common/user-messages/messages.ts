@@ -28,7 +28,7 @@ export const getDiffProgressMessage = (key: keyof typeof DIFF_MESSAGES.DIFF_PROG
 }; 
 
 export const LICENSE_MESSAGES = {
-    REQUIRE_LICENSE: 'To get started with Mode, you\'ll need a license key.',
+    REQUIRE_LICENSE: 'To get started with Mode, you\'ll need a license key, which includes a free trial.',
     INVALID_LICENSE: 'Hmm, that license key doesn\'t seem to work. Need help? Contact support@getmode.dev',
     FAILED_VALIDATION: 'Unable to verify your license right now. Please check your connection.',
     FAILED_DEACTIVATION: 'Unable to deactivate your license right now. Please check your connection.',
