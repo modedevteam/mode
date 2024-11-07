@@ -2,7 +2,7 @@
 	"name": "mode",
 	"description": "Mode: Fully configurable AI copilot. Sleek. Personal. Powerful.",
 	"version": "0.0.1",
-	"publisher": "aruna-labs",
+	"publisher": "Aruna Labs",
 	"private": true,
 	"engines": {
 		"vscode": "^1.74.0"
@@ -58,13 +58,10 @@
 		]
 	},
 	"scripts": {
-		"compile": "npm run check-types && node esbuild.js",
-		"check-types": "tsc --noEmit",
-		"watch": "npm-run-all -p watch:*",
-		"watch:esbuild": "node esbuild.js --watch",
-		"watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-		"vscode:prepublish": "npm run package",
-		"package": "npm run check-types && node esbuild.js --production"
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"lint": "eslint \"src/**/*.ts\"",
+		"watch": "tsc -w -p ./"
 	},
 	"devDependencies": {
 		"@types/markdown-it": "^14.1.2",
@@ -75,8 +72,7 @@
 		"@typescript-eslint/parser": "^7.14.0",
 		"esbuild": "^0.24.0",
 		"eslint": "^8.26.0",
-		"typescript": "^5.6.2",
-		"npm-run-all": "^4.1.5"
+		"typescript": "^5.6.2"
 	},
 	"dependencies": {
 		"@anthropic-ai/sdk": "^0.30.1",
@@ -88,6 +84,5 @@
 		"markdown-it": "^14.1.0",
 		"openai": "^4.68.4",
 		"uuid": "^10.0.0"
-	},
-	"type": "module"
+	}
 }
