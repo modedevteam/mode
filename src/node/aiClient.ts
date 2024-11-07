@@ -290,7 +290,7 @@ export class AIClient {
                     return fullText;
                 }
                 const text = chunk.data.choices[0].delta.content || '';
-                if (text !== undefined) {
+                if (text && typeof text === 'string') {
                     fullText += text;
                     callbacks.onToken(text);
                 }
