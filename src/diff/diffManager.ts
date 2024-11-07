@@ -32,16 +32,9 @@ export class DiffManager {
             title: DIFF_MESSAGES.PROGRESS_TITLE,
             cancellable: false
         }, async (progress) => {
-            // Initial progress
-            progress.report({ message: getProgressMessage('CREATING_TEMP'), increment: 10 });
-            await new Promise(resolve => setTimeout(resolve, 100));
             
             const tempDir = path.join(os.tmpdir(), 'vscode-chat-diffs');
             await fs.promises.mkdir(tempDir, { recursive: true });
-
-            // Read file progress
-            progress.report({ message: getProgressMessage('READING_CODE'), increment: 10 });
-            await new Promise(resolve => setTimeout(resolve, 100));
 
             // AI Client setup progress
             progress.report({ message: getProgressMessage('WAKING_AI'), increment: 10 });
@@ -57,14 +50,10 @@ export class DiffManager {
             const aiClient = new AIClient(clientConfig);
 
             // Chunking progress
-            progress.report({ message: getProgressMessage('CHUNKING'), increment: 20 });
-            await new Promise(resolve => setTimeout(resolve, 100));
             const chunks = await new FileChunker(originalUri).chunk();
             const rechunkedContent = chunks.join('\n').toString();
 
             // Create temp file progress
-            progress.report({ message: getProgressMessage('SETTING_DIFF'), increment: 20 });
-            await new Promise(resolve => setTimeout(resolve, 100));
             const tempFilePath = path.join(tempDir, 'final-file.txt');
             await fs.promises.writeFile(tempFilePath, rechunkedContent);
             const tempUri = vscode.Uri.file(tempFilePath);
@@ -91,17 +80,33 @@ export class DiffManager {
                 { role: 'user' as const,content: `Return the modified chunks based on the file chunks and proposed changes`}
             ];
 
+            let tokenCount = 0;
+            const totalExpectedLines = chunks.length; // Rough estimate of expected lines
             const modifiedChunks = chunks;
-
-            // AI processing progress
-            progress.report({ message: getProgressMessage('AI_PROCESSING'), increment: 20 });
-            await new Promise(resolve => setTimeout(resolve, 100));
+            const progressMessage = getProgressMessage('AI_PROCESSING');
+            let lastReportedProgress = 10; // Start at 10 since we've already reported some progress
 
             // Call LLM to get modified chunks
             await aiClient.chat(this._outputChannel, messages, {
                 onToken: (token: string) => {
+                    const newlines = (token.match(/\n/g) || []).length;
+                    tokenCount += newlines;
+                    const tokenProgressPercent = Math.min(80, (tokenCount / totalExpectedLines) * 100);
+                    const actualProgressIncrement = tokenProgressPercent - lastReportedProgress;
+                    lastReportedProgress = tokenProgressPercent;
+                    
+                    progress.report({ 
+                        message: `${progressMessage} ${tokenProgressPercent.toFixed(0)}%`, 
+                        increment: actualProgressIncrement 
+                    });
                 },
                 onComplete: async (content: string) => {
+                    // Report final progress before processing chunks
+                    progress.report({
+                        message: `${progressMessage} 90%`,
+                        increment: 10
+                    });
+
                     // Extract all modified chunks
                     const modifiedChunksMatches = content.match(/<mc>[\s\S]*?<\/mc>/g);                    
                     if (modifiedChunksMatches) {
@@ -123,12 +128,16 @@ export class DiffManager {
                             }
                         });
                     }
+
+                    // Report completion
+                    progress.report({
+                        message: `${progressMessage} 100%`,
+                        increment: 10
+                    });
                 }
             });
 
-            // Final progress
-            progress.report({ message: getProgressMessage('FINAL_TOUCHES'), increment: 10 });
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // Final progress and file writing
             await fs.promises.truncate(tempFilePath, 0);
             await fs.promises.writeFile(tempFilePath, modifiedChunks.join('\n'));
 
