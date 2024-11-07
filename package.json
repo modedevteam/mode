@@ -2,6 +2,7 @@
 	"name": "mode",
 	"description": "Mode: Fully configurable AI copilot. Sleek. Personal. Powerful.",
 	"version": "0.0.1",
+	"publisher": "aruna-labs",
 	"private": true,
 	"engines": {
 		"vscode": "^1.74.0"

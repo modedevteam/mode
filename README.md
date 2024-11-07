@@ -1,18 +1,17 @@
-# Cat Codicons 
+# Mode
 
-Demonstrates loading [codicons](https://github.com/microsoft/vscode-codicons) in a [webview](https://code.visualstudio.com/api/extension-guides/webview).
+Mode is the first client-only AI coding companion for Visual Studio Code, providing fast, direct access to your favorite language models (LLMs) without relying on third-party backends. Mode is designed to help you get answers about your code, troubleshoot errors, and apply AI-powered suggestions seamlessly within your coding environment.
 
-## VS Code API
+## Features
 
-### `vscode` module
+- **Interactive Welcome Panel**: Displays an introduction to Mode with easy-to-follow setup instructions.
+- **AI-Assisted Coding**: Provides helpful insights, answers questions, and explains error messages directly in your editor.
+- **Command Integration**: Execute commands to open Mode chat or manage API keys, all from within the welcome panel.
+- **Shortcut for Quick Access**: Press `Cmd+L` (or `Ctrl+L` on Windows) to open Mode chat for instant AI assistance.
 
-- [`window.createWebviewPanel`](https://code.visualstudio.com/api/references/vscode-api#window.createWebviewPanel)
+## Getting Started
 
-## Running the example
+### Prerequisites
 
-- Open this example in VS Code 1.47+
-- `npm install`
-- `npm run watch` or `npm run compile`
-- `F5` to start debugging
-
-Run the `Cat Codicons: Show Cat Codicons` command to create the webview.
+- Visual Studio Code 1.47 or higher
+- Node.js and npm installed
