@@ -1,16 +1,16 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { FileResolver } from '../common/io/fileUtils';
+import { FileResolver } from '../../common/io/fileUtils';
 import * as os from 'os';
-import { AIModel } from '../common/llms/aiModel';
-import { AIClient, AIMessage } from '../common/llms/aiClient';
-import { ApiKeyManager } from '../common/llms/aiApiKeyManager';
-import { DIFF_MESSAGES } from '../common/user-messages/messages';
-import { ErrorMessages } from '../common/user-messages/errorMessages';
-import { diffMergePrompt } from '../common/llms/aiPrompts';
+import { AIModel } from '../../common/llms/aiModel';
+import { AIClient, AIMessage } from '../../common/llms/aiClient';
+import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
+import { DIFF_MESSAGES } from '../../common/user-messages/messages';
+import { ErrorMessages } from '../../common/user-messages/errorMessages';
+import { diffMergePrompt } from '../../common/llms/aiPrompts';
 import { FileChunker } from '../diff/fileChunker';
-import { getProgressMessage } from '../common/user-messages/messages';
+import { getProgressMessage } from '../../common/user-messages/messages';
 
 export class DiffManager {
     private _applyChangesButton?: vscode.StatusBarItem;

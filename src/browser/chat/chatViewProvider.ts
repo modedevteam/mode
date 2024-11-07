@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
-import { ChatManager } from '../../chat/chatManager';
+import { ChatManager } from '../../capabilities/chat/chatManager';
 import * as path from 'path';
 import hljs from 'highlight.js';
 import { ChatViewHtmlGenerator } from './chatViewHtmlGenerator';
-import { DiffManager } from '../../diff/diffManager';
+import { DiffManager } from '../../capabilities/diff/diffManager';
 import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
 import { AIModel } from '../../common/llms/aiModel';
 import { ErrorMessages } from '../../common/user-messages/errorMessages';

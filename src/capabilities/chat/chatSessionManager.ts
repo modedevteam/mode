@@ -2,8 +2,8 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid'; // Add this import for generating unique IDs
-import { copilotPrompt } from '../common/llms/aiPrompts';
-import { AIMessage } from '../common/llms/aiClient';
+import { copilotPrompt } from '../../common/llms/aiPrompts';
+import { AIMessage } from '../../common/llms/aiClient';
 
 export class SessionManager {
 	private chatSessions: {

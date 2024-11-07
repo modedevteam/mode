@@ -3,7 +3,7 @@ import { ModeChatViewProvider } from './browser/chat/chatViewProvider';
 import { WelcomeViewProvider } from './browser/welcome/welcomeViewProvider';
 import { ApiKeyManager } from './common/llms/aiApiKeyManager';
 import { AIModel } from './common/llms/aiModel';
-import { AskModeCodeActionProvider } from './quickfix/askModeCodeActionProvider';
+import { AskModeCodeActionProvider } from './capabilities/quickfix/askModeCodeActionProvider';
 import { ErrorMessages } from './common/user-messages/errorMessages';
 
 export function activate(context: vscode.ExtensionContext) {

@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
-import { AIMessage } from '../common/llms/aiClient';
+import { AIMessage } from '../../common/llms/aiClient';
 import MarkdownIt = require('markdown-it');
 import * as fs from 'fs';
 import { StreamProcessor } from './streamProcessor';
-import { AIClient } from '../common/llms/aiClient';
+import { AIClient } from '../../common/llms/aiClient';
 
 // New class to handle message processing
 export class MessageHandler {
