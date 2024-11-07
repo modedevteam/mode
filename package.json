@@ -16,6 +16,10 @@
 		"onCommand:mode.showWelcomePage",
 		"onView:mode.chatView"
 	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/modedevteam/mode"
+	},
 	"contributes": {
 		"viewsContainers": {
 			"activitybar": [
