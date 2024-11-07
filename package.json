@@ -89,5 +89,5 @@
 		"openai": "^4.68.4",
 		"uuid": "^10.0.0"
 	},
-	"type": "commonjs"
+	"type": "module"
 }
