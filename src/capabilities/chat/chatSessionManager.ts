@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid'; // Add this import for generating unique IDs
-import { copilotPrompt } from '../../common/llms/aiPrompts';
+import { chatPrompt } from '../../common/llms/aiPrompts';
 import { AIMessage } from '../../common/llms/aiClient';
 
 export class SessionManager {
@@ -12,31 +12,6 @@ export class SessionManager {
 		systemTime: number;
 		messages: AIMessage[];
 		overview: string;
-		config: {
-			temperature: number;
-			maxTokens: number;
-			responseModes: {
-				concise: {
-					temperature: number;
-					maxTokens: number;
-				};
-				detailed: {
-					temperature: number;
-					maxTokens: number;
-				};
-			};
-			languageSettings: {
-				typescript: {
-					preferredQuotes: string;
-					semicolons: boolean;
-					trailingComma: string;
-				};
-				python: {
-					indentSize: number;
-					maxLineLength: number;
-				};
-			};
-		};
 	}[] = [];
 	private currentSessionId: string | null = null;
 	private readonly STORAGE_FILE_NAME = 'mode_chat_sessions.json';
@@ -52,36 +27,9 @@ export class SessionManager {
 			systemTime: Date.now(),
 			messages: [{
 				role: "system" as const,
-				content: copilotPrompt
+				content: chatPrompt
 			}],
-			overview: "New Chat",
-			config: {
-				temperature: 0.7,
-				maxTokens: 2048,
-				
-				responseModes: {
-					concise: {
-						temperature: 0.5,
-						maxTokens: 1024
-					},
-					detailed: {
-						temperature: 0.8,
-						maxTokens: 4096
-					}
-				},
-				
-				languageSettings: {
-					typescript: {
-						preferredQuotes: "single",
-						semicolons: true,
-						trailingComma: "es5"
-					},
-					python: {
-						indentSize: 4,
-						maxLineLength: 88
-					}
-				}
-			}
+			overview: "New Chat"
 		};
 		this.chatSessions.push(newSession);
 		this.currentSessionId = newSession.id;
