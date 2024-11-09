@@ -10,6 +10,8 @@ Mode is the first client-only AI code copilot that connects directly to your fav
 
 ## Mode in Action
 
+![Mode in Action](media/Chat.gif)
+
 ### Chat
 Get instant help with understanding code, planning, and choosing the best approach.
 
