@@ -5,39 +5,11 @@ import { ApiKeyManager } from './common/llms/aiApiKeyManager';
 import { AIModel } from './common/llms/aiModel';
 import { AskModeCodeActionProvider } from './capabilities/quickfix/askModeCodeActionProvider';
 import { ErrorMessages } from './common/user-messages/errorMessages';
-import { registerInstance } from './capabilities/licensing/instanceManager';
-// import { LicenseManager } from './capabilities/licensing/licenseManager';
 
 // Add at the top of the file, outside the activate function
 const LICENSE_CHECK_INTERVAL = 1000 * 60 * 60 * 24; // 24 hours in milliseconds
 
 export async function activate(context: vscode.ExtensionContext) {
-
-	// Register instance ID
-	const instanceId = registerInstance(context);
-
-	// @todo: After we have licensing approval, uncomment this
-	// @todo: Also, there's a bug where we are exhausting the license too quickly
-	// const licenseManager = new LicenseManager(context);
-	// const isLicenseValid = await licenseManager.handleLicense();
-	
-	// if (!isLicenseValid) {
-	// 	return;
-	// }
-
-	// // Add periodic license check
-	// const intervalHandle = setInterval(async () => {
-	// 	const isStillValid = await licenseManager.handleLicense();
-	// 	if (!isStillValid) {
-	// 		// Clear the interval
-	// 		clearInterval(intervalHandle);
-	// 		// Deactivate the extension
-	// 		vscode.commands.executeCommand('workbench.action.reloadWindow');
-	// 	}
-	// }, LICENSE_CHECK_INTERVAL);
-
-	// Add the interval handle to subscriptions so it gets cleaned up on deactivation
-	// context.subscriptions.push({ dispose: () => clearInterval(intervalHandle) });
 
 	// Create output channel
 	const outputChannel = vscode.window.createOutputChannel('Mode');
@@ -130,7 +102,4 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 export async function deactivate(context: vscode.ExtensionContext) {
-	// @todo: After we have licensing approval, uncomment this
-    // const licenseManager = new LicenseManager(context);
-    // await licenseManager.deactivateLicense();
 }

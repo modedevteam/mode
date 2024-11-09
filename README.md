@@ -1,41 +1,32 @@
 # Mode
 
-Mode is the first client-only AI coding companion for Visual Studio Code, delivering secure, fast, and direct access to your preferred language models (LLMs) without relying on third-party servers. Mode offers a streamlined experience for enhancing productivity, improving code quality, and facilitating smoother code review and debugging processes.
+Mode is the first client-only AI code copilot that connects directly to your favorite language models. Harness the full power of AI assistants without the risks of third-party backends and the hassles of token limits and upgrade fees.
 
-## Why Choose Mode?
+## Why Mode?
 
-- **True Privacy**: Mode connects directly to your chosen LLM provider, ensuring that your code and interactions never pass through an intermediary. This gives you complete control over your data—no extra permissions or compliance checks needed at work.
-- **Direct Connection to LLMs**: By connecting directly to model providers, Mode gives you immediate access to the latest updates from providers like Anthropic, OpenAI, Google, Mistral, and Cohere, ensuring you’re always working with the most advanced versions available. With this direct setup, you won’t experience third-party throttling or extra costs for upgraded tokens or “fast-lane” access. This allows you to fully leverage each provider's performance and responsiveness without interruptions or hidden fees.
-- **Built for Enterprise and Flexibility**: Mode puts more control in developers' hands by enabling prompt and temperature customization, along with the freedom to add any preferred models. With Mode, enterprise developers can bring their own API keys, making it easy to integrate directly with the LLM providers already approved in their organization. By eliminating third-party backends, Mode also simplifies deployment in security-sensitive environments where data privacy and control are paramount. This "bring your own keys" approach empowers developers to fine-tune Mode’s responses and functionality to fit specific project needs, ensuring the AI aligns with team goals and coding standards.
+- **Personal and Powerful**: Mode connects directly to providers like Anthropic, OpenAI, Google, Mistral, and more&mdash;your code and interactions stay private. Since there's no middle layer, you can instantly upgrade to the latest models without relying on third-party tools to catch up or pay their upgrade fees.
 
-## Key Features
-
-Mode redefines secure and intelligent AI-powered coding assistance with the following features:
-
-1. **AI Chat**: Get immediate assistance by pressing `Cmd+L` (or `Ctrl+L` on Windows) to access Mode's AI chat. Whether you need help understanding an error, getting code suggestions, or asking general coding questions, Mode’s chat has you covered.
-   
-2. **Multi-Model Support**: Mode connects directly with popular LLM providers, including Anthropic, OpenAI, Google, Mistral, and Cohere. Easily switch between providers, with more integrations coming soon.
-
-3. **Enhanced Code Merging**: Mode’s intelligent merge functionality simplifies code application, making code changes easier to apply, understand, and review. Mode feels like pair programming with an AI that understands your codebase, seamlessly integrating suggestions into your environment.
-
-4. **No Backend Dependence**: Mode operates entirely on your device, maximizing security and enabling frictionless deployment without backend setup or concerns about third-party data storage.
-
-5. **Customization and Personalization**: Mode empowers you to personalize your experience by adjusting prompts, temperature, context, and even adding images. This flexibility lets you control the AI’s response style—from concise and technical to creative and exploratory—ensuring it aligns perfectly with your specific coding needs.
+- **Built for the Enterprise**: Mode is purpose-built for developers who need configurability. You bring your own keys, and can adjust prompts, chat settings, and endpoints, making it easy to integrate with providers already approved in your organization. With no tracking or servers, Mode is ideal for secure environments that require data privacy and control.
 
 ## Mode in Action
 
-See Mode’s features in action through the following GIFs:
+### Chat
+Get instant help with understanding code, planning, and choosing the best approach.
 
-1. **AI Chat**: Watch how Mode's AI Chat responds instantly to code-related queries, helping you debug, understand, and enhance your code seamlessly.
-  
-2. **Apply Changes**: Observe how Mode's intelligent merge and apply changes functionality works, making it feel like pair programming with an AI partner that intuitively integrates suggestions into your codebase.
+### Contextualize
+Add images, code snippets, and files to help set the broader context, especially great for building UI.
 
-3. **Quick Fixes for Debugging**: See how Mode provides quick, context-aware debugging solutions, helping you identify and resolve issues efficiently within your editor.
+### Pair Program
+Mode intelligently applies suggestions, without breaking your changes, giving you a true pair-programming experience.
 
-4. **Customization and Personalization**: Explore how Mode allows you to adjust prompts, temperature, context, and even images, giving you control over the AI’s response style so it aligns perfectly with your project needs.
+### Debug and Deploy
+Quickly resolve issues with intelligent debugging support.
 
-Enjoy coding without compromising privacy, security, or compatibility. With Mode, you’re in control of your AI assistant—empowering your coding experience while safeguarding your intellectual property.
+### Personalize
+Tailor Mode to fit your coding style and needs: change models, prompts, temperature, and more.
 
-## Support, Feedback, and Community
+# Join Us on this Journey
 
-We’re dedicated to continuously improving Mode and value your input in making it even better! If you encounter any issues, have feature requests, or just want to share your experiences, join our vibrant Discord community where developers connect and collaborate. You can also reach out to us via email for direct support. To learn more about Mode and explore commonly asked questions, check out our FAQ. We look forward to building an even better coding experience with you!
+We built Mode because we love building, just like you. Our journey is just beginning – we're continuously improving Mode and working on an exciting roadmap: smart autocompletion, automating routine tasks, collaborating across files, and supporting even more language models and providers.
+
+Have questions? Reach out (hi@getmode.dev) or drop by our [Discord](https://discord.gg/XHxbjcRM). Give Mode a try, and let's build something amazing together.

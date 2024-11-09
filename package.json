@@ -1,8 +1,11 @@
 {
 	"name": "mode",
-	"description": "Mode: Fully configurable AI copilot. Sleek. Personal. Powerful.",
+	"displayName": "Mode",
+	"description": "Client-only AI copilot. Sleek. Private. Powerful.",
 	"version": "0.0.1",
 	"publisher": "Aruna Labs",
+	"publisherId": "aruna-labs",
+	"homepage": "https://www.getmode.dev",
 	"private": true,
 	"engines": {
 		"vscode": "^1.74.0"
@@ -26,7 +29,7 @@
 				{
 					"id": "mode",
 					"title": "Mode",
-					"icon": "media/ModeTransparent.png"
+					"icon": "media/ModeDark.png"
 				}
 			]
 		},
@@ -88,5 +91,10 @@
 		"markdown-it": "^14.1.0",
 		"openai": "^4.68.4",
 		"uuid": "^10.0.0"
-	}
+	},
+	"galleryBanner": {
+		"color": "#FFFFFF",
+		"theme": "dark"
+	},
+	"icon": "media/Mode.png"
 }
