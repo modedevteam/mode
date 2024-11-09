@@ -96,5 +96,8 @@
 		"color": "#FFFFFF",
 		"theme": "dark"
 	},
-	"icon": "media/Mode.png"
+	"icon": "media/Mode.png",
+	"files": [
+		"media/"
+	]
 }

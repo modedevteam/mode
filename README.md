@@ -1,3 +1,11 @@
+![GitHub issues](https://img.shields.io/github/issues/modedevteam/mode-community)
+![GitHub license](https://img.shields.io/github/license/modedevteam/mode-community)
+![Twitter Follow](https://img.shields.io/twitter/follow/modedevteam?style=social)
+![Discord](https://img.shields.io/discord/1304602978497331290)
+![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/modedevteam.mode)
+![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/modedevteam.mode)
+![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/modedevteam.mode)
+
 # Mode
 
 Mode is the first client-only AI code copilot that connects directly to your favorite language models. Harness the full power of AI assistants without the risks of third-party backends and the hassles of token limits and upgrade fees.
@@ -10,16 +18,20 @@ Mode is the first client-only AI code copilot that connects directly to your fav
 
 ## Mode in Action
 
-![Mode in Action](media/Chat.gif)
-
 ### Chat
 Get instant help with understanding code, planning, and choosing the best approach.
 
+![Chat](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/Chat.gif)
+
 ### Contextualize
-Add images, code snippets, and files to help set the broader context, especially great for building UI.
+Add images, code snippets, and files to help set the broader context, especially great for  UI development.
+
+![Context](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/Context.gif)
 
 ### Pair Program
 Mode intelligently applies suggestions, without breaking your changes, giving you a true pair-programming experience.
+
+![Pair](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/ApplyChanges.gif)
 
 ### Debug and Deploy
 Quickly resolve issues with intelligent debugging support.
@@ -27,8 +39,8 @@ Quickly resolve issues with intelligent debugging support.
 ### Personalize
 Tailor Mode to fit your coding style and needs: change models, prompts, temperature, and more.
 
-# Join Us on this Journey
+## Be part of the journey
 
-We built Mode because we love building, just like you. Our journey is just beginning – we're continuously improving Mode and working on an exciting roadmap: smart autocompletion, automating routine tasks, collaborating across files, and supporting even more language models and providers.
+We created Mode because we love building, just like you. Our journey is just beginning – we're continuously improving and have an exciting roadmap ahead: smart autocompletion, automating routine tasks, collaborating across files, and supporting even more language models and providers.
 
-Have questions? Reach out (hi@getmode.dev) or drop by our [Discord](https://discord.gg/XHxbjcRM). Give Mode a try, and let's build something amazing together.
+Have questions? Reach out (hi@getmode.dev) or drop by our [Discord](https://discord.gg/XHxbjcRM). You can also visit our [Mode Community](https://github.com/modedevteam/mode-community/blob/main/README.md) to submit feature requests, report bugs, and share your ideas. Give Mode a try, and let's build something amazing together.
