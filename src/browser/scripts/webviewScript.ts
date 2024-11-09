@@ -472,18 +472,6 @@ declare function acquireVsCodeApi(): any;
         const dropdownToggle = document.querySelector('.dropdown-toggle') as HTMLButtonElement;
         const dropdownContent = document.querySelector('.dropdown-content') as HTMLDivElement;
         const selectedOptionSpan = document.querySelector('.selected-model') as HTMLSpanElement;
-        const supportsVisionSpan = document.querySelector('.supports-vision') as HTMLSpanElement;
-        const addFileMediaButton = document.getElementById('add-file-media-button') as HTMLButtonElement;
-
-        function updateVisionSupport(supportsVision: boolean) {
-            addFileMediaButton.disabled = !supportsVision;
-            addFileMediaButton.title = supportsVision ? 
-                'Add an image' : 
-                'Image capabilities for this model are not available yet';
-        }
-
-        // Initialize vision support based on default model
-        updateVisionSupport(supportsVisionSpan.textContent === 'true');
 
         dropdownToggle.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -503,9 +491,6 @@ declare function acquireVsCodeApi(): any;
                 const optionElement = e.target as HTMLAnchorElement;
                 if (optionElement.dataset.option) {
                     selectedOptionSpan.textContent = optionElement.dataset.option;
-                    supportsVisionSpan.textContent = optionElement.dataset.supportsVision || 'false';
-                    updateVisionSupport(optionElement.dataset.supportsVision === 'true');
-                    
                     // Notify extension about model change
                     vscode.postMessage({
                         command: 'modelSelected',

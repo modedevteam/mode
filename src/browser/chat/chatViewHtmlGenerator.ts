@@ -77,8 +77,8 @@ export class ChatViewHtmlGenerator {
 		const defaultModel = AIModel.getDefaultModel();
 		
 		const modelOptions = Object.entries(models)
-			.map(([modelId, info]) => `
-				<a href="#" data-option="${modelId}" data-supports-vision="${info.supportsVision || false}">
+			.map(([modelId]) => `
+				<a href="#" data-option="${modelId}">
 					${modelId}
 				</a>
 			`)
@@ -88,7 +88,6 @@ export class ChatViewHtmlGenerator {
 			<div class="dropdown">
 				<button class="dropdown-toggle" title="Select model">
 					<span class="selected-model">${defaultModel}</span>
-					<span class="supports-vision" style="display: none;">${models[defaultModel]?.supportsVision || false}</span>
 					<i class="codicon codicon-chevron-down"></i>
 				</button>
 				<div class="dropdown-content">
