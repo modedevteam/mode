@@ -1,17 +1,55 @@
 {
 	"name": "mode",
-	"displayName": "Mode: Client-only AI copilot.",
-	"description": "Client-only AI copilot. Sleek. Private. Powerful.",
-	"version": "1.0.0",
+	"displayName": "Mode: Your Personal AI Code Copilot",
+	"description": "Mode directly connects to your favorite language models, providing secure, direct, and fully customizable AI coding support.",
+	"version": "1.0.2",
 	"preRelease": true,
 	"publisher": "aruna-labs",
 	"homepage": "https://www.getmode.dev",
 	"private": true,
+	"keywords": [
+		"AI",
+		"code",
+		"copilot",
+		"language models",
+		"coding support",
+		"ai",
+		"c#",
+		"c++",
+		"code-referencing",
+		"codex",
+		"co-pilot",
+		"documentation",
+		"go",
+		"golang",
+		"intellisense",
+		"java",
+		"javascript",
+		"keybindings",
+		"kotlin",
+		"openai",
+		"php",
+		"pilot",
+		"python",
+		"refactor",
+		"ruby",
+		"snippets",
+		"typescript",
+		"anthropic",
+		"mistral",
+		"google",
+		"cohere"
+	],
 	"engines": {
 		"vscode": "^1.74.0"
 	},
 	"categories": [
-		"Other"
+		"Programming Languages",
+		"Snippets",
+		"Machine Learning",
+		"Education",
+		"AI",
+		"Chat"
 	],
 	"main": "./out/extension.js",
 	"activationEvents": [
@@ -21,7 +59,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/modedevteam/mode"
+		"url": "https://github.com/modedevteam/mode-community"
 	},
 	"contributes": {
 		"viewsContainers": {
@@ -91,10 +129,6 @@
 		"markdown-it": "^14.1.0",
 		"openai": "^4.68.4",
 		"uuid": "^10.0.0"
-	},
-	"galleryBanner": {
-		"color": "#FFFFFF",
-		"theme": "dark"
 	},
 	"icon": "media/Mode.png",
 	"files": [

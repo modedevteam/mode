@@ -1,10 +1,11 @@
 ![GitHub issues](https://img.shields.io/github/issues/modedevteam/mode-community)
-![Twitter Follow](https://img.shields.io/twitter/follow/modedevteam?style=social)
-![Discord](https://img.shields.io/discord/1304602978497331290)
+![Follow](https://img.shields.io/twitter/follow/modedevteam?style=social)
+[![Join our Discord](https://img.shields.io/badge/Join%20us%20on-Discord-7289DA?logo=discord&logoColor=white)](https://discord.gg/XHxbjcRM)
+![Early Access](https://img.shields.io/badge/status-early%20access-007FFF)
 
 # Mode
 
-Mode is the first client-only AI code copilot that connects directly to your favorite language models. Harness the full power of AI assistants without the risks of third-party backends and the hassles of token limits and upgrade fees.
+Mode is the first personal AI code copilot that connects directly to your favorite language models. Harness the full power of AI assistants without the risks of third-party servers and the hassles of token limits and upgrade fees.
 
 ## Why Mode?
 
