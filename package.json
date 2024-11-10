@@ -1,10 +1,10 @@
 {
 	"name": "mode",
-	"displayName": "Mode",
+	"displayName": "Mode: Client-only AI copilot.",
 	"description": "Client-only AI copilot. Sleek. Private. Powerful.",
-	"version": "0.0.1",
-	"publisher": "Aruna Labs",
-	"publisherId": "aruna-labs",
+	"version": "1.0.0",
+	"preRelease": true,
+	"publisher": "aruna-labs",
 	"homepage": "https://www.getmode.dev",
 	"private": true,
 	"engines": {

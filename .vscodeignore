@@ -1,0 +1,12 @@
+# Ignore node_modules
+node_modules/**
+
+# Ignore test files
+tests/**
+
+# Ignore build output
+dist/**
+
+# Ignore configuration files
+.vscode/**
+*.config.js

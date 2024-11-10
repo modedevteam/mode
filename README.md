@@ -1,10 +1,6 @@
 ![GitHub issues](https://img.shields.io/github/issues/modedevteam/mode-community)
-![GitHub license](https://img.shields.io/github/license/modedevteam/mode-community)
 ![Twitter Follow](https://img.shields.io/twitter/follow/modedevteam?style=social)
 ![Discord](https://img.shields.io/discord/1304602978497331290)
-![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/modedevteam.mode)
-![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/modedevteam.mode)
-![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/modedevteam.mode)
 
 # Mode
 
@@ -36,11 +32,15 @@ Mode intelligently applies suggestions, without breaking your changes, giving yo
 ### Debug and Deploy
 Quickly resolve issues with intelligent debugging support.
 
+![Debug](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/Context.gif)
+
 ### Personalize
 Tailor Mode to fit your coding style and needs: change models, prompts, temperature, and more.
 
-## Be part of the journey
+![ChangeProviders](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/ChangeProviders.gif)
+
+## Be part of the journey!
 
 We created Mode because we love building, just like you. Our journey is just beginning – we're continuously improving and have an exciting roadmap ahead: smart autocompletion, automating routine tasks, collaborating across files, and supporting even more language models and providers.
 
-Have questions? Reach out (hi@getmode.dev) or drop by our [Discord](https://discord.gg/XHxbjcRM). You can also visit our [Mode Community](https://github.com/modedevteam/mode-community/blob/main/README.md) to submit feature requests, report bugs, and share your ideas. Give Mode a try, and let's build something amazing together.
+Have questions? Reach out (hi@getmode.dev) or drop by our [Discord](https://discord.gg/XHxbjcRM). You can also visit our [Mode Community](https://github.com/modedevteam/mode-community/blob/main/README.md) to submit feature requests, report bugs, and share your ideas. Give Mode a try, and let's build something amazing together!
