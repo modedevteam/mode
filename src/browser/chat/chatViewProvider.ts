@@ -7,6 +7,7 @@ import { DiffManager } from '../../capabilities/diff/diffManager';
 import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
 import { AIModel } from '../../common/llms/aiModel';
 import { ErrorMessages } from '../../common/user-messages/errorMessages';
+import { safeLanguageIdentifier } from '../../capabilities/context/safeLanguageIdentifier';
 
 export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 	public static readonly viewType = 'mode.chatView';
@@ -130,10 +131,18 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 				const range = `${startLine}-${endLine}`;
 
 				// Determine the language for syntax highlighting
-				const language = editor.document.languageId;
+				const language = safeLanguageIdentifier(editor.document.languageId);
 
 				// Apply syntax highlighting
-				const highlightedCode = hljs.highlight(text, { language }).value;
+				let highlightedCode;
+				try {
+					highlightedCode = hljs.highlight(text, { language }).value;
+				} catch (error) {
+					const errorMessage = ErrorMessages.CODE_HIGHLIGHTING_ERROR(error, language);
+					highlightedCode = text; // Fallback to plain text if highlighting fails
+					this._outputChannel.appendLine(errorMessage);
+					this._outputChannel.show();
+				}
 
 				// Send a message to the webview to update the context pill and add the highlighted code container
 				this._view?.webview.postMessage({

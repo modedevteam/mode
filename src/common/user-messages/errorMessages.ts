@@ -9,5 +9,8 @@ export const ErrorMessages = {
         `Failed to apply changes: ${error instanceof Error ? error.message : String(error)}`,
     
     EXPERIMENTAL_MODEL_FOR_MERGE_WARNING: (currentModel: string, recommendedModels: string[]) =>
-        `Mode's support for AI-assisted merge operations using ${currentModel} is currently experimental. This may result in lower quality results. Would you like to continue anyway?\n\nRecommended models: ${recommendedModels.join(', ')}`
+        `Mode's support for AI-assisted merge operations using ${currentModel} is currently experimental. This may result in lower quality results. Would you like to continue anyway?\n\nRecommended models: ${recommendedModels.join(', ')}`,
+
+    CODE_HIGHLIGHTING_ERROR: (error: unknown, language: string) =>
+        `Error highlighting code for language "${language}": ${error instanceof Error ? error.message : String(error)}`,
 }; 
