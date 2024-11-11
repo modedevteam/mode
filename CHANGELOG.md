@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.5] - 2024-11-11
+### Added
+- Now Mode automatically adds the currently opened files as chat context so users don't have to manually add them
+- Include unsaved changes in the file context
+
+### Fixed
+- Fixed syntax highlighting not working for some languages
+
 ## [1.0.4] - 2024-11-10
 ### Fixed
 - (Continued) Fixed open chat command not working for some users
