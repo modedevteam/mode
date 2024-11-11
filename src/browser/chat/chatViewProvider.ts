@@ -113,6 +113,15 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 		currentFile: string | null = null,
 		selectedModel: string
 	) {
+		// add the currently opened files to the fileUrls so users don't have to manually add them
+		// only include files, not output channel, terminal, etc.
+		const openedFileUrls = vscode.window.visibleTextEditors
+			.filter(editor => editor.document.uri.scheme === 'file') // Filter to include only file URIs
+			.map(editor => editor.document.uri.toString());
+
+		// merge the currently opened files with the manually added files, keeping only unique values
+		fileUrls = [...new Set([...fileUrls, ...openedFileUrls])];
+
 		if (this._chatManager) {
 			this._chatManager.sendMessage(this._outputChannel, message, images, codeSnippets, fileUrls, currentFile, selectedModel);
 		}
