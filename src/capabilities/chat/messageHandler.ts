@@ -68,7 +68,10 @@ export class MessageHandler {
 				// Convert the file URL to a path using vscode.Uri
 				const uri = vscode.Uri.parse(fileUrl);
 				const filePath = uri.fsPath;
-				const fileContent = fs.readFileSync(filePath, 'utf-8');
+
+				// Check if the document is open and get its content including unsaved changes
+				const openDocument = vscode.workspace.textDocuments.find(doc => doc.uri.toString() === uri.toString());
+				const fileContent = openDocument ? openDocument.getText() : fs.readFileSync(filePath, 'utf-8');
 
 				// Get document symbols
 				const symbols = await vscode.commands.executeCommand<vscode.SymbolInformation[]>('vscode.executeDocumentSymbolProvider', uri);
