@@ -22,7 +22,6 @@ export class ChatManager {
 	}
 
 	private async initializeClient(selectedModel: string): Promise<{ success: boolean; message?: string }> {
-		AIModel.setLastUsedModel(selectedModel);
 		if (this.currentModel !== selectedModel || !this.aiClient) {
 			const provider = AIModel.getModelInfo(selectedModel)!.provider;
 			const result = await AIClientFactory.createClient(provider, selectedModel);

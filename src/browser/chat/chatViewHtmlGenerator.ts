@@ -74,7 +74,7 @@ export class ChatViewHtmlGenerator {
 
 	private _getDropdownHtml(): string {
 		const models = AIModel.getAllModels();
-		const defaultModel = AIModel.getDefaultModel();
+		const defaultModel = AIModel.getLastUsedModel();
 		
 		const modelOptions = Object.entries(models)
 			.map(([modelId]) => `

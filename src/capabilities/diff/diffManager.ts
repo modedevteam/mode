@@ -21,7 +21,7 @@ export class DiffManager {
     private async prepareAIDiff(originalUri: vscode.Uri, proposedChanges: string): Promise<vscode.Uri | null> {
 
         // Get the current model info
-        const currentModel = AIModel.getDefaultModel();
+        const currentModel = AIModel.getLastUsedModel();
         const modelInfo = AIModel.getModelInfo(currentModel);
         if (!modelInfo) {
             throw new Error('No model configuration found');

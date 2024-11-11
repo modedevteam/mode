@@ -66,7 +66,7 @@ export class AIModel {
         return { ...this.MODEL_MAPPINGS };
     }
 
-    public static getDefaultModel(): string {
+    public static getLastUsedModel(): string {
         return this.extensionContext.globalState.get('lastUsedModel', 'gpt-4o');
     }
 
