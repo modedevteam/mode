@@ -70,7 +70,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 						);
 						break;
 					case 'showQuickPick':
-						this._handleQuickPickFileSelection();
+						this._handleQuickPickSelection(message.source);
 						break;
 					case 'openFile':
 						this._openFileInEditor(message.fileUri);
@@ -182,26 +182,76 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 		}
 	}
 
-	// Updating file search to use configurable exclude patterns
-
-	private async _handleQuickPickFileSelection() {
+	private async _handleQuickPickSelection(source?: string) {
 		try {
 			const selectedFile = await SearchUtils.showFileQuickPick();
-			
-			if (selectedFile) {
-				const fileUri = SearchUtils.createFileUri(selectedFile);
-				if (fileUri) {
+			if (!selectedFile) {
+				this.sendMessageToWebview({
+					command: 'addFilePill',
+					fileName: undefined,
+					fileUri: undefined,
+					...(source && { source })
+				});
+				return;
+			}
+	
+			const fileUri = SearchUtils.createFileUri(selectedFile);
+			if (!fileUri) {
+				this._outputChannel.appendLine('Error: Invalid file URI');
+				return;
+			}
+	
+			const fileExtension = path.extname(selectedFile.label).toLowerCase();
+			const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
+			const isImage = imageExtensions.includes(fileExtension);
+	
+			if (isImage) {
+				try {
+					const uri = vscode.Uri.parse(fileUri);
+					const imageBuffer = await vscode.workspace.fs.readFile(uri);
+	
+					// Determine MIME type based on file extension
+					const mimeType = this._getMimeType(fileExtension);
+					
+					// Convert to base64
+					const base64Image = `data:${mimeType};base64,${Buffer.from(imageBuffer).toString('base64')}`;
+	
 					this.sendMessageToWebview({
-						command: 'addFilePill',
+						command: 'addImagePill',
 						fileName: selectedFile.label,
-						fileUri
+						imageData: base64Image,
+						fileUri,
+						...(source && { source })
 					});
+				} catch (error) {
+					this._outputChannel.appendLine(`Error processing image file: ${error}`);
+					this._outputChannel.show();
 				}
+			} else {
+				this.sendMessageToWebview({
+					command: 'addFilePill',
+					fileName: selectedFile.label,
+					fileUri,
+					...(source && { source })
+				});
 			}
 		} catch (error) {
 			this._outputChannel.appendLine(`Error selecting file: ${error}`);
 			this._outputChannel.show();
 		}
+	}
+	
+	// Helper method to determine MIME type
+	private _getMimeType(extension: string): string {
+		const mimeTypes: { [key: string]: string } = {
+			'.jpg': 'image/jpeg',
+			'.jpeg': 'image/jpeg',
+			'.png': 'image/png',
+			'.gif': 'image/gif',
+			'.webp': 'image/webp',
+			'.bmp': 'image/bmp'
+		};
+		return mimeTypes[extension] || 'application/octet-stream';
 	}
 
 	// New method to open a file in the editor

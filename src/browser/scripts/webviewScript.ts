@@ -134,6 +134,23 @@ declare function acquireVsCodeApi(): any;
         updateSendButtonState();
         resizeTextarea();
     }
+
+    // display @-mentioned file in chat
+    function handleContextMention(fileName: string) {
+        const cursorPosition = parseInt(messageInput.dataset.lastCursorPosition || '0');
+
+        // Insert the file name at the cursor position
+        const before = messageInput.value.substring(0, cursorPosition);
+        const after = messageInput.value.substring(cursorPosition);
+        messageInput.value = before + '@' + fileName + ' ' + after;
+
+        // Set cursor position after the inserted file name
+        const newPosition = cursorPosition + fileName.length + 2; // +2 for '@' and space
+        messageInput.setSelectionRange(newPosition, newPosition);
+
+        // Focus the textarea
+        messageInput.focus();
+    }
     //#endregion
 
     //#region Chat output
@@ -256,8 +273,7 @@ declare function acquireVsCodeApi(): any;
     let currentImages: { id: string; data: string; fileName?: string }[] = [];
 
     // image upload and display functions
-    function displayImagePreview(imageData: string, fileUri?: string) {
-        const imageId = generateUniqueId();
+    function displayImagePreview(imageData: string, fileName: string, imageId: string) {
         const previewContainer = document.createElement('div');
         previewContainer.className = 'image-preview-container';
         previewContainer.dataset.imageId = imageId;
@@ -275,13 +291,13 @@ declare function acquireVsCodeApi(): any;
             removeButton.addEventListener('click', () => {
                 previewContainer.remove();
                 currentImages = currentImages.filter(img => img.id !== imageId); // Remove the specific image
-                removeImagePill(fileUri || 'Image', imageId); // Remove the corresponding pill
+                removeImagePill(fileName || 'Image', imageId); // Remove the corresponding pill
                 focusTextarea(); // Focus on the textarea after removing the image
             });
         }
 
         // Add a pill for the image
-        addImagePill(fileUri || 'Image', imageId);
+        addImagePill(fileName || 'Image', imageId);
 
         resizeTextarea();
         focusTextarea(); // Focus on the textarea after adding the image
@@ -330,8 +346,9 @@ declare function acquireVsCodeApi(): any;
         reader.onload = (e) => {
             if (e.target && typeof e.target.result === 'string') {
                 const imageData = e.target.result;
-                currentImages.push({ id: generateUniqueId(), data: imageData, fileName: file.name }); // Add image to the list
-                displayImagePreview(imageData, file.name); // Pass the file name
+                const imageId = generateUniqueId();
+                currentImages.push({ id: imageId, data: imageData, fileName: file.name }); // Add image to the list
+                displayImagePreview(imageData, file.name, imageId); // Pass the file name
                 focusTextarea(); // Focus on the textarea after uploading the image
             }
         };
@@ -504,9 +521,7 @@ declare function acquireVsCodeApi(): any;
     }
     //#endregion
 
-    // ==========================
-    // Event Listeners
-    // ==========================
+    //#region Event Listeners
     function setupEventListeners() {
         messageInput.focus();
 
@@ -517,6 +532,28 @@ declare function acquireVsCodeApi(): any;
             if (e.key === 'Enter' && !e.shiftKey && !isStreaming) {
                 e.preventDefault();
                 sendMessage();
+            }
+        });
+
+        // @mention context
+        messageInput.addEventListener('keydown', function (e) {
+            // Check if the pressed key is '@'
+            if (e.key === '@') {
+                const cursorPosition = this.selectionStart;
+                const contentBeforeCursor = this.value.substring(0, cursorPosition);
+
+                // Check if the previous character is a space or start of input
+                const isStartOfWord = cursorPosition === 0 || /\s$/.test(contentBeforeCursor);
+
+                if (isStartOfWord) {
+                    e.preventDefault(); // Prevent the '@' from being typed
+
+                    // Show file picker
+                    vscode.postMessage({ command: 'showQuickPick', source: 'chatInput' });
+
+                    // Store the cursor position for later use
+                    this.dataset.lastCursorPosition = cursorPosition.toString();
+                }
             }
         });
 
@@ -574,46 +611,43 @@ declare function acquireVsCodeApi(): any;
             }
         });
 
-        // Get a reference to the history button element
+        // history button
         const historyButton = document.getElementById('history-button') as HTMLButtonElement;
-
-        // Add a click event listener to the history button
         historyButton.addEventListener('click', () => {
-            // Send a message to the VS Code extension to show the chat history
             vscode.postMessage({ command: 'showChatHistory' });
         });
 
-        // Add event listener for merge buttons
+        // merge buttons
         document.addEventListener('click', (e) => {
             const target = e.target as HTMLElement;
             const mergeButton = target.closest('#manual-merge-button') || target.closest('#merge-button');
-            
+
             if (mergeButton instanceof HTMLElement) {
                 const codeHeader = mergeButton.closest('.chat-code-header');
                 const codeContainer = codeHeader?.nextElementSibling as HTMLElement;
-                
+
                 if (codeContainer && codeContainer.classList.contains('chat-code-container')) {
                     const rawCode = codeContainer.textContent || '';
                     const fileUri = codeHeader?.querySelector('.file-uri')?.textContent || '';
                     const isManual = mergeButton.id === 'manual-merge-button';
-                    
-                    vscode.postMessage({ 
-                        command: 'showDiff', 
-                        code: rawCode, 
+
+                    vscode.postMessage({
+                        command: 'showDiff',
+                        code: rawCode,
                         fileUri,
-                        manual: isManual 
+                        manual: isManual
                     });
                 }
             }
         });
 
-        // Add event listener for settings gear button
+        // settings gear button
         const settingsGearButton = document.getElementById('manage-keys-button') as HTMLButtonElement;
         settingsGearButton.addEventListener('click', () => {
             vscode.postMessage({ command: 'manageApiKeys' });
         });
 
-        // Add event listener for copy code button
+        // copy code button
         document.addEventListener('click', (e) => {
             const target = e.target as HTMLElement;
             if (target.closest('#copy-code-button')) {
@@ -627,7 +661,7 @@ declare function acquireVsCodeApi(): any;
             }
         });
 
-        // Add this near your other event listeners in setupEventListeners()
+        // stop streaming chat
         messageInput.addEventListener('keydown', function (e) {
             // Check for Cmd+Backspace (Mac) or Ctrl+Backspace (Windows/Linux)
             if (e.key === 'Backspace' && (e.metaKey || e.ctrlKey)) {
@@ -639,28 +673,21 @@ declare function acquireVsCodeApi(): any;
             }
         });
 
-        // Get a reference to the new chat button element
+        // new chat button
         const newChatButton = document.getElementById('new-chat-button') as HTMLButtonElement;
-
-        // Add a click event listener to the new chat button
         newChatButton.addEventListener('click', () => {
             vscode.postMessage({ command: 'openNewChat' });
         });
     }
+    //#endregion
 
-    // ==========================
-    // Message listeners
-    // ==========================
+    //#region Message Listeners
     function setupMessageListener() {
         window.addEventListener('message', event => {
             const message = event.data;
             switch (message.command) {
                 case 'chatStream':
                     handleChatStreamMessage(message);
-                    break;
-                case 'imageUploaded':
-                    displayImagePreview(message.imageUri);
-                    focusTextarea(); // Focus on the textarea after the image is uploaded
                     break;
                 case 'addCodePill': {
                     const snippetIdentifier = `${message.fileName}:${message.range}`;
@@ -673,28 +700,45 @@ declare function acquireVsCodeApi(): any;
                     break;
                 }
                 case 'addFilePill': {
-                    // Check if a file pill for this URI already exists
-                    let newFilePill = findFilePillByUri(message.fileUri);
+                    // add file pill if present
+                    if (message.fileUri) {
+                        // Handle non-image files with existing file pill logic
+                        let newFilePill = findFilePillByUri(message.fileUri);
 
-                    if (!newFilePill) {
-                        // If the file pill doesn't exist, create a new one
-                        newFilePill = addFilePill(message.fileName, message.fileUri) as HTMLElement;
+                        if (!newFilePill) {
+                            newFilePill = addFilePill(message.fileName, message.fileUri) as HTMLElement;
 
-                        // If this is the current file, update it as the current file pill
-                        if (message.currentFile) {
-                            updateCurrentFilePill(newFilePill as HTMLElement);
-                        }
-                    } else {
-                        // If the file pill already exists and it's the current file
-                        if (message.currentFile) {
-                            // Check if the current file pill is different from the new one
+                            if (message.currentFile) {
+                                updateCurrentFilePill(newFilePill as HTMLElement);
+                            }
+                        } else if (message.currentFile) {
                             if (!isSameUri(currentFilePill?.getAttribute('data-file-uri') ?? null, newFilePill.getAttribute('data-file-uri') ?? null)) {
-                                // If they're different, update this one as the current file pill
                                 updateCurrentFilePill(newFilePill as HTMLElement);
                             }
                         }
+
+                        if (message.source === 'chatInput') {
+                            handleContextMention(message.fileName);
+                        }
                     }
-                    focusTextarea(); // always focus back to the textarea
+
+                    focusTextarea();
+                    break;
+                }
+                case 'addImagePill': {
+                    // Check if image with this ID already exists
+                    const imageExists = currentImages.some(img => img.id === message.fileUri);
+                    
+                    // Only add image if it doesn't already exist
+                    if (!imageExists) {
+                        currentImages.push({ id: message.fileUri, data: message.imageData, fileName: message.fileName});
+                        displayImagePreview(message.imageData, message.fileName, message.fileUri);
+                    }
+                    
+                    if (message.source === 'chatInput') {
+                        handleContextMention(message.fileName);
+                    }
+                    focusTextarea();
                     break;
                 }
                 case 'activeEditorChanged': {
@@ -723,9 +767,27 @@ declare function acquireVsCodeApi(): any;
                     resizeTextarea(); // Adjust the textarea size
                     focusTextarea(); // Focus on the textarea
                     break;
+                case 'contextMentioned': {
+                    const cursorPosition = parseInt(messageInput.dataset.lastCursorPosition || '0');
+                    const fileName = message.fileName;
+
+                    // Insert the file name at the cursor position
+                    const before = messageInput.value.substring(0, cursorPosition);
+                    const after = messageInput.value.substring(cursorPosition);
+                    messageInput.value = before + '@' + fileName + ' ' + after;
+
+                    // Set cursor position after the inserted file name
+                    const newPosition = cursorPosition + fileName.length + 2; // +2 for '@' and space
+                    messageInput.setSelectionRange(newPosition, newPosition);
+
+                    // Focus the textarea
+                    messageInput.focus();
+                    break;
+                }
             }
         });
     }
+    //#endregion
 
     function findFilePillByUri(fileUri: string): Element | undefined {
         return Array.from(document.querySelectorAll('.file-pill')).find(pill => {
