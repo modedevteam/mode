@@ -100,7 +100,35 @@
 				"key": "ctrl+l",
 				"mac": "cmd+l"
 			}
-		]
+		],
+		"configuration": {
+			"title": "Mode",
+			"properties": {
+				"mode.excludePatterns": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"**/node_modules/**",
+						"**/.git/**",
+						"**/dist/**",
+						"**/build/**",
+						"**/coverage/**",
+						"**/out/**",
+						"**/target/**",
+						"**/bin/**",
+						"**/obj/**",
+						"**/__pycache__/**",
+						"**/.DS_Store",
+						"**/*.pyc",
+						"**/.next/**",
+						"**/.cache/**"
+					],
+					"description": "Patterns to exclude when searching for source files"
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

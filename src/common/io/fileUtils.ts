@@ -1,5 +1,6 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { SearchUtils } from './searchUtils';
 
 // Detects a filename from a line of text. Returns the filename if detected, or null if no filename is detected.
 export function detectFileNameUri(line: string): { filename: string | null, fileUri: string | null } {
@@ -26,6 +27,7 @@ export function detectFileNameUri(line: string): { filename: string | null, file
 }
 
 export class FileResolver {
+
     static async resolveFile(fileUri: string): Promise<vscode.Uri | undefined> {
         if (!fileUri) {
             return this.handleEmptyUri();
@@ -34,68 +36,71 @@ export class FileResolver {
         let uri: vscode.Uri;
 
         if (path.isAbsolute(fileUri)) {
-            // For absolute paths, use vscode.Uri.file
             uri = vscode.Uri.file(fileUri);
         } else {
             try {
-                // Try to parse the fileUri as a URI with a scheme
                 uri = vscode.Uri.parse(fileUri);
             } catch {
-                // If parsing fails, assume it's a relative file path
                 uri = vscode.Uri.file(fileUri);
             }
         }
 
-        // Look for similar files
-        const files = await vscode.workspace.findFiles(`**/${path.basename(uri.fsPath)}`);
+        try {
+            // Use SearchUtils to find files by name
+            const files = await SearchUtils.findFilesByName(path.basename(uri.fsPath));
 
-        if (files.length === 0) {
-            // No similar files found, offer options
-            const activeEditor = vscode.window.activeTextEditor;
-            const options = [
-                {
-                    label: "$(file-add) Create at specified location",
-                    value: 'create'
-                },
-                {
-                    label: "$(file) Apply to current file",
-                    description: activeEditor ? vscode.workspace.asRelativePath(activeEditor.document.uri) : "No file open",
-                    value: 'current',
-                    disabled: !activeEditor
-                },
-                {
-                    label: "$(close) Cancel",
-                    value: 'cancel'
+            if (files.length === 0) {
+                // No similar files found, offer options
+                const activeEditor = vscode.window.activeTextEditor;
+                const options = [
+                    {
+                        label: "$(file-add) Create at specified location",
+                        value: 'create'
+                    },
+                    {
+                        label: "$(file) Apply to current file",
+                        description: activeEditor ? vscode.workspace.asRelativePath(activeEditor.document.uri) : "No file open",
+                        value: 'current',
+                        disabled: !activeEditor
+                    },
+                    {
+                        label: "$(close) Cancel",
+                        value: 'cancel'
+                    }
+                ];
+
+                const choice = await vscode.window.showQuickPick(options, {
+                    placeHolder: 'No similar files found. What would you like to do?'
+                });
+
+                if (choice?.value === 'create') {
+                    await vscode.workspace.fs.writeFile(uri, new Uint8Array());
+                    return uri;
+                } else if (choice?.value === 'current' && activeEditor) {
+                    return activeEditor.document.uri;
                 }
-            ];
-
-            const choice = await vscode.window.showQuickPick(options, {
-                placeHolder: 'No similar files found. What would you like to do?'
-            });
-
-            if (choice?.value === 'create') {
-                await vscode.workspace.fs.writeFile(uri, new Uint8Array());
-                return uri;
-            } else if (choice?.value === 'current' && activeEditor) {
-                return activeEditor.document.uri;
+                return undefined;
             }
-            return undefined;
-        }
 
-        // Exact match: If exactly one file is found, return it directly
-        if (files.length === 1) {
-            return files[0];
-        } else {
-            // Multiple files found, let user pick
-            const selected = await vscode.window.showQuickPick(
-                files.map(f => ({
-                    label: path.basename(f.fsPath),
-                    description: vscode.workspace.asRelativePath(f),
-                    uri: f
-                })),
-                { placeHolder: 'Select an existing file to use' }
-            );
-            return selected?.uri;
+            // Exact match
+            if (files.length === 1) {
+                return files[0];
+            } else {
+                // Multiple files found, let user pick
+                const selected = await vscode.window.showQuickPick(
+                    files.map(f => ({
+                        label: path.basename(f.fsPath),
+                        description: vscode.workspace.asRelativePath(f),
+                        uri: f
+                    })),
+                    { placeHolder: 'Select an existing file to use' }
+                );
+                return selected?.uri;
+            }
+        } catch (error) {
+            console.error('Error resolving file:', error);
+            vscode.window.showErrorMessage(`Failed to resolve file: ${error}`);
+            return undefined;
         }
     }
 

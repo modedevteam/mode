@@ -8,6 +8,7 @@ import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
 import { AIModel } from '../../common/llms/aiModel';
 import { ErrorMessages } from '../../common/user-messages/errorMessages';
 import { safeLanguageIdentifier } from '../../capabilities/context/safeLanguageIdentifier';
+import { SearchUtils } from '../../common/io/searchUtils';
 
 export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 	public static readonly viewType = 'mode.chatView';
@@ -181,21 +182,25 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 		}
 	}
 
-	// New method to handle the showQuickPick message
+	// Updating file search to use configurable exclude patterns
+
 	private async _handleQuickPickFileSelection() {
-		const files = await vscode.workspace.findFiles('**/*');
-		const fileItems = files.map(file => ({
-			label: path.basename(file.fsPath),
-			description: file.fsPath
-		}));
-
-		const selectedFile = await vscode.window.showQuickPick(fileItems, {
-			placeHolder: 'Select a file to add'
-		});
-
-		if (selectedFile) {
-			const fileUri = vscode.Uri.file(selectedFile.description).toString(); // Normalize URI
-			this.sendMessageToWebview({ command: 'addFilePill', fileName: selectedFile.label, fileUri });
+		try {
+			const selectedFile = await SearchUtils.showFileQuickPick();
+			
+			if (selectedFile) {
+				const fileUri = SearchUtils.createFileUri(selectedFile);
+				if (fileUri) {
+					this.sendMessageToWebview({
+						command: 'addFilePill',
+						fileName: selectedFile.label,
+						fileUri
+					});
+				}
+			}
+		} catch (error) {
+			this._outputChannel.appendLine(`Error selecting file: ${error}`);
+			this._outputChannel.show();
 		}
 	}
 
