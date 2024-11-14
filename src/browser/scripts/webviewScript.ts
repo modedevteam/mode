@@ -117,7 +117,11 @@ declare function acquireVsCodeApi(): any;
     function showProcessingAnimation() {
         const processingElement = document.createElement('div');
         processingElement.className = 'message assistant processing';
-        processingElement.innerHTML = '<i class="codicon codicon-loading codicon-modifier-spin"></i>';
+        processingElement.innerHTML = `
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        `;
         chatOutput.appendChild(processingElement);
         chatOutput.scrollTop = chatOutput.scrollHeight;
     }
