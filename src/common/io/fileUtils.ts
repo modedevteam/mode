@@ -29,114 +29,126 @@ export function detectFileNameUri(line: string): { filename: string | null, file
 export class FileResolver {
 
     static async resolveFile(fileUri: string): Promise<vscode.Uri | undefined> {
+        // 1. Early return if no file specified
         if (!fileUri) {
-            return this.handleEmptyUri();
+            return this.showFileOptions();
         }
 
-        let uri: vscode.Uri;
+        // 2. Search for specified file
+        const matchingFiles = await this.findMatchingFiles(fileUri);
 
-        if (path.isAbsolute(fileUri)) {
-            uri = vscode.Uri.file(fileUri);
+        // 3. Handle cases based on number of matches
+        if (matchingFiles.length === 0) {
+            return this.showFileOptions(fileUri);
+        } else if (matchingFiles.length === 1) {
+            return matchingFiles[0];
         } else {
-            try {
-                uri = vscode.Uri.parse(fileUri);
-            } catch {
-                uri = vscode.Uri.file(fileUri);
-            }
-        }
-
-        try {
-            // Use SearchUtils to find files by name
-            const files = await SearchUtils.findFilesByName(path.basename(uri.fsPath));
-
-            if (files.length === 0) {
-                // No similar files found, offer options
-                const activeEditor = vscode.window.activeTextEditor;
-                const options = [
-                    {
-                        label: "$(file-add) Create at specified location",
-                        value: 'create'
-                    },
-                    {
-                        label: "$(file) Apply to current file",
-                        description: activeEditor ? vscode.workspace.asRelativePath(activeEditor.document.uri) : "No file open",
-                        value: 'current',
-                        disabled: !activeEditor
-                    },
-                    {
-                        label: "$(close) Cancel",
-                        value: 'cancel'
-                    }
-                ];
-
-                const choice = await vscode.window.showQuickPick(options, {
-                    placeHolder: 'No similar files found. What would you like to do?'
-                });
-
-                if (choice?.value === 'create') {
-                    await vscode.workspace.fs.writeFile(uri, new Uint8Array());
-                    return uri;
-                } else if (choice?.value === 'current' && activeEditor) {
-                    return activeEditor.document.uri;
-                }
-                return undefined;
-            }
-
-            // Exact match
-            if (files.length === 1) {
-                return files[0];
-            } else {
-                // Multiple files found, let user pick
-                const selected = await vscode.window.showQuickPick(
-                    files.map(f => ({
-                        label: path.basename(f.fsPath),
-                        description: vscode.workspace.asRelativePath(f),
-                        uri: f
-                    })),
-                    { placeHolder: 'Select an existing file to use' }
-                );
-                return selected?.uri;
-            }
-        } catch (error) {
-            console.error('Error resolving file:', error);
-            vscode.window.showErrorMessage(`Failed to resolve file: ${error}`);
-            return undefined;
+            return this.selectFromMultipleFiles(matchingFiles);
         }
     }
 
-    private static async handleEmptyUri(): Promise<vscode.Uri | undefined> {
+    private static async findMatchingFiles(fileUri: string): Promise<vscode.Uri[]> {
+        try {
+            const uri = this.parseFileUri(fileUri);
+            return await SearchUtils.findFilesByName(path.basename(uri.fsPath));
+        } catch (error) {
+            console.error('Error finding files:', error);
+            return [];
+        }
+    }
+
+    private static parseFileUri(fileUri: string): vscode.Uri {
+        if (path.isAbsolute(fileUri)) {
+            return vscode.Uri.file(fileUri);
+        }
+        try {
+            return vscode.Uri.parse(fileUri);
+        } catch {
+            return vscode.Uri.file(fileUri);
+        }
+    }
+
+    private static async showFileOptions(fileUri?: string): Promise<vscode.Uri | undefined> {
         const activeEditor = vscode.window.activeTextEditor;
+        const options = this.getFileOptions(activeEditor);
 
-        const choice = await vscode.window.showQuickPick(
-            [
-                {
-                    label: "$(file) Apply to current file",
-                    description: activeEditor ? vscode.workspace.asRelativePath(activeEditor.document.uri) : "No file open",
-                    value: 'current',
-                    disabled: !activeEditor
-                },
-                {
-                    label: "$(new-file) Create new file",
-                    description: "Create a new file in the workspace",
-                    value: 'new'
-                }
-            ],
+        const choice = await vscode.window.showQuickPick(options, {
+            placeHolder: fileUri
+                ? 'File not found. What would you like to do?'
+                : 'No file specified. What would you like to do?'
+        });
+
+        return this.handleOptionChoice(choice, activeEditor);
+    }
+
+    private static getFileOptions(activeEditor: vscode.TextEditor | undefined) {
+        return [
             {
-                placeHolder: 'What would you like to do?'
+                label: "$(file) Apply to current file",
+                description: activeEditor 
+                    ? vscode.workspace.asRelativePath(activeEditor.document.uri) 
+                    : "No file open",
+                value: 'current',
+                disabled: !activeEditor
+            },
+            {
+                label: "$(file-add) Create new file",
+                description: "Create a new file in the workspace",
+                value: 'create'
+            },
+            {
+                label: "$(search) Search workspace",
+                description: "Search and choose from existing files",
+                value: 'search'
+            },
+            {
+                label: "$(close) Cancel",
+                value: 'cancel'
             }
+        ];
+    }
+
+    private static async handleOptionChoice(
+        choice: { value: string } | undefined,
+        activeEditor: vscode.TextEditor | undefined
+    ): Promise<vscode.Uri | undefined> {
+        if (!choice) return undefined;
+
+        switch (choice.value) {
+            case 'current':
+                return activeEditor?.document.uri;
+            case 'create':
+                return this.createNewFile();
+            case 'search':
+                return this.showFileSearch();
+            default:
+                return undefined;
+        }
+    }
+
+    private static async showFileSearch(): Promise<vscode.Uri | undefined> {
+        const files = await SearchUtils.findWorkspaceFiles();
+        const selected = await vscode.window.showQuickPick(
+            files.map(f => ({
+                label: path.basename(f.fsPath),
+                description: vscode.workspace.asRelativePath(f),
+                uri: f
+            })),
+            { placeHolder: 'Select an existing file' }
         );
+        return selected?.uri;
+    }
 
-        if (!choice) {
-            return undefined;
-        }
-
-        if (choice.value === 'current' && activeEditor) {
-            return activeEditor.document.uri;
-        } else if (choice.value === 'new') {
-            return this.createNewFile();
-        }
-
-        return undefined;
+    private static async selectFromMultipleFiles(files: vscode.Uri[]): Promise<vscode.Uri | undefined> {
+        const selected = await vscode.window.showQuickPick(
+            files.map(f => ({
+                label: path.basename(f.fsPath),
+                description: vscode.workspace.asRelativePath(f),
+                uri: f
+            })),
+            { placeHolder: 'Select an existing file to use' }
+        );
+        return selected?.uri;
     }
 
     private static async createNewFile(): Promise<vscode.Uri | undefined> {

@@ -140,16 +140,28 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 				const endLine = selection.end.line + 1;
 				const range = `${startLine}-${endLine}`;
 
+				// Process the text to remove base indentation
+				const lines = text.split('\n');
+				const nonEmptyLines = lines.filter(line => line.trim().length > 0);
+				const minIndent = Math.min(...nonEmptyLines.map(line => {
+					const match = line.match(/^\s*/);
+					return match ? match[0].length : 0;
+				}));
+				
+				const processedText = lines
+					.map(line => line.slice(minIndent))
+					.join('\n');
+
 				// Determine the language for syntax highlighting
 				const language = safeLanguageIdentifier(editor.document.languageId);
 
 				// Apply syntax highlighting
 				let highlightedCode;
 				try {
-					highlightedCode = hljs.highlight(text, { language }).value;
+					highlightedCode = hljs.highlight(processedText, { language }).value;
 				} catch (error) {
 					const errorMessage = ErrorMessages.CODE_HIGHLIGHTING_ERROR(error, language);
-					highlightedCode = text; // Fallback to plain text if highlighting fails
+					highlightedCode = processedText; // Fallback to plain text if highlighting fails
 					this._outputChannel.appendLine(errorMessage);
 					this._outputChannel.show();
 				}
