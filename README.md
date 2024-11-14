@@ -11,7 +11,7 @@ Mode is the first personal AI code copilot that connects directly to your favori
 
 - **Personal and Powerful**: Mode connects directly to providers like Anthropic, OpenAI, Google, Mistral, and more&mdash;your code and interactions stay private. Since there's no middle layer, you can instantly upgrade to the latest models without relying on third-party tools to catch up or pay their upgrade fees.
 
-- **Built for the Enterprise**: Mode is purpose-built for developers who need configurability. You bring your own keys, and can adjust prompts, chat settings, and endpoints, making it easy to integrate with providers already approved in your organization. With no tracking or servers, Mode is ideal for secure environments that require data privacy and control.
+- **Built for the Enterprise**: Mode is purpose-built for developers who need configurability. You bring your own keys, and can adjust endpoints (talk to us if you want more flexibility), making it easy to integrate with providers already approved in your organization. With no tracking or servers, Mode is ideal for secure environments that require data privacy and control.
 
 ## Mode in Action
 
@@ -36,7 +36,7 @@ Quickly resolve issues with intelligent debugging support.
 ![Debug](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/Context.gif)
 
 ### Personalize
-Tailor Mode to fit your coding style and needs: change models, prompts, temperature, and more.
+Customize Mode to suit you: adjust models and endpoints as needed.
 
 ![ChangeProviders](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/ChangeProviders.gif)
 
