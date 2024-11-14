@@ -108,22 +108,42 @@ body {
     width: 100%;
 }
 
+/* Making chat input scrollable while maintaining consistent styling */
 #message-input {
     width: 100%;
     padding: 6px 10px;
     border: none;
-    /* Remove the border */
     border-radius: 4px;
-    /* Add border-radius to the input */
     background-color: transparent;
     color: var(--vscode-input-foreground);
     resize: none;
-    overflow-y: hidden;
+    overflow-y: auto; /* Changed from hidden to auto */
     min-height: 20px;
     max-height: 150px;
     line-height: 1.4;
     font-size: 13px;
     font-family: var(--vscode-font-family);
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: var(--vscode-scrollbarSlider-background) transparent;
+    scroll-behavior: smooth; /* Added for smooth scrolling */
+}
+
+/* Add custom scrollbar styling for the input */
+#message-input::-webkit-scrollbar {
+    width: 2px;
+}
+
+#message-input::-webkit-scrollbar-track {
+    background: var(--vscode-scrollbarSlider-background);
+}
+
+#message-input::-webkit-scrollbar-thumb {
+    background: var(--vscode-scrollbarSlider-hoverBackground);
+    border-radius: 2px;
+}
+
+#message-input::-webkit-scrollbar-thumb:hover {
+    background: var(--vscode-scrollbarSlider-activeBackground);
 }
 
 #message-input::placeholder {
