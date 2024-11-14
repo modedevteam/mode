@@ -7,6 +7,12 @@
 
 Mode is the first personal AI code copilot that connects directly to your favorite language models. Harness the full power of AI assistants without the risks of third-party servers and the hassles of token limits and upgrade fees.
 
+### 🌟🌟 Weekly Launch Highlight 🌟🌟
+
+You can now add files and images as context just by @-mentioning them without breaking your flow.
+
+![Mention](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/AtMentionContext.gif)
+
 ## Why Mode?
 
 - **Personal and Powerful**: Mode connects directly to providers like Anthropic, OpenAI, Google, Mistral, and more&mdash;your code and interactions stay private. Since there's no middle layer, you can instantly upgrade to the latest models without relying on third-party tools to catch up or pay their upgrade fees.

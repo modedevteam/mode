@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.6] - 2024-11-14
+### Added
+* Users can now @-mention context!
+* Improve chat and merge results by excluding non-source files from scope (configurable)
+
+### Fixed
+* Improved pasted code’s indendation
+* Made the chat loading animation smoother
+* Show consistent merge options
+
+### Removed
+* Remove the ability to adjust prompt and temperature until we are getting really reliable results from the LLM or until users request it
+
 ## [1.0.5] - 2024-11-11
 ### Added
 - Now Mode automatically adds the currently opened files as chat context so users don't have to manually add them
