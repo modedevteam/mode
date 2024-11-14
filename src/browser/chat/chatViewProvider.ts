@@ -140,17 +140,24 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 				const endLine = selection.end.line + 1;
 				const range = `${startLine}-${endLine}`;
 
-				// Process the text to remove base indentation
-				const lines = text.split('\n');
+				// Process the text to remove common indentation while preserving structure
+				const lines = text.replace(/\t/g, '    ').split('\n'); // tabs -> 2 spaces - easier to 
 				const nonEmptyLines = lines.filter(line => line.trim().length > 0);
-				const minIndent = Math.min(...nonEmptyLines.map(line => {
-					const match = line.match(/^\s*/);
-					return match ? match[0].length : 0;
-				}));
-				
-				const processedText = lines
-					.map(line => line.slice(minIndent))
-					.join('\n');
+
+				if (nonEmptyLines.length === 0) {
+					return text; // Return original if all lines are empty
+				}
+
+				// Find the common prefix length across all non-empty lines
+				const commonPrefixLength = this.findCommonIndentation(nonEmptyLines);
+
+				// Process each line by removing the common prefix
+				const processedText = lines.map(line => {
+					if (line.trim().length === 0) {
+						return ''; // Preserve empty lines
+					}
+					return line.slice(commonPrefixLength);
+				}).join('\n');
 
 				// Determine the language for syntax highlighting
 				const language = safeLanguageIdentifier(editor.document.languageId);
@@ -178,6 +185,19 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 
 		// Always focus the text area, regardless of whether there's an active editor or selected text
 		this._view?.webview.postMessage({ command: 'focusTextArea' });
+	}
+
+	findCommonIndentation(lines: string[]): number {
+		const nonEmptyLines = lines.filter(line => line.trim().length > 0);
+		if (nonEmptyLines.length === 0) return 0;
+	
+		// Count leading whitespace characters
+		const leadingSpaces = nonEmptyLines.map(line => {
+			const match = line.match(/^[\t ]*/);
+			return match ? match[0].length : 0;
+		});
+	
+		return Math.min(...leadingSpaces);
 	}
 
 	public sendMessageToWebview(message: any) {
