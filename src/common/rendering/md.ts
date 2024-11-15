@@ -21,7 +21,6 @@ export function createMarkdownIt() {
                         <div class="file-uri hidden">${fileUri}</div>` : ''}
                         <div class="buttons">
                             <button id="copy-code-button" class="icon-button" title="Copy"><i class="codicon codicon-copy"></i></button>
-                            <button id="manual-merge-button" class="icon-button" title="Apply"><i class="codicon codicon-merge"></i></button>
                             <button id="merge-button" class="icon-button" title="Apply with AI"><i class="codicon codicon-sparkle-filled"></i></button>
                         </div>
                     </div>`;

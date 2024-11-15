@@ -155,6 +155,8 @@ export class DiffManager {
         }
 
         let modifiedUri: vscode.Uri;
+        // @todo remove this - we aren't supporting manual merges any more
+        // they don't really work
         if (manual) {
             const tempDir = path.join(os.tmpdir(), 'vscode-chat-diffs');
             await fs.promises.mkdir(tempDir, { recursive: true });
