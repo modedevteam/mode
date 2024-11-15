@@ -64,19 +64,37 @@ export class AIClient {
         }
     }
 
+    private filterDiagnosticMessages(messages: AIMessage[]): AIMessage[] {
+        return messages.filter(msg => {
+            if (typeof msg.content === 'string') {
+                return !msg.content.startsWith('Mode.');
+            }
+            if (Array.isArray(msg.content)) {
+                // For array content, check if any text elements start with 'Mode.'
+                return !msg.content.some(item =>
+                    typeof item === 'string' && item.startsWith('Mode.') ||
+                    (item.type === 'text' && item.text?.startsWith('Mode.'))
+                );
+            }
+            return true;
+        });
+    }
+
     async chat(outputChannel: vscode.OutputChannel, messages: AIMessage[], callbacks: StreamCallbacks): Promise<string> {
         try {
+            const filteredMessages = this.filterDiagnosticMessages(messages);
+
             switch (this.provider) {
                 case 'anthropic':
-                    return this.anthropicChat(messages, callbacks);
+                    return this.anthropicChat(filteredMessages, callbacks);
                 case 'openai':
-                    return this.openaiChat(messages, callbacks);
+                    return this.openaiChat(filteredMessages, callbacks);
                 case 'google':
-                    return this.googleChat(messages, callbacks);
+                    return this.googleChat(filteredMessages, callbacks);
                 case 'cohere':
-                    return this.cohereChat(messages, callbacks);
+                    return this.cohereChat(filteredMessages, callbacks);
                 case 'mistral':
-                    return this.mistralChat(messages, callbacks);
+                    return this.mistralChat(filteredMessages, callbacks);
                 default:
                     throw new Error(`Unsupported provider: ${this.provider}`);
             }

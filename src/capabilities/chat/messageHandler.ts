@@ -106,6 +106,14 @@ export class MessageHandler {
 					if (this.isCancelled) {
 						return;
 					}
+
+					// save the fullText for diagnostic purposes
+					this.chatSession.push({
+						role: "assistant",
+						content: fullText,
+						name: "Mode.Diagnostics"
+					});
+
 					// Remove code_analysis blocks before rendering
 					const processedText = fullText.replace(/<code_analysis>[\s\S]*?<\/code_analysis>/g, '');
 					finalRenderedContent = this.md.render(processedText);
