@@ -6,7 +6,39 @@ import { SearchUtils } from './searchUtils';
 export function detectFileNameUri(line: string): { filename: string | null, fileUri: string | null } {
     const trimmedLine = line.trim();
     
-    // Clean the line by removing common prefixes
+    // Combined pattern for various comment styles
+    const commentPatterns = [
+        /\/\*\s*(\/.+?)\s*\*\//, // /* /path/file.ext */
+        /\/\/\s*(\/.+?)(?:\s|$)/, // // /path/file.ext
+        /#\s*(\/.+?)(?:\s|$)/, // # /path/file.ext
+        /<!--\s*(\/.+?)\s*-->/, // <!-- /path/file.ext -->
+        /{\s*\/\*\s*(\/.+?)\s*\*\/\s*}/, // {/* /path/file.ext */}
+        /\(\*\s*(\/.+?)\s*\*\)/, // (* /path/file.ext *)
+        /--\[\[\s*(\/.+?)\s*\]\]/, // --[[ /path/file.ext ]]
+        /"""\s*(\/.+?)\s*"""/, // """ /path/file.ext """
+        /'''\s*(\/.+?)\s*'''/, // ''' /path/file.ext '''
+    ];
+
+    // Try each comment pattern
+    for (const pattern of commentPatterns) {
+        const match = trimmedLine.match(pattern);
+        if (match && match[1]) {
+            try {
+                const parsedPath = path.parse(match[1]);
+                if (parsedPath.ext) {
+                    return {
+                        filename: parsedPath.base,
+                        fileUri: match[1]
+                    };
+                }
+            } catch (e) {
+                // Invalid path format, continue to next pattern
+                continue;
+            }
+        }
+    }
+
+    // Clean the line by removing common prefixes (existing logic)
     const cleanedLine = trimmedLine
         .replace(/^(?:file:\/\/|vscode:\/\/file\/|\/\/\s*File:\s*|\/\/\s*)/i, '')
         .trim();
