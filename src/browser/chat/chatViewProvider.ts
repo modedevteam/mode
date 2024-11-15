@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
 import { ChatManager } from '../../capabilities/chat/chatManager';
 import * as path from 'path';
-import hljs from 'highlight.js';
 import { ChatViewHtmlGenerator } from './chatViewHtmlGenerator';
 import { DiffManager } from '../../capabilities/diff/diffManager';
 import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
 import { AIModel } from '../../common/llms/aiModel';
 import { ErrorMessages } from '../../common/user-messages/errorMessages';
-import { safeLanguageIdentifier } from '../../capabilities/context/safeLanguageIdentifier';
 import { SearchUtils } from '../../common/io/searchUtils';
+import { SessionManager } from '../../capabilities/chat/chatSessionManager';
+import { CodeSelection, PillRenderer } from '../../common/rendering/pills';
 
 export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 	public static readonly viewType = 'mode.chatView';
@@ -18,6 +18,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 	private _modifiedContentMap: Map<string, string> = new Map();
 	private _diffManager: DiffManager;
 	private _apiKeyManager: ApiKeyManager;
+	private _sessionManager: SessionManager;
 
 	constructor(
 		private readonly _extensionUri: vscode.Uri,
@@ -27,7 +28,8 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 		this._htmlGenerator = new ChatViewHtmlGenerator(_extensionUri);
 		this._setupContentProvider();
 		this._apiKeyManager = new ApiKeyManager(_extensionContext);
-		this._diffManager = new DiffManager(this._outputChannel, this._apiKeyManager);
+		this._sessionManager = new SessionManager(_extensionContext);
+		this._diffManager = new DiffManager(this._outputChannel, this._apiKeyManager, this._sessionManager);
 	}
 
 	private _setupContentProvider() {
@@ -45,7 +47,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 	) {
 		try {
 			this._view = webviewView;
-			this._chatManager = new ChatManager(webviewView, this._extensionContext);
+			this._chatManager = new ChatManager(webviewView, this._sessionManager, this._extensionContext);
 
 			// Configure webview options
 			webviewView.webview.options = {
@@ -79,7 +81,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 						this.showChatHistory();
 						break;
 					case 'showDiff':
-						this._handleShowDiff(message.code, message.fileUri, message.manual);
+						this._handleShowDiff(message.code, message.fileUri);
 						break;
 					case 'manageApiKeys':
 						vscode.commands.executeCommand('mode.manageApiKeys');
@@ -134,51 +136,22 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 			const selection = editor.selection;
 			const text = editor.document.getText(selection);
 			if (text) {
-				const document = editor.document;
-				const fileName = path.basename(document.fileName);
-				const startLine = selection.start.line + 1;
-				const endLine = selection.end.line + 1;
-				const range = `${startLine}-${endLine}`;
+				const codeSelection: CodeSelection = {
+					text,
+					fileName: path.basename(editor.document.fileName),
+					startLine: selection.start.line + 1,
+					endLine: selection.end.line + 1,
+					language: editor.document.languageId
+				};
 
-				// Process the text to remove common indentation while preserving structure
-				const lines = text.replace(/\t/g, '    ').split('\n'); // tabs -> 2 spaces - easier to 
-				const nonEmptyLines = lines.filter(line => line.trim().length > 0);
+				const processedCode = PillRenderer.processCodeSelection(
+					codeSelection,
+					this._outputChannel
+				);
 
-				if (nonEmptyLines.length === 0) {
-					return text; // Return original if all lines are empty
-				}
-
-				// Find the common prefix length across all non-empty lines
-				const commonPrefixLength = this.findCommonIndentation(nonEmptyLines);
-
-				// Process each line by removing the common prefix
-				const processedText = lines.map(line => {
-					if (line.trim().length === 0) {
-						return ''; // Preserve empty lines
-					}
-					return line.slice(commonPrefixLength);
-				}).join('\n');
-
-				// Determine the language for syntax highlighting
-				const language = safeLanguageIdentifier(editor.document.languageId);
-
-				// Apply syntax highlighting
-				let highlightedCode;
-				try {
-					highlightedCode = hljs.highlight(processedText, { language }).value;
-				} catch (error) {
-					const errorMessage = ErrorMessages.CODE_HIGHLIGHTING_ERROR(error, language);
-					highlightedCode = processedText; // Fallback to plain text if highlighting fails
-					this._outputChannel.appendLine(errorMessage);
-					this._outputChannel.show();
-				}
-
-				// Send a message to the webview to update the context pill and add the highlighted code container
 				this._view?.webview.postMessage({
 					command: 'addCodePill',
-					fileName: fileName,
-					range: range,
-					highlightedCode: highlightedCode
+					...processedCode
 				});
 			}
 		}
@@ -190,13 +163,13 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 	findCommonIndentation(lines: string[]): number {
 		const nonEmptyLines = lines.filter(line => line.trim().length > 0);
 		if (nonEmptyLines.length === 0) return 0;
-	
+
 		// Count leading whitespace characters
 		const leadingSpaces = nonEmptyLines.map(line => {
 			const match = line.match(/^[\t ]*/);
 			return match ? match[0].length : 0;
 		});
-	
+
 		return Math.min(...leadingSpaces);
 	}
 
@@ -226,28 +199,28 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 				});
 				return;
 			}
-	
+
 			const fileUri = SearchUtils.createFileUri(selectedFile);
 			if (!fileUri) {
 				this._outputChannel.appendLine('Error: Invalid file URI');
 				return;
 			}
-	
+
 			const fileExtension = path.extname(selectedFile.label).toLowerCase();
 			const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
 			const isImage = imageExtensions.includes(fileExtension);
-	
+
 			if (isImage) {
 				try {
 					const uri = vscode.Uri.parse(fileUri);
 					const imageBuffer = await vscode.workspace.fs.readFile(uri);
-	
+
 					// Determine MIME type based on file extension
 					const mimeType = this._getMimeType(fileExtension);
-					
+
 					// Convert to base64
 					const base64Image = `data:${mimeType};base64,${Buffer.from(imageBuffer).toString('base64')}`;
-	
+
 					this.sendMessageToWebview({
 						command: 'addImagePill',
 						fileName: selectedFile.label,
@@ -272,7 +245,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 			this._outputChannel.show();
 		}
 	}
-	
+
 	// Helper method to determine MIME type
 	private _getMimeType(extension: string): string {
 		const mimeTypes: { [key: string]: string } = {
@@ -351,23 +324,67 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 		return userMessage ? userMessage.content.toString() : '';
 	}
 
-	private async _handleShowDiff(rawCode: string, fileUri: string, manual: boolean) {
-		await this._diffManager.showDiff(rawCode, fileUri, manual);
+	private async _handleShowDiff(rawCode: string, fileUri: string) {
+		await this._diffManager.showDiff(rawCode, fileUri);
 	}
 
 	public clearModifiedContent(uri: vscode.Uri) {
 		this._modifiedContentMap.delete(uri.toString());
 	}
 
-	public handleAskMode(diagnosticMessage: string, lineNumber: number) {
-		const question = lineNumber !== 0
-			? `Can you help me with this error on line ${lineNumber}: "${diagnosticMessage}"`
-			: `Can you help me with this error: "${diagnosticMessage}"`;
+	public async handleAskMode(diagnosticMessage: string, lineNumber: number) {
+		const editor = vscode.window.activeTextEditor;
+		if (editor && lineNumber > 0) {
+			try {
+				// Create a selection for the specific line
+				const line = editor.document.lineAt(lineNumber - 1);
+				const selection = new vscode.Selection(
+					line.range.start,
+					line.range.end
+				);
 
-		this._view?.webview.postMessage({
-			command: 'askMode',
-			question: question
-		});
+				// Set the editor selection and reveal the line
+				editor.selection = selection;
+				editor.revealRange(selection, vscode.TextEditorRevealType.InCenter);
+
+				// Create CodeSelection object
+				const codeSelection: CodeSelection = {
+					text: editor.document.getText(selection),
+					fileName: path.basename(editor.document.fileName),
+					startLine: lineNumber,
+					endLine: lineNumber,
+					language: editor.document.languageId
+				};
+
+				// Use PillRenderer to process the code selection
+				const processedCode = PillRenderer.processCodeSelection(
+					codeSelection,
+					this._outputChannel
+				);
+
+				// Add the code pill
+				this._view?.webview.postMessage({
+					command: 'addCodePill',
+					...processedCode
+				});
+			} catch (error) {
+				this._outputChannel.appendLine(`Error processing code selection in Ask mode: ${error}`);
+			}
+
+			// Construct and send the question
+			const question = `Can you help me with this error on line ${lineNumber}: "${diagnosticMessage}"\n`;
+			this._view?.webview.postMessage({
+				command: 'askMode',
+				question: question
+			});
+		} else if (!editor) {
+			// Handle case when no editor is active
+			const question = `Can you help me with this error: "${diagnosticMessage}"`;
+			this._view?.webview.postMessage({
+				command: 'askMode',
+				question: question
+			});
+		}
 	}
 }
 

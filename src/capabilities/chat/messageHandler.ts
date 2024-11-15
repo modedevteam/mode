@@ -111,7 +111,7 @@ export class MessageHandler {
 					this.chatSession.push({
 						role: "assistant",
 						content: fullText,
-						name: "Mode.Diagnostics"
+						name: "Mode.Diagnostics.Chat"
 					});
 
 					// Remove code_analysis blocks before rendering

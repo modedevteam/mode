@@ -11,141 +11,164 @@ import { ErrorMessages } from '../../common/user-messages/errorMessages';
 import { diffMergePrompt } from '../../common/llms/aiPrompts';
 import { FileChunker } from '../diff/fileChunker';
 import { getDiffProgressMessage } from '../../common/user-messages/messages';
+import { SessionManager } from '../../capabilities/chat/chatSessionManager';
 
 export class DiffManager {
     private _applyChangesButton?: vscode.StatusBarItem;
     private _diffEditor?: vscode.TextEditor;
-    constructor(private readonly _outputChannel: vscode.OutputChannel, private readonly _apiKeyManager: ApiKeyManager) {
+    constructor(
+        private readonly _outputChannel: vscode.OutputChannel,
+        private readonly _apiKeyManager: ApiKeyManager,
+        private readonly _sessionManager: SessionManager) {
     }
 
-    private async prepareAIDiff(originalUri: vscode.Uri, proposedChanges: string): Promise<vscode.Uri | null> {
-
-        // Get the current model info
+    private async setupAIClient(progress: vscode.Progress<{ message?: string; increment?: number }>) {
         const currentModel = AIModel.getLastUsedModel();
         const modelInfo = AIModel.getModelInfo(currentModel);
         if (!modelInfo) {
             throw new Error('No model configuration found');
         }
 
+        progress.report({ message: getDiffProgressMessage('WAKING_AI'), increment: 10 });
+        const apiKey = await this._apiKeyManager.getApiKey(modelInfo.provider);
+        if (!apiKey) {
+            throw new Error(`No API key found for provider: ${modelInfo.provider}`);
+        }
+
+        const clientConfig = AIModel.getClientConfig(currentModel, apiKey);
+        if (!clientConfig) {
+            throw new Error('Failed to create AI client configuration');
+        }
+
+        return new AIClient(clientConfig);
+    }
+
+    private async prepareTemporaryFiles(chunks: string[]) {
+        const tempDir = path.join(os.tmpdir(), 'vscode-chat-diffs');
+        await fs.promises.mkdir(tempDir, { recursive: true });
+        const rechunkedContent = chunks.join('\n').toString();
+        const tempFilePath = path.join(tempDir, 'final-file.txt');
+        await fs.promises.writeFile(tempFilePath, rechunkedContent);
+        return { tempFilePath, tempUri: vscode.Uri.file(tempFilePath) };
+    }
+
+    private formatChunks(chunks: string[]): string {
+        let combinedChunks = '';
+        for (let i = 0; i < chunks.length; i++) {
+            const chunk = chunks[i];
+            combinedChunks += `<c>\n<ci>\n${i}</ci>\n<cv>\n${chunk}</cv>\n</c>`;
+        }
+        return combinedChunks;
+    }
+
+    private createInitialMessages(combinedChunks: string, proposedChanges: string): AIMessage[] {
+        return [
+            { role: 'system', content: diffMergePrompt(combinedChunks, proposedChanges) },
+            { role: 'user', content: 'Return the modified chunks based on the file chunks and proposed changes' }
+        ];
+    }
+
+    private async handleAIResponse(
+        content: string,
+        modifiedChunks: string[],
+        progress: vscode.Progress<{ message?: string; increment?: number }>,
+        progressMessage: string
+    ) {
+        progress.report({
+            message: `${progressMessage} 90%`,
+            increment: 10
+        });
+
+        const modifiedChunksMatches = content.match(/<mc>[\s\S]*?<\/mc>/g);
+        if (modifiedChunksMatches) {
+            modifiedChunksMatches.forEach(match => {
+                const indexMatch = match.match(/<ci>\s*(\d+)\s*<\/ci>/);
+                const contentMatch = match.match(/<mcv>([\s\S]*?)<\/mcv>/);
+
+                if (indexMatch && contentMatch) {
+                    const chunkIndex = parseInt(indexMatch[1], 10);
+                    const cleanedContent = contentMatch[1].trim();
+
+                    if (chunkIndex >= 0 && chunkIndex < modifiedChunks.length) {
+                        modifiedChunks[chunkIndex] = cleanedContent;
+                    }
+                }
+            });
+        }
+
+        progress.report({
+            message: `${progressMessage} 100%`,
+            increment: 10
+        });
+
+        return modifiedChunks;
+    }
+
+    private async prepareAIDiff(originalUri: vscode.Uri, proposedChanges: string): Promise<vscode.Uri | null> {
         return vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             title: DIFF_MESSAGES.PROGRESS_TITLE,
             cancellable: false
         }, async (progress) => {
-            
-            const tempDir = path.join(os.tmpdir(), 'vscode-chat-diffs');
-            await fs.promises.mkdir(tempDir, { recursive: true });
+            try {
+                const aiClient = await this.setupAIClient(progress);
+                const chunks = await new FileChunker(originalUri).chunk();
+                const { tempFilePath, tempUri } = await this.prepareTemporaryFiles(chunks);
 
-            // AI Client setup progress
-            progress.report({ message: getDiffProgressMessage('WAKING_AI'), increment: 10 });
-            await new Promise(resolve => setTimeout(resolve, 100));
-            const apiKey = await this._apiKeyManager.getApiKey(modelInfo.provider);
-            if (!apiKey) {
-                throw new Error(`No API key found for provider: ${modelInfo.provider}`);
-            }
-            const clientConfig = AIModel.getClientConfig(currentModel, apiKey);
-            if (!clientConfig) {
-                throw new Error('Failed to create AI client configuration');
-            }
-            const aiClient = new AIClient(clientConfig);
+                await vscode.commands.executeCommand('vscode.diff',
+                    originalUri,
+                    tempUri,
+                    `Changes for ${path.basename(originalUri.fsPath)}`,
+                    { preview: true }
+                );
 
-            // Chunking progress
-            const chunks = await new FileChunker(originalUri).chunk();
-            const rechunkedContent = chunks.join('\n').toString();
+                const combinedChunks = this.formatChunks(chunks);
+                const messages = this.createInitialMessages(combinedChunks, proposedChanges);
 
-            // Create temp file progress
-            const tempFilePath = path.join(tempDir, 'final-file.txt');
-            await fs.promises.writeFile(tempFilePath, rechunkedContent);
-            const tempUri = vscode.Uri.file(tempFilePath);
+                let tokenCount = 0;
+                const totalExpectedLines = chunks.length;
+                const modifiedChunks = chunks;
+                const progressMessage = getDiffProgressMessage('AI_PROCESSING');
+                let lastReportedProgress = 10;
 
-            // Show the diff immediately
-            await vscode.commands.executeCommand('vscode.diff',
-                originalUri,
-                tempUri,
-                `Changes for ${path.basename(originalUri.fsPath)}`,
-                { preview: true }
-            );
+                await aiClient.chat(this._outputChannel, messages, {
+                    onToken: (token: string) => {
+                        const newlines = (token.match(/\n/g) || []).length;
+                        tokenCount += newlines;
+                        const tokenProgressPercent = Math.min(80, (tokenCount / totalExpectedLines) * 100);
+                        const actualProgressIncrement = tokenProgressPercent - lastReportedProgress;
+                        lastReportedProgress = tokenProgressPercent;
 
-            // Ensure all chunks are included in the combined output
-            let combinedChunks = '';
-            for (let i = 0; i < chunks.length; i++) {
-                const chunk = chunks[i];
-                const formattedChunk = `<c>\n<ci>\n${i}</ci>\n<cv>\n${chunk}</cv>\n</c>`;
-                combinedChunks += formattedChunk;
-            }
-
-            // Initialize conversation history
-            const messages: AIMessage[] = [
-                { role: 'system' as const, content: diffMergePrompt(combinedChunks, proposedChanges) },
-                { role: 'user' as const,content: `Return the modified chunks based on the file chunks and proposed changes`}
-            ];
-
-            let tokenCount = 0;
-            const totalExpectedLines = chunks.length; // Rough estimate of expected lines
-            const modifiedChunks = chunks;
-            const progressMessage = getDiffProgressMessage('AI_PROCESSING');
-            let lastReportedProgress = 10; // Start at 10 since we've already reported some progress
-
-            // Call LLM to get modified chunks
-            await aiClient.chat(this._outputChannel, messages, {
-                onToken: (token: string) => {
-                    const newlines = (token.match(/\n/g) || []).length;
-                    tokenCount += newlines;
-                    const tokenProgressPercent = Math.min(80, (tokenCount / totalExpectedLines) * 100);
-                    const actualProgressIncrement = tokenProgressPercent - lastReportedProgress;
-                    lastReportedProgress = tokenProgressPercent;
-                    
-                    progress.report({ 
-                        message: `${progressMessage} ${tokenProgressPercent.toFixed(0)}%`, 
-                        increment: actualProgressIncrement 
-                    });
-                },
-                onComplete: async (content: string) => {
-                    // Report final progress before processing chunks
-                    progress.report({
-                        message: `${progressMessage} 90%`,
-                        increment: 10
-                    });
-
-                    // Extract all modified chunks
-                    const modifiedChunksMatches = content.match(/<mc>[\s\S]*?<\/mc>/g);                    
-                    if (modifiedChunksMatches) {
-                        // Process each modified chunk and update the corresponding index
-                        modifiedChunksMatches.forEach(match => {
-                            // Extract chunk index and content more reliably
-                            const indexMatch = match.match(/<ci>\s*(\d+)\s*<\/ci>/);
-                            const contentMatch = match.match(/<mcv>([\s\S]*?)<\/mcv>/);
-                            
-                            if (indexMatch && contentMatch) {
-                                const chunkIndex = parseInt(indexMatch[1], 10);
-                                // Trim any leading/trailing whitespace from the content
-                                const cleanedContent = contentMatch[1].trim();
-                                
-                                // Update the chunk at the specified index if it exists
-                                if (chunkIndex >= 0 && chunkIndex < modifiedChunks.length) {
-                                    modifiedChunks[chunkIndex] = cleanedContent;
-                                }
-                            }
+                        progress.report({
+                            message: `${progressMessage} ${tokenProgressPercent.toFixed(0)}%`,
+                            increment: actualProgressIncrement
                         });
+                    },
+                    onComplete: async (content: string) => {
+
+                        // save in the chat session as a diagnostic message
+                        this._sessionManager.getCurrentSession()?.messages.push({
+                            role: "assistant",
+                            content: content,
+                            name: "Mode.Diagnostics.Diff"
+                        });
+
+                        const updatedChunks = await this.handleAIResponse(content, modifiedChunks, progress, progressMessage);
+                        await fs.promises.truncate(tempFilePath, 0);
+                        await fs.promises.writeFile(tempFilePath, updatedChunks.join('\n'));
                     }
+                });
 
-                    // Report completion
-                    progress.report({
-                        message: `${progressMessage} 100%`,
-                        increment: 10
-                    });
-                }
-            });
-
-            // Final progress and file writing
-            await fs.promises.truncate(tempFilePath, 0);
-            await fs.promises.writeFile(tempFilePath, modifiedChunks.join('\n'));
-
-            return tempUri;
+                return tempUri;
+            } catch (error) {
+                this._outputChannel.appendLine(ErrorMessages.APPLY_CHANGES_ERROR(error));
+                this._outputChannel.show();
+                return null;
+            }
         });
     }
 
-    async showDiff(rawCode: string, fileUri: string, manual: boolean) {
+    async showDiff(rawCode: string, fileUri: string) {
         // Remove any existing "Apply Changes" button and open diff
         this.removeExistingDiffs();
 
@@ -154,23 +177,10 @@ export class DiffManager {
             return; // Abort if no file was resolved
         }
 
-        let modifiedUri: vscode.Uri;
-        // @todo remove this - we aren't supporting manual merges any more
-        // they don't really work
-        if (manual) {
-            const tempDir = path.join(os.tmpdir(), 'vscode-chat-diffs');
-            await fs.promises.mkdir(tempDir, { recursive: true });
-            const tempFilePath = path.join(tempDir, 'final-file.txt');
-            await fs.promises.writeFile(tempFilePath, rawCode);
-            modifiedUri = vscode.Uri.file(tempFilePath);
-        } else {
-            // Use the prepareDiff utility function for AI-assisted diffs
-            const aiModifiedUri = await this.prepareAIDiff(originalUri, rawCode);
-            // Return early if user cancelled the merge operation
-            if (!aiModifiedUri) {
-                return;
-            }
-            modifiedUri = aiModifiedUri;
+        const modifiedUri = await this.prepareAIDiff(originalUri, rawCode);
+        // Return early if user cancelled the merge operation
+        if (!modifiedUri) {
+            return;
         }
 
         // Show the diff

@@ -10,13 +10,15 @@ import { AIModel } from '../../common/llms/aiModel';
 export class ChatManager {
 	private aiClient: AIClient | null = null;
 	private md: MarkdownIt;
-	private sessionManager: SessionManager;
 	private currentModel: string;
 	private currentHandler: MessageHandler | null = null;
 
-	constructor(private readonly _view: vscode.WebviewView, context: vscode.ExtensionContext) {
+	constructor(
+		private readonly _view: vscode.WebviewView,
+		private readonly sessionManager: SessionManager,
+		context: vscode.ExtensionContext
+	) {
 		this.md = createMarkdown();
-		this.sessionManager = new SessionManager(context);
 		AIClientFactory.initialize(context);
 		this.currentModel = '';
 	}
@@ -43,7 +45,7 @@ export class ChatManager {
 		currentFile: string | null = null,
 		selectedModel: string
 	): Promise<void> {
-		
+
 		const initResult = await this.initializeClient(selectedModel);
 
 		if (!initResult.success) {

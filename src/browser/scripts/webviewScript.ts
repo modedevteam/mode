@@ -624,7 +624,7 @@ declare function acquireVsCodeApi(): any;
         // merge buttons
         document.addEventListener('click', (e) => {
             const target = e.target as HTMLElement;
-            const mergeButton = target.closest('#manual-merge-button') || target.closest('#merge-button');
+            const mergeButton = target.closest('#merge-button');
 
             if (mergeButton instanceof HTMLElement) {
                 const codeHeader = mergeButton.closest('.chat-code-header');
@@ -633,13 +633,10 @@ declare function acquireVsCodeApi(): any;
                 if (codeContainer && codeContainer.classList.contains('chat-code-container')) {
                     const rawCode = codeContainer.textContent || '';
                     const fileUri = codeHeader?.querySelector('.file-uri')?.textContent || '';
-                    const isManual = mergeButton.id === 'manual-merge-button';
-
                     vscode.postMessage({
                         command: 'showDiff',
                         code: rawCode,
-                        fileUri,
-                        manual: isManual
+                        fileUri
                     });
                 }
             }
@@ -732,13 +729,13 @@ declare function acquireVsCodeApi(): any;
                 case 'addImagePill': {
                     // Check if image with this ID already exists
                     const imageExists = currentImages.some(img => img.id === message.fileUri);
-                    
+
                     // Only add image if it doesn't already exist
                     if (!imageExists) {
-                        currentImages.push({ id: message.fileUri, data: message.imageData, fileName: message.fileName});
+                        currentImages.push({ id: message.fileUri, data: message.imageData, fileName: message.fileName });
                         displayImagePreview(message.imageData, message.fileName, message.fileUri);
                     }
-                    
+
                     if (message.source === 'chatInput') {
                         handleContextMention(message.fileName);
                     }
