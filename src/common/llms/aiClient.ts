@@ -1,6 +1,5 @@
 import * as anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
-import { ModelProvider } from './aiModel';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CohereClientV2 as Cohere } from 'cohere-ai';
 import { Mistral } from '@mistralai/mistralai';
@@ -16,7 +15,7 @@ export interface AIMessage {
 }
 
 export interface AIClientConfig {
-    provider: ModelProvider;
+    provider: string;
     apiKey: string;
     model?: string;
 }
@@ -32,7 +31,7 @@ export class AIClient {
     private googleClient?: GoogleGenerativeAI;
     private cohereClient?: Cohere;
     private mistralClient?: Mistral;
-    private provider: ModelProvider;
+    private provider: string;
     private model!: string;
     private isCancelled = false;
     private googleFileManager?: GoogleAIFileManager;

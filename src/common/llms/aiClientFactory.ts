@@ -1,7 +1,6 @@
 import { AIClient, AIClientConfig } from './aiClient';
 import { ApiKeyManager } from './aiApiKeyManager';
 import * as vscode from 'vscode';
-import { ModelProvider } from './aiModel';
 
 export class AIClientFactory {
     private static instances: Map<string, AIClient> = new Map();
@@ -14,7 +13,7 @@ export class AIClientFactory {
     }
 
     public static async createClient(
-        provider: ModelProvider,
+        provider: string,
         model?: string
     ): Promise<{ success: boolean; message?: string; client?: AIClient }> {
         const instanceKey = `${provider}-${model || 'default'}`;
@@ -52,7 +51,7 @@ export class AIClientFactory {
         }
     }
 
-    public static getInstance(provider: ModelProvider, model?: string): AIClient | undefined {
+    public static getInstance(provider: string, model?: string): AIClient | undefined {
         const instanceKey = `${provider}-${model || 'default'}`;
         return this.instances.get(instanceKey);
     }

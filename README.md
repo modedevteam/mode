@@ -17,7 +17,7 @@ You can now add files and images as context just by @-mentioning them without br
 
 - **Personal and Powerful**: Mode connects directly to providers like Anthropic, OpenAI, Google, Mistral, and more&mdash;your code and interactions stay private. Since there's no middle layer, you can instantly upgrade to the latest models without relying on third-party tools to catch up or pay their upgrade fees.
 
-- **Built for the Enterprise**: Mode is purpose-built for developers who need configurability. You bring your own keys, and can adjust endpoints (talk to us if you want more flexibility), making it easy to integrate with providers already approved in your organization. With no tracking or servers, Mode is ideal for secure environments that require data privacy and control.
+- **Built for the Enterprise**: Mode is purpose-built for developers who need configurability. You bring your own keys, making it easy to integrate with providers already approved in your organization. With no tracking or servers, Mode is ideal for secure environments that require data privacy and control.
 
 ## Mode in Action
 
@@ -41,10 +41,10 @@ Quickly resolve issues with intelligent debugging support.
 
 ![Debug](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/Context.gif)
 
-### Personalize
-Customize Mode to suit you: adjust models and endpoints as needed.
+### Easy Upgrades
+Stay ahead with the latest: customize Mode by upgrading models as they’re released, without waiting on us.
 
-![ChangeProviders](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/ChangeProviders.gif)
+![AdjustModels](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/AdjustModels.gif)
 
 ## Be part of the journey!
 

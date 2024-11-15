@@ -104,7 +104,60 @@
 		"configuration": {
 			"title": "Mode",
 			"properties": {
+				"mode.providers": {
+					"order": 0,
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"name": {
+								"type": "string",
+								"enum": ["openai", "anthropic", "google", "mistral", "cohere"]
+							},
+							"models": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"visible": {
+								"type": "boolean",
+								"default": true
+							}
+						},
+						"required": ["name", "models", "visible"]
+					},
+					"default": [
+						{
+							"name": "openai",
+							"models": ["gpt-4o", "gpt-4o-mini"],
+							"visible": true
+						},
+						{
+							"name": "anthropic",
+							"models": ["claude-3-5-sonnet-latest", "claude-3-5-haiku-20241022"],
+							"visible": true
+						},
+						{
+							"name": "google",
+							"models": ["gemini-1.5-flash", "gemini-1.5-pro"],
+							"visible": true
+						},
+						{
+							"name": "mistral",
+							"models": ["mistral-large-latest", "codestral-latest"],
+							"visible": true
+						},
+						{
+							"name": "cohere",
+							"models": ["command-r-plus-08-2024", "command-light"],
+							"visible": true
+						}
+					],
+					"markdownDescription": "Configure AI providers and their models. Add or update models as they become available. To set up API keys, [click here](command:mode.manageApiKeys) or use 'Mode: Manage API Keys' command."
+				},
 				"mode.excludePatterns": {
+					"order": 1,
 					"type": "array",
 					"items": {
 						"type": "string"

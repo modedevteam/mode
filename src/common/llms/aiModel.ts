@@ -1,56 +1,21 @@
 import type { AIClientConfig } from './aiClient';
 import * as vscode from 'vscode';
 
-export type ModelProvider = 'openai' | 'anthropic' | 'google' | 'cohere' | 'mistral';
+interface ProviderConfig {
+    name: string;
+    models: string[];
+    visible: boolean;
+}
+
+interface ModelConfigMap {
+    [key: string]: ModelInfo;
+}
 
 export interface ModelInfo {
-    provider: ModelProvider;
-    supportsVision?: boolean;
+    provider: string;
 }
 
 export class AIModel {
-    private static readonly MODEL_MAPPINGS: Record<string, ModelInfo> = {
-        'gpt-4o': {
-            provider: 'openai',
-            supportsVision: true,
-        },
-        'gpt-4o-mini': {
-            provider: 'openai',
-            supportsVision: true,
-        },
-        'o1-mini': {
-            provider: 'openai'
-        },
-        'o1-preview': {
-            provider: 'openai'
-        },
-        'claude-3-5-sonnet-latest': {
-            provider: 'anthropic',
-            supportsVision: true,
-        },
-        'claude-3-5-haiku-20241022': {
-            provider: 'anthropic',
-            supportsVision: true,
-        },
-        'gemini-1.5-flash': {
-            provider: 'google',
-        },
-        'gemini-1.5-pro': {
-            provider: 'google',
-        },
-        'command-r-plus-08-2024': {
-            provider: 'cohere'
-        },
-        'command-light': {
-            provider: 'cohere'
-        },
-        'mistral-large-latest': {
-            provider: 'mistral'
-        },
-        'codestral-latest': {
-            provider: 'mistral'
-        },
-    };
 
     private static extensionContext: vscode.ExtensionContext;
 
@@ -59,11 +24,11 @@ export class AIModel {
     }
 
     public static getModelInfo(modelKey: string): ModelInfo | undefined {
-        return this.MODEL_MAPPINGS[modelKey];
+        return this.getModelInfoFromConfig(modelKey);
     }
 
     public static getAllModels(): Record<string, ModelInfo> {
-        return { ...this.MODEL_MAPPINGS };
+        return this.getModelsFromConfig();
     }
 
     public static getLastUsedModel(): string {
@@ -83,5 +48,36 @@ export class AIModel {
             apiKey,
             model: modelKey
         };
+    }
+
+    private static getModelInfoFromConfig(modelKey: string): ModelInfo | undefined {
+        const providers = vscode.workspace.getConfiguration('mode').get<ProviderConfig[]>('providers') || [];
+        
+        for (const provider of providers) {
+            if (provider.visible && provider.models.includes(modelKey)) {
+                return {
+                    provider: provider.name
+                };
+            }
+        }
+        
+        return undefined;
+    }
+
+    private static getModelsFromConfig(): Record<string, ModelInfo> {
+        const providers = vscode.workspace.getConfiguration('mode').get<ProviderConfig[]>('providers') || [];
+        const modelMap: ModelConfigMap = {};
+
+        for (const provider of providers) {
+            if (provider.visible) {
+                for (const model of provider.models) {
+                    modelMap[model] = {
+                        provider: provider.name
+                    };
+                }
+            }
+        }
+
+        return modelMap;
     }
 } 
