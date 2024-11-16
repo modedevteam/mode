@@ -83,7 +83,7 @@ export class ChatManager {
 		try {
 			let overview = '';
 			await this.aiClient.chat(outputChannel, [
-				{ role: "system", content: "Summarize chat session is less than five words. Use valid words." },
+				{ role: "system", "content": "Summarize the current conversation in five or fewer meaningful words. If the conversation cannot be summarized, respond with 'New Chat'." },
 				{ role: "user", content: message }
 			], {
 				onToken: (token: string) => {

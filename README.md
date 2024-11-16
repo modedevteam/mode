@@ -31,7 +31,7 @@ Add images, code snippets, and files to help set the broader context, especially
 
 ![Context](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/Context.gif)
 
-### Pair Program
+### Pair Program (Experimental)
 Mode intelligently applies suggestions, without breaking your changes, giving you a true pair-programming experience.
 
 ![Pair](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/ApplyChanges.gif)
