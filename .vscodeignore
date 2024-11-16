@@ -11,3 +11,4 @@ src/
 tsconfig.json
 webpack.config.js
 esbuild.js
+obfuscator-config.json
