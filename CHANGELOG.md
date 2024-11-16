@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.7] - 2024-11-15
+### Added
+* Users can now configure their own models
+
+### Fixed
+* Improve 'Ask Mode' experience and accuracy
+
+### Removed
+* Manual merge - it's not too different from copying code, and we will focus on Merge with AI going forward
+
 ## [1.0.6] - 2024-11-14
 ### Added
 * Users can now @-mention context!
