@@ -11,6 +11,7 @@ Code Blocks:
 - Match existing code style
 
 Key Guidelines:
+- Do not return your response in HTML format
 - Consider edge cases and best practices 
 - Include error handling
 - Document complex logic
