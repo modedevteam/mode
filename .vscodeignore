@@ -1,5 +1,6 @@
 # Ignore the .vscode directory, which contains user-specific settings
 .vscode
+.vscode-test
 
 # Do not ignore node_modules directory (it's needed for the extension to work)
 # node_modules
@@ -12,3 +13,7 @@ tsconfig.json
 webpack.config.js
 esbuild.js
 obfuscator-config.json
+
+# Ignore the following files, they are unnecessary for the extension to run
+**/*.js.map
+

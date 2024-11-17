@@ -112,7 +112,13 @@
 						"properties": {
 							"name": {
 								"type": "string",
-								"enum": ["openai", "anthropic", "google", "mistral", "cohere"]
+								"enum": [
+									"openai",
+									"anthropic",
+									"google",
+									"mistral",
+									"cohere"
+								]
 							},
 							"models": {
 								"type": "array",
@@ -125,32 +131,51 @@
 								"default": true
 							}
 						},
-						"required": ["name", "models", "visible"]
+						"required": [
+							"name",
+							"models",
+							"visible"
+						]
 					},
 					"default": [
 						{
 							"name": "openai",
-							"models": ["gpt-4o", "gpt-4o-mini"],
+							"models": [
+								"gpt-4o",
+								"gpt-4o-mini"
+							],
 							"visible": true
 						},
 						{
 							"name": "anthropic",
-							"models": ["claude-3-5-sonnet-latest", "claude-3-5-haiku-20241022"],
+							"models": [
+								"claude-3-5-sonnet-latest",
+								"claude-3-5-haiku-20241022"
+							],
 							"visible": true
 						},
 						{
 							"name": "google",
-							"models": ["gemini-1.5-flash", "gemini-1.5-pro"],
+							"models": [
+								"gemini-1.5-flash",
+								"gemini-1.5-pro"
+							],
 							"visible": true
 						},
 						{
 							"name": "mistral",
-							"models": ["mistral-large-latest", "codestral-latest"],
+							"models": [
+								"mistral-large-latest",
+								"codestral-latest"
+							],
 							"visible": true
 						},
 						{
 							"name": "cohere",
-							"models": ["command-r-plus-08-2024", "command-light"],
+							"models": [
+								"command-r-plus-08-2024",
+								"command-light"
+							],
 							"visible": true
 						}
 					],
@@ -188,6 +213,7 @@
 		"compile": "tsc -p ./",
 		"lint": "eslint \"src/**/*.ts\"",
 		"watch": "tsc -w -p ./",
+		"test": "vscode-test",
 		"obfuscate": "javascript-obfuscator out --output out --config obfuscator-config.json"
 	},
 	"devDependencies": {
@@ -197,6 +223,8 @@
 		"@types/vscode": "^1.95.0",
 		"@typescript-eslint/eslint-plugin": "^8.14.0",
 		"@typescript-eslint/parser": "^8.14.0",
+		"@vscode/test-cli": "^0.0.10",
+		"@vscode/test-electron": "^2.4.1",
 		"esbuild": "^0.24.0",
 		"eslint": "^9.15.0",
 		"javascript-obfuscator": "^4.1.1",
