@@ -160,17 +160,42 @@ declare function acquireVsCodeApi(): any;
     //#region Chat output
     const chatOutput = document.getElementById('chat-output') as HTMLDivElement;
 
-    function renderMessage(message: string, sender: 'user' | 'assistant') {
-        const messageElement = document.createElement('div');
-        messageElement.className = `message ${sender}`;
-        if (sender === 'user') {
-            messageElement.textContent = message;
-        } else {
-            messageElement.innerHTML = message;
-        }
-        chatOutput.appendChild(messageElement);
-        chatOutput.scrollTop = chatOutput.scrollHeight;
+function renderMessage(message: string, sender: 'user' | 'assistant') {
+    const messageElement = document.createElement('div');
+    messageElement.className = `message ${sender}`;
+    
+    if (sender === 'user') {
+        messageElement.textContent = message;
+        
+        // Add copy button for user messages
+        const copyButton = document.createElement('button');
+        copyButton.className = 'copy-button';
+        copyButton.innerHTML = '<i class="codicon codicon-copy"></i>';
+        copyButton.title = 'Copy message';
+        copyButton.addEventListener('click', () => {
+            const textToCopy = message;
+            messageInput.value = textToCopy;
+            messageInput.focus();
+            resizeTextarea();
+            
+            // Show copy feedback
+            copyButton.innerHTML = '<i class="codicon codicon-check"></i>';
+            copyButton.classList.add('copied');
+            
+            setTimeout(() => {
+                copyButton.innerHTML = '<i class="codicon codicon-copy"></i>';
+                copyButton.classList.remove('copied');
+            }, 2000);
+        });
+        
+        messageElement.appendChild(copyButton);
+    } else {
+        messageElement.innerHTML = message;
     }
+    
+    chatOutput.appendChild(messageElement);
+    chatOutput.scrollTop = chatOutput.scrollHeight;
+}
 
     // chat state variables
     let isStreaming = false;
