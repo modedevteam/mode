@@ -52,15 +52,6 @@ export class DiffManager {
         return { tempFilePath, tempUri: vscode.Uri.file(tempFilePath) };
     }
 
-    private formatChunks(chunks: string[]): string {
-        let combinedChunks = '';
-        for (let i = 0; i < chunks.length; i++) {
-            const chunk = chunks[i];
-            combinedChunks += `<c>\n<ci>\n${i}</ci>\n<cv>\n${chunk}</cv>\n</c>`;
-        }
-        return combinedChunks;
-    }
-
     private createInitialMessages(combinedChunks: string, proposedChanges: string): AIMessage[] {
         return [
             { role: 'system', content: diffMergePrompt(combinedChunks, proposedChanges) },
@@ -70,7 +61,7 @@ export class DiffManager {
 
     private async handleAIResponse(
         content: string,
-        modifiedChunks: string[],
+        chunks: string[],
         progress: vscode.Progress<{ message?: string; increment?: number }>,
         progressMessage: string
     ) {
@@ -79,20 +70,54 @@ export class DiffManager {
             increment: 10
         });
 
-        const modifiedChunksMatches = content.match(/<mc>[\s\S]*?<\/mc>/g);
-        if (modifiedChunksMatches) {
-            modifiedChunksMatches.forEach(match => {
-                const indexMatch = match.match(/<ci>\s*(\d+)\s*<\/ci>/);
-                const contentMatch = match.match(/<mcv>([\s\S]*?)<\/mcv>/);
+        // Convert chunks into tuple format [primary_index, secondary_index, content]
+        type LineEntry = [number, number, string];
+        let lines: LineEntry[] = chunks.map((content, index) => [index, 0, content]);
 
-                if (indexMatch && contentMatch) {
-                    const chunkIndex = parseInt(indexMatch[1], 10);
-                    const cleanedContent = contentMatch[1].trim();
+        const changesMatches = content.match(/<changes>[\s\S]*?<\/changes>/g);
+        if (changesMatches) {
+            changesMatches.forEach(match => {
+                // Process all changes
+                const lineMatches = match.matchAll(/<i>(\d+(?:\.\d+)?)<\/i>(?:<r>|<m>([\s\S]*?)<\/m>|<a>([\s\S]*?)<\/a>)/g);
+                
+                for (const lineMatch of Array.from(lineMatches)) {
+                    const lineNumberStr = lineMatch[1];
+                    const modifyContent = lineMatch[2];
+                    const addContent = lineMatch[3];
+                    
+                    // Parse line number and handle fractional parts
+                    const [baseNum, fraction] = lineNumberStr.split('.');
+                    const primaryIndex = parseInt(baseNum, 10);
+                    const secondaryIndex = fraction ? parseInt(fraction, 10) : 0;
+                    
+                    // Skip invalid line numbers
+                    if (primaryIndex < 0 || primaryIndex >= chunks.length) {
+                        continue;
+                    }
 
-                    if (chunkIndex >= 0 && chunkIndex < modifiedChunks.length) {
-                        modifiedChunks[chunkIndex] = cleanedContent;
+                    if (addContent !== undefined) {
+                        // Handle addition
+                        lines.push([primaryIndex, secondaryIndex, addContent]);
+                    } else if (modifyContent !== undefined) {
+                        // Handle modification - find and update the line
+                        const lineIndex = lines.findIndex(([p, s]) => p === primaryIndex && s === 0);
+                        if (lineIndex !== -1) {
+                            lines[lineIndex][2] = modifyContent;
+                        }
+                    } else {
+                        // Handle removal - find and remove the line
+                        const lineIndex = lines.findIndex(([p, s]) => p === primaryIndex && s === 0);
+                        if (lineIndex !== -1) {
+                            lines.splice(lineIndex, 1);
+                        }
                     }
                 }
+
+                // Sort lines by primary index then secondary index
+                lines.sort(([p1, s1], [p2, s2]) => {
+                    if (p1 !== p2) return p1 - p2;
+                    return s1 - s2;
+                });
             });
         }
 
@@ -101,7 +126,8 @@ export class DiffManager {
             increment: 10
         });
 
-        return modifiedChunks;
+        // Convert back to simple array of strings
+        return lines.map(([_, __, content]) => content);
     }
 
     private async prepareAIDiff(originalUri: vscode.Uri, proposedChanges: string): Promise<vscode.Uri | null> {
@@ -112,8 +138,19 @@ export class DiffManager {
         }, async (progress) => {
             try {
                 const aiClient = await this.setupAIClient(progress);
-                const chunks = await new FileChunker(originalUri).chunk();
-                const { tempFilePath, tempUri } = await this.prepareTemporaryFiles(chunks);
+                
+                // Read file content and implement line number mapping
+                const fileContent = await vscode.workspace.fs.readFile(originalUri);
+                const lines = new TextDecoder().decode(fileContent).split('\n');
+                const fileName = originalUri.path.split('/').pop() || '';
+                const chunks = [
+                    `<fn>${fileName}</fn>`, 
+                    ...lines.map((content, index) => 
+                        `<i>${index}</i><v>${content}</v>`
+                    )
+                ];
+
+                const { tempFilePath, tempUri } = await this.prepareTemporaryFiles(lines);
 
                 await vscode.commands.executeCommand('vscode.diff',
                     originalUri,
@@ -122,30 +159,13 @@ export class DiffManager {
                     { preview: true }
                 );
 
-                const combinedChunks = this.formatChunks(chunks);
-                const messages = this.createInitialMessages(combinedChunks, proposedChanges);
-
-                let tokenCount = 0;
-                const totalExpectedLines = chunks.length;
-                const modifiedChunks = chunks;
+                const messages = this.createInitialMessages(chunks.join('\n'), proposedChanges);
                 const progressMessage = getDiffProgressMessage('AI_PROCESSING');
-                let lastReportedProgress = 10;
 
                 await aiClient.chat(this._outputChannel, messages, {
-                    onToken: (token: string) => {
-                        const newlines = (token.match(/\n/g) || []).length;
-                        tokenCount += newlines;
-                        const tokenProgressPercent = Math.min(80, (tokenCount / totalExpectedLines) * 100);
-                        const actualProgressIncrement = tokenProgressPercent - lastReportedProgress;
-                        lastReportedProgress = tokenProgressPercent;
-
-                        progress.report({
-                            message: `${progressMessage} ${tokenProgressPercent.toFixed(0)}%`,
-                            increment: actualProgressIncrement
-                        });
+                    onToken: () => {
                     },
                     onComplete: async (content: string) => {
-
                         // save in the chat session as a diagnostic message
                         this._sessionManager.getCurrentSession()?.messages.push({
                             role: "assistant",
@@ -153,7 +173,8 @@ export class DiffManager {
                             name: "Mode.Diagnostics.Diff"
                         });
 
-                        const updatedChunks = await this.handleAIResponse(content, modifiedChunks, progress, progressMessage);
+                        console.log("content", content);
+                        const updatedChunks = await this.handleAIResponse(content, lines as string[], progress, progressMessage);
                         await fs.promises.truncate(tempFilePath, 0);
                         await fs.promises.writeFile(tempFilePath, updatedChunks.join('\n'));
                     }

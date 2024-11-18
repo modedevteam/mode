@@ -93,13 +93,13 @@ Let me know if you'd like me to explain any part in more detail!
 \\\`
 `;
 
-export const diffMergePrompt = (combinedChunks: string, proposedChanges: string) => `You are an AI coding assistant specialized in analyzing and modifying code files based on proposed changes. Your task is to carefully review the provided file chunks and proposed changes, then apply the necessary modifications while maintaining the overall structure and functionality of the code.
+export const diffMergePrompt = (inputLines: string, proposedChanges: string) => `You are an AI coding assistant specialized in analyzing and modifying code files based on proposed changes. Your task is to carefully review the provided file and suggest appropriate modifications based on the proposed changes while maintaining code structure and functionality.
 
-Here are the file chunks you need to analyze:
+Here are the lines from the input file:
 
-<combined_chunks>
-${combinedChunks}
-</combined_chunks>
+{{inputLines}}
+${inputLines}
+{{/inputLines}}
 
 And here are the proposed changes:
 
@@ -109,63 +109,61 @@ ${proposedChanges}
 
 Instructions:
 
-1. Analyze the file chunks and proposed changes. Each chunk is a token from the original file.
-   The chunks are organized like this:
-   <c>
-   <ci>
-   [chunk index]
-   </ci>
-   <cv>
-   [chunk value]
-   </cv>
-   </c>
+1. Analyze the input file lines and proposed changes. The input file is formatted as follows:
+   - First line contains the filename: <fn>filename</fn>
+   - Each subsequent line is formatted as: <i>[line number]</i><v>[line content]</v>
 
-2. Identify which chunks need modification based on the proposed changes.
+2. Review the proposed changes and suggest appropriate modifications:
+   - Understand the intent of the proposed changes
+   - Identify which lines need to be modified, added, or removed
+   - Suggest specific code changes that implement the proposed changes
+   - Ensure suggestions maintain code correctness and style
 
-3. Apply the necessary changes to the affected chunks. When modifying a chunk, include the complete context:
-   - The entire chunk content should be returned, including both modified and unmodified code
-   - If a change affects part of a chunk (e.g., adding a comment to one function), include all surrounding code in that chunk (e.g., adjacent functions) exactly as they appear in the original
-   - Never split or fragment existing chunks - maintain their original boundaries and include all code within those boundaries
+3. CRITICAL: Line Number Format
+   - Use original file line numbers for all operations
+   - For removals: <i>X</i><r> where X is the original line number
+   - For modifications: <i>X</i><m>new content</m> where X is the original line number
+   - For additions: <i>X.Y</i><a>new content</a> where:
+     * X is the line number AFTER which to insert
+     * Y is a fractional increment (0.1, 0.2, etc.)
+     * Example: <i>5.1</i><a>new line</a> inserts after line 5
+     * Multiple additions: 5.1, 5.2, 5.3, etc.
 
-4. Before providing your final answer, wrap your thought process in <change_analysis> tags. Consider the following:
-   - List each proposed change and identify which chunks it affects
-   - For each affected chunk, write out the current content and the proposed modification
-   - How will the changes impact the code's functionality?
-   - Are there any potential conflicts or issues with the proposed changes?
-   - What is the impact on code readability and maintainability?
-   - Consider potential conflicts or unintended consequences of each change
-   - Double-check that no unintended data loss occurs during the modification process
+4. IMPORTANT: Change Operations
+   - <r> : Remove the line
+   - <m> : Modify existing line with new content
+   - <a> : Add new line after specified line number
+   - Operations can be listed in any order since line numbers are absolute
 
-5. Format your final response as follows:
-   - Use <mc></mc> tags for each modified chunk.
-   - Within each <mc></mc> block:
-     - Use <ci></ci> tags for the modified chunk index. This should be the corresponding index of the chunk in the original file.
-     - Use <mcv></mcv> tags for the modified chunk value.
-   - Only include modified chunks in your response.
-   - Ensure that your modifications maintain the overall structure and functionality of the code.
+5. Before providing suggestions, analyze in <change_analysis> tags:
+   - Which lines need to be removed
+   - Which lines need to be modified
+   - Where new lines need to be inserted
+   - How fractional line numbers should be assigned
+   - Any potential conflicts or issues
 
-Example output format showing context preservation:
+6. Format your suggested changes using <changes> tags containing:
+   - Removals: <i>X</i><r>
+   - Modifications: <i>X</i><m>new content</m>
+   - Additions: <i>X.Y</i><a>new content</a>
+
+Example response format:
 
 <change_analysis>
-[Your detailed analysis of the changes and their impact]
+1. Remove line 5 (old error handling)
+2. Modify line 4 to add try block
+3. Add two new lines after line 4 for error handling
 </change_analysis>
 
-<mc>
-<ci>5</ci>
-<mcv>
-// Unmodified function from original chunk
-function originalFunction() {
-  return true;
-}
+<changes>
+<i>5</i><r>
+<i>4</i><m>    try {</m>
+<i>4.1</i><a>        const result = await processData();</a>
+<i>4.2</i><a>    } catch (error) {</a>
+</changes>
 
-// Modified function with added comments
-/**
- * @param {string} input - New parameter description
- */
-function modifiedFunction(input) {
-  return input.length;
-}
-</mcv>
-</mc>
-
-Remember to be clear and concise in your analysis and modifications. Focus on accurately implementing the proposed changes while maintaining code integrity and ensuring no unintended data loss.`;
+Remember:
+- Use original file line numbers for all operations
+- Use fractional numbers for additions (X.1, X.2, etc.)
+- Maintain proper code indentation
+- Keep code structure consistent`;
