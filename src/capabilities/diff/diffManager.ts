@@ -67,6 +67,12 @@ export class DiffManager {
             increment: 10
         });
 
+        // If source file is empty (chunks is empty), just return the proposed changes directly
+        if (chunks.length === 0) {
+            const proposedContent = content.replace(/<changes>[\s\S]*?<\/changes>/g, '').trim();
+            return [proposedContent];
+        }
+
         // Convert chunks into tuple format [primary_index, secondary_index, content]
         type LineEntry = [number, number, string];
         let lines: LineEntry[] = chunks.map((content, index) => [index, 0, content]);
