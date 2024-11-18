@@ -2,29 +2,44 @@ export const DIFF_MESSAGES = {
     TITLE: 'Mode suggested changes',
     PROGRESS_TITLE: 'Applying changes',
     DIFF_PROGRESS: {
-        WAKING_AI: [
+        SETUP: [
+            '🚀 Initializing diff engine...',
+            '🔧 Setting up workspace...',
+            '⚙️ Preparing environment...'
+        ],
+        FILE_PROCESSING: [
+            '📄 Reading file contents...',
+            '📝 Analyzing code structure...',
+            '🔍 Scanning file...'
+        ],
+        AI_INIT: [
             '🤖 Waking AI...',
-            '🤖 Booting up...',
-            '🤖 Loading AI...'
+            '🤖 Booting up AI engine...',
+            '🤖 Loading AI models...'
         ],
         AI_PROCESSING: [
-            '🤔 Overthinking...',
-            '🔧 Overcomplicating...',
-            '⚙️ Making it complex...',
-            '🎯 Trying too hard...',
-            '🔄 Re-refactoring...',
-            '⚡ Writing thesis...',
-            '🎨 Adding frameworks...'
+            '🧠 Analyzing changes...',
+            '⚡ Processing modifications...',
+            '🔄 Generating diff...',
+            '✨ Crafting improvements...',
+            '📊 Optimizing code...'
+        ],
+        FINALIZING: [
+            '📋 Almost there, preparing diff view...',
+            '🎯 Just a moment, finalizing changes...',
+            '✨ Nearly done, putting on finishing touches...',
+            '🔍 Almost ready, final review...',
+            '✅ Just a few more seconds...'
         ]
     }
 };
 
-export const getDiffProgressMessage = (key: keyof typeof DIFF_MESSAGES.DIFF_PROGRESS): string => {
+export const getDiffProgressMessage = (key: keyof typeof DIFF_MESSAGES.DIFF_PROGRESS, progress?: number): string => {
     const messages = DIFF_MESSAGES.DIFF_PROGRESS[key];
     const message = Array.isArray(messages) 
         ? messages[Math.floor(Math.random() * messages.length)]
         : messages;
-    return message;
+    return progress !== undefined ? `${message} (${Math.round(progress)}%)` : message;
 }; 
 
 export const LICENSE_MESSAGES = {
@@ -41,5 +56,3 @@ export const LICENSE_MESSAGES = {
     LICENSE_PROMPT: 'Enter your Mode license key',
     LICENSE_PLACEHOLDER: 'License Key'
 };
-
-

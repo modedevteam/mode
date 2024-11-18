@@ -26,7 +26,7 @@ export class DiffManager {
             throw new Error('No model configuration found');
         }
 
-        progress.report({ message: getDiffProgressMessage('WAKING_AI'), increment: 10 });
+        progress.report({ message: getDiffProgressMessage('AI_INIT'), increment: 10 });
         const apiKey = await this._apiKeyManager.getApiKey(modelInfo.provider);
         if (!apiKey) {
             throw new Error(`No API key found for provider: ${modelInfo.provider}`);
@@ -134,9 +134,22 @@ export class DiffManager {
             cancellable: false
         }, async (progress) => {
             try {
+                // Setup stage (0-20%)
+                progress.report({ 
+                    message: getDiffProgressMessage('SETUP', 0),
+                    increment: 10 
+                });
                 const aiClient = await this.setupAIClient(progress);
+                progress.report({ 
+                    message: getDiffProgressMessage('SETUP', 20),
+                    increment: 10 
+                });
                 
-                // Read file content and implement line number mapping
+                // File processing stage (20-40%)
+                progress.report({ 
+                    message: getDiffProgressMessage('FILE_PROCESSING', 20),
+                    increment: 10 
+                });
                 const fileContent = await vscode.workspace.fs.readFile(originalUri);
                 const lines = new TextDecoder().decode(fileContent).split('\n');
                 const fileName = originalUri.path.split('/').pop() || '';
@@ -146,8 +159,17 @@ export class DiffManager {
                         `<i>${index}</i><v>${content}</v>`
                     )
                 ];
+                progress.report({ 
+                    message: getDiffProgressMessage('FILE_PROCESSING', 40),
+                    increment: 10 
+                });
 
+                // Prepare temp files (40-50%)
                 const { tempFilePath, tempUri } = await this.prepareTemporaryFiles(lines);
+                progress.report({ 
+                    message: getDiffProgressMessage('FINALIZING', 50),
+                    increment: 10 
+                });
 
                 await vscode.commands.executeCommand('vscode.diff',
                     originalUri,
@@ -156,16 +178,35 @@ export class DiffManager {
                     { preview: true }
                 );
 
+                // AI Processing stage (50-90%)
                 const messages = this.createInitialMessages(chunks.join('\n'), proposedChanges);
-                const progressMessage = getDiffProgressMessage('AI_PROCESSING');
+                let processedTokens = 0;
+                const estimatedTotalTokens = proposedChanges.length / 4; // Rough estimate
 
                 await aiClient.chat(this._outputChannel, messages, {
                     onToken: () => {
+                        processedTokens++;
+                        if (processedTokens % 20 === 0) { // Update every 20 tokens
+                            const aiProgress = Math.min(90, 50 + (processedTokens / estimatedTotalTokens) * 40);
+                            progress.report({ 
+                                message: getDiffProgressMessage('AI_PROCESSING', aiProgress),
+                                increment: 1
+                            });
+                        }
                     },
                     onComplete: async (content: string) => {
-                        const updatedChunks = await this.handleAIResponse(content, lines as string[], progress, progressMessage);
+                        // Finalizing stage (90-100%)
+                        progress.report({ 
+                            message: getDiffProgressMessage('FINALIZING', 90),
+                            increment: 5 
+                        });
+                        const updatedChunks = await this.handleAIResponse(content, lines as string[], progress, getDiffProgressMessage('FINALIZING', 95));
                         await fs.promises.truncate(tempFilePath, 0);
                         await fs.promises.writeFile(tempFilePath, updatedChunks.join('\n'));
+                        progress.report({ 
+                            message: getDiffProgressMessage('FINALIZING', 100),
+                            increment: 5 
+                        });
                     }
                 });
 
