@@ -212,6 +212,7 @@ export class DiffManager {
                         }
                     },
                     onComplete: async (content: string) => {
+                        console.log("Changes received", content);
                         // Finalizing stage (90-100%)
                         progress.report({ 
                             message: getDiffProgressMessage('FINALIZING', 90),

@@ -4,7 +4,7 @@ import { createMarkdownIt as createMarkdown } from '../../common/rendering/md';
 import { SessionManager } from './chatSessionManager';
 import { MessageHandler } from './messageHandler';
 import { AIClientFactory } from '../../common/llms/aiClientFactory';
-import { AIClient } from '../../common/llms/aiClient';
+import { AIClient, AIMessage } from '../../common/llms/aiClient';
 import { AIModel } from '../../common/llms/aiModel';
 
 export class ChatManager {
@@ -109,7 +109,7 @@ export class ChatManager {
 			// Clear the current chat in the webview
 			this._view.webview.postMessage({ command: 'clearChat' });
 			// Render the messages in the session
-			session.messages.forEach(message => {
+			session.messages.forEach((message: AIMessage) => {
 				if ((message.role === 'user' || message.role === 'assistant') && message.name === 'Mode') {
 					this._view.webview.postMessage({
 						command: 'addMessage',

@@ -31,8 +31,11 @@ export class SessionManager {
 			}],
 			overview: "New Chat"
 		};
-		this.chatSessions.push(newSession);
-		this.currentSessionId = newSession.id;
+		
+		// Create a fresh copy of the session
+		const freshSession = JSON.parse(JSON.stringify(newSession));
+		this.chatSessions.push(freshSession);
+		this.currentSessionId = freshSession.id;
 		this.saveSessions();
 	}
 
@@ -90,7 +93,20 @@ export class SessionManager {
 	public loadChatSession(sessionId: string) {
 		const session = this.chatSessions.find(s => s.id === sessionId);
 		if (session) {
+			// Create a fresh copy of the session's messages
+			const freshSession = {
+				...session,
+				messages: JSON.parse(JSON.stringify(session.messages))
+			};
+			
+			// Update the session in the array
+			const index = this.chatSessions.findIndex(s => s.id === sessionId);
+			if (index !== -1) {
+				this.chatSessions[index] = freshSession;
+			}
+			
 			this.currentSessionId = sessionId;
+			return freshSession;
 		}
 		return session;
 	}
