@@ -67,21 +67,33 @@ export class DiffManager {
             increment: 10
         });
 
+        // Pre-compile regex patterns for better performance
+        const CHANGES_PATTERN = /<changes>[\s\S]*?<\/changes>/g;
+        const LINE_PATTERN = /<i>(\d+(?:\.\d+)?)<\/i>(?:<r>|<m>([\s\S]*?)<\/m>|<a>([\s\S]*?)<\/a>)/g;
+
         // If source file is empty (chunks is empty), just return the proposed changes directly
         if (chunks.length === 0) {
-            const proposedContent = content.replace(/<changes>[\s\S]*?<\/changes>/g, '').trim();
+            const proposedContent = content.replace(CHANGES_PATTERN, '').trim();
             return [proposedContent];
         }
 
-        // Convert chunks into tuple format [primary_index, secondary_index, content]
+        // Convert chunks into tuple format and create a fast lookup map
         type LineEntry = [number, number, string];
-        let lines: LineEntry[] = chunks.map((content, index) => [index, 0, content]);
+        const linesMap = new Map<string, number>();
+        let lines: LineEntry[] = chunks.map((content, index) => {
+            const entry: LineEntry = [index, 0, content];
+            linesMap.set(`${index}_0`, index);
+            return entry;
+        });
 
-        const changesMatches = content.match(/<changes>[\s\S]*?<\/changes>/g);
+        const changesMatches = content.match(CHANGES_PATTERN);
         if (changesMatches) {
+            // Pre-allocate array for better performance
+            const newLines: LineEntry[] = [];
+            
             changesMatches.forEach(match => {
                 // Process all changes
-                const lineMatches = match.matchAll(/<i>(\d+(?:\.\d+)?)<\/i>(?:<r>|<m>([\s\S]*?)<\/m>|<a>([\s\S]*?)<\/a>)/g);
+                const lineMatches = match.matchAll(LINE_PATTERN);
                 
                 for (const lineMatch of Array.from(lineMatches)) {
                     const lineNumberStr = lineMatch[1];
@@ -98,30 +110,29 @@ export class DiffManager {
                         continue;
                     }
 
+                    const key = `${primaryIndex}_${secondaryIndex}`;
+                    const existingIndex = linesMap.get(key);
+
                     if (addContent !== undefined) {
                         // Handle addition
+                        const newIndex = lines.length;
                         lines.push([primaryIndex, secondaryIndex, addContent]);
-                    } else if (modifyContent !== undefined) {
-                        // Handle modification - find and update the line
-                        const lineIndex = lines.findIndex(([p, s]) => p === primaryIndex && s === 0);
-                        if (lineIndex !== -1) {
-                            lines[lineIndex][2] = modifyContent;
-                        }
-                    } else {
-                        // Handle removal - find and remove the line
-                        const lineIndex = lines.findIndex(([p, s]) => p === primaryIndex && s === 0);
-                        if (lineIndex !== -1) {
-                            lines.splice(lineIndex, 1);
-                        }
+                        linesMap.set(key, newIndex);
+                    } else if (modifyContent !== undefined && existingIndex !== undefined) {
+                        // Handle modification
+                        lines[existingIndex][2] = modifyContent;
+                    } else if (existingIndex !== undefined) {
+                        // Handle removal
+                        lines[existingIndex] = [-1, -1, '']; // Mark for removal
+                        linesMap.delete(key);
                     }
                 }
-
-                // Sort lines by primary index then secondary index
-                lines.sort(([p1, s1], [p2, s2]) => {
-                    if (p1 !== p2) return p1 - p2;
-                    return s1 - s2;
-                });
             });
+
+            // Filter out removed lines and sort in one pass
+            lines = lines
+                .filter(([p]) => p !== -1)
+                .sort(([p1, s1], [p2, s2]) => (p1 === p2) ? s1 - s2 : p1 - p2);
         }
 
         progress.report({
