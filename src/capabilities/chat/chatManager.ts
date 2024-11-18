@@ -99,11 +99,6 @@ export class ChatManager {
 		}
 	}
 
-	public resetSession() {
-		this.sessionManager.saveSessions();
-		this.sessionManager.createNewSession();
-	}
-
 	public getChatSessions() {
 		return this.sessionManager.getChatSessions();
 	}

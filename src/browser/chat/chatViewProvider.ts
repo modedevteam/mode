@@ -29,7 +29,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 		this._setupContentProvider();
 		this._apiKeyManager = new ApiKeyManager(_extensionContext);
 		this._sessionManager = new SessionManager(_extensionContext);
-		this._diffManager = new DiffManager(this._outputChannel, this._apiKeyManager, this._sessionManager);
+		this._diffManager = new DiffManager(this._outputChannel, this._apiKeyManager);
 	}
 
 	private _setupContentProvider() {
@@ -267,7 +267,8 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 	}
 
 	public resetChatSession() {
-		this._chatManager?.resetSession(); // Call resetSession on the ChatService
+		this._sessionManager.saveSessions();
+		this._sessionManager.createNewSession();
 		this._view?.webview.postMessage({ command: 'clearChat' }); // Clear the chat in the webview
 	}
 

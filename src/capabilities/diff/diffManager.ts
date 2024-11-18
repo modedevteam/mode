@@ -9,17 +9,14 @@ import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
 import { DIFF_MESSAGES } from '../../common/user-messages/messages';
 import { ErrorMessages } from '../../common/user-messages/errorMessages';
 import { diffMergePrompt } from '../../common/llms/aiPrompts';
-import { FileChunker } from '../diff/fileChunker';
 import { getDiffProgressMessage } from '../../common/user-messages/messages';
-import { SessionManager } from '../../capabilities/chat/chatSessionManager';
 
 export class DiffManager {
     private _applyChangesButton?: vscode.StatusBarItem;
     private _diffEditor?: vscode.TextEditor;
     constructor(
         private readonly _outputChannel: vscode.OutputChannel,
-        private readonly _apiKeyManager: ApiKeyManager,
-        private readonly _sessionManager: SessionManager) {
+        private readonly _apiKeyManager: ApiKeyManager) {
     }
 
     private async setupAIClient(progress: vscode.Progress<{ message?: string; increment?: number }>) {
@@ -166,14 +163,6 @@ export class DiffManager {
                     onToken: () => {
                     },
                     onComplete: async (content: string) => {
-                        // save in the chat session as a diagnostic message
-                        this._sessionManager.getCurrentSession()?.messages.push({
-                            role: "assistant",
-                            content: content,
-                            name: "Mode.Diagnostics.Diff"
-                        });
-
-                        console.log("content", content);
                         const updatedChunks = await this.handleAIResponse(content, lines as string[], progress, progressMessage);
                         await fs.promises.truncate(tempFilePath, 0);
                         await fs.promises.writeFile(tempFilePath, updatedChunks.join('\n'));
