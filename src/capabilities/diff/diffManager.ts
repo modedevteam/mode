@@ -184,7 +184,7 @@ export class DiffManager {
                 // Prepare temp files (40-50%)
                 const { tempFilePath, tempUri } = await this.prepareTemporaryFiles(lines);
                 progress.report({ 
-                    message: getDiffProgressMessage('FINALIZING', 50),
+                    message: getDiffProgressMessage('AI_INIT', 50),
                     increment: 10 
                 });
 
