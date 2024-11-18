@@ -41,7 +41,7 @@
 		"cohere"
 	],
 	"engines": {
-		"vscode": "^1.74.0"
+		"vscode": "^1.95.0"
 	},
 	"categories": [
 		"Programming Languages",
