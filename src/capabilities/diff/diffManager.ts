@@ -26,7 +26,7 @@ export class DiffManager {
             throw new Error('No model configuration found');
         }
 
-        progress.report({ message: getDiffProgressMessage('AI_INIT'), increment: 10 });
+        progress.report({ message: getDiffProgressMessage('AI_INIT'), increment: 2.5 });
         const apiKey = await this._apiKeyManager.getApiKey(modelInfo.provider);
         if (!apiKey) {
             throw new Error(`No API key found for provider: ${modelInfo.provider}`);
@@ -63,21 +63,18 @@ export class DiffManager {
         progressMessage: string
     ) {
         progress.report({
-            message: `${progressMessage} 90%`,
-            increment: 10
+            message: `${progressMessage} 97.5%`,
+            increment: 2.5
         });
 
-        // Pre-compile regex patterns for better performance
         const CHANGES_PATTERN = /<changes>[\s\S]*?<\/changes>/g;
         const LINE_PATTERN = /<i>(\d+(?:\.\d+)?)<\/i>(?:<r>|<m>([\s\S]*?)<\/m>|<a>([\s\S]*?)<\/a>)/g;
 
-        // If source file is empty (chunks is empty), just return the proposed changes directly
         if (chunks.length === 0) {
             const proposedContent = content.replace(CHANGES_PATTERN, '').trim();
             return [proposedContent];
         }
 
-        // Convert chunks into tuple format and create a fast lookup map
         type LineEntry = [number, number, string];
         const linesMap = new Map<string, number>();
         let lines: LineEntry[] = chunks.map((content, index) => {
@@ -88,24 +85,21 @@ export class DiffManager {
 
         const changesMatches = content.match(CHANGES_PATTERN);
         if (changesMatches) {
-            // Pre-allocate array for better performance
             const newLines: LineEntry[] = [];
-            
+
             changesMatches.forEach(match => {
-                // Process all changes
                 const lineMatches = match.matchAll(LINE_PATTERN);
-                
+
                 for (const lineMatch of Array.from(lineMatches)) {
                     const lineNumberStr = lineMatch[1];
                     const modifyContent = lineMatch[2];
                     const addContent = lineMatch[3];
-                    
-                    // Parse line number and handle fractional parts
+
+                    // Adjust index to be zero-based
                     const [baseNum, fraction] = lineNumberStr.split('.');
-                    const primaryIndex = parseInt(baseNum, 10);
+                    const primaryIndex = parseInt(baseNum, 10) - 1;  // Decrement by 1
                     const secondaryIndex = fraction ? parseInt(fraction, 10) : 0;
-                    
-                    // Skip invalid line numbers
+
                     if (primaryIndex < 0 || primaryIndex >= chunks.length) {
                         continue;
                     }
@@ -114,35 +108,30 @@ export class DiffManager {
                     const existingIndex = linesMap.get(key);
 
                     if (addContent !== undefined) {
-                        // Handle addition
                         const newIndex = lines.length;
                         lines.push([primaryIndex, secondaryIndex, addContent]);
-                        linesMap.set(key, newIndex);
+                        linesMap.set(`${primaryIndex}_${secondaryIndex}`, newIndex);
                     } else if (modifyContent !== undefined && existingIndex !== undefined) {
-                        // Handle modification
                         lines[existingIndex][2] = modifyContent;
                     } else if (existingIndex !== undefined) {
-                        // Handle removal
                         lines[existingIndex] = [-1, -1, '']; // Mark for removal
                         linesMap.delete(key);
                     }
                 }
             });
 
-            // Filter out removed lines and sort in one pass
-            lines = lines
-                .filter(([p]) => p !== -1)
+            lines = lines.filter(([p]) => p !== -1)
                 .sort(([p1, s1], [p2, s2]) => (p1 === p2) ? s1 - s2 : p1 - p2);
         }
 
         progress.report({
             message: `${progressMessage} 100%`,
-            increment: 10
+            increment: 2.5
         });
 
-        // Convert back to simple array of strings
         return lines.map(([_, __, content]) => content);
     }
+
 
     private async prepareAIDiff(originalUri: vscode.Uri, proposedChanges: string): Promise<vscode.Uri | null> {
         return vscode.window.withProgress({
@@ -151,41 +140,41 @@ export class DiffManager {
             cancellable: false
         }, async (progress) => {
             try {
-                // Setup stage (0-20%)
-                progress.report({ 
+                // Setup stage (0-5%)
+                progress.report({
                     message: getDiffProgressMessage('SETUP', 0),
-                    increment: 10 
+                    increment: 2.5
                 });
                 const aiClient = await this.setupAIClient(progress);
-                progress.report({ 
-                    message: getDiffProgressMessage('SETUP', 20),
-                    increment: 10 
+                progress.report({
+                    message: getDiffProgressMessage('SETUP', 5),
+                    increment: 2.5
                 });
-                
-                // File processing stage (20-40%)
-                progress.report({ 
-                    message: getDiffProgressMessage('FILE_PROCESSING', 20),
-                    increment: 10 
+
+                // File processing stage (5-10%)
+                progress.report({
+                    message: getDiffProgressMessage('FILE_PROCESSING', 5),
+                    increment: 2.5
                 });
                 const fileContent = await vscode.workspace.fs.readFile(originalUri);
                 const lines = new TextDecoder().decode(fileContent).split('\n');
                 const fileName = originalUri.path.split('/').pop() || '';
                 const chunks = [
-                    `<fn>${fileName}</fn>`, 
-                    ...lines.map((content, index) => 
-                        `<i>${index}</i><v>${content}</v>`
+                    `<fn>${fileName}</fn>`,
+                    ...lines.map((content, index) =>
+                        `<i>${index + 1}</i><v>${content}</v>`
                     )
                 ];
-                progress.report({ 
-                    message: getDiffProgressMessage('FILE_PROCESSING', 40),
-                    increment: 10 
+                progress.report({
+                    message: getDiffProgressMessage('FILE_PROCESSING', 10),
+                    increment: 2.5
                 });
 
-                // Prepare temp files (40-50%)
+                // Prepare temp files (10-15%)
                 const { tempFilePath, tempUri } = await this.prepareTemporaryFiles(lines);
-                progress.report({ 
-                    message: getDiffProgressMessage('AI_INIT', 50),
-                    increment: 10 
+                progress.report({
+                    message: getDiffProgressMessage('AI_INIT', 15),
+                    increment: 5
                 });
 
                 await vscode.commands.executeCommand('vscode.diff',
@@ -195,7 +184,7 @@ export class DiffManager {
                     { preview: true }
                 );
 
-                // AI Processing stage (50-90%)
+                // AI Processing stage (15-95%)
                 const messages = this.createInitialMessages(chunks.join('\n'), proposedChanges);
                 let processedTokens = 0;
                 const estimatedTotalTokens = proposedChanges.length / 4; // Rough estimate
@@ -204,8 +193,8 @@ export class DiffManager {
                     onToken: () => {
                         processedTokens++;
                         if (processedTokens % 20 === 0) { // Update every 20 tokens
-                            const aiProgress = Math.min(90, 50 + (processedTokens / estimatedTotalTokens) * 40);
-                            progress.report({ 
+                            const aiProgress = Math.min(95, 15 + (processedTokens / estimatedTotalTokens) * 80);
+                            progress.report({
                                 message: getDiffProgressMessage('AI_PROCESSING', aiProgress),
                                 increment: 1
                             });
@@ -213,17 +202,17 @@ export class DiffManager {
                     },
                     onComplete: async (content: string) => {
                         console.log("Changes received", content);
-                        // Finalizing stage (90-100%)
-                        progress.report({ 
-                            message: getDiffProgressMessage('FINALIZING', 90),
-                            increment: 5 
+                        // Finalizing stage (95-100%)
+                        progress.report({
+                            message: getDiffProgressMessage('FINALIZING', 95),
+                            increment: 2.5
                         });
-                        const updatedChunks = await this.handleAIResponse(content, lines as string[], progress, getDiffProgressMessage('FINALIZING', 95));
+                        const updatedChunks = await this.handleAIResponse(content, lines as string[], progress, getDiffProgressMessage('FINALIZING', 97.5));
                         await fs.promises.truncate(tempFilePath, 0);
                         await fs.promises.writeFile(tempFilePath, updatedChunks.join('\n'));
-                        progress.report({ 
+                        progress.report({
                             message: getDiffProgressMessage('FINALIZING', 100),
-                            increment: 5 
+                            increment: 2.5
                         });
                     }
                 });
