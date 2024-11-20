@@ -29,7 +29,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 		this._setupContentProvider();
 		this._apiKeyManager = new ApiKeyManager(_extensionContext);
 		this._sessionManager = new SessionManager(_extensionContext);
-		this._diffManager = new DiffManager(this._outputChannel, this._apiKeyManager);
+		this._diffManager = new DiffManager(this._outputChannel, this._apiKeyManager, this._sessionManager);
 	}
 
 	private _setupContentProvider() {
@@ -81,7 +81,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 						this.showChatHistory();
 						break;
 					case 'showDiff':
-						this._handleShowDiff(message.code, message.fileUri);
+						this._handleShowDiff(message.code, message.fileUri, message.codeId);
 						break;
 					case 'manageApiKeys':
 						vscode.commands.executeCommand('mode.manageApiKeys');
@@ -325,8 +325,8 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 		return userMessage ? userMessage.content.toString() : '';
 	}
 
-	private async _handleShowDiff(rawCode: string, fileUri: string) {
-		await this._diffManager.showDiff(rawCode, fileUri);
+	private async _handleShowDiff(rawCode: string, fileUri: string, codeId: string) {
+		await this._diffManager.showDiff(rawCode, fileUri, codeId);
 	}
 
 	public clearModifiedContent(uri: vscode.Uri) {

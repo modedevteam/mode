@@ -658,10 +658,12 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                 if (codeContainer && codeContainer.classList.contains('chat-code-container')) {
                     const rawCode = codeContainer.textContent || '';
                     const fileUri = codeHeader?.querySelector('.file-uri')?.textContent || '';
+                    const codeId = codeHeader?.querySelector('.code-id')?.textContent || ''; // Extract code-id
                     vscode.postMessage({
                         command: 'showDiff',
                         code: rawCode,
-                        fileUri
+                        fileUri,
+                        codeId // Include code-id in the message
                     });
                 }
             }

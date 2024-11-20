@@ -64,7 +64,7 @@ export class ChatManager {
 			this._view,
 			this.aiClient!,
 			this.md,
-			this.sessionManager.getCurrentSession().messages
+			this.sessionManager
 		);
 		await this.currentHandler.handleMessage(outputChannel, message, images, codeSnippets, fileUrls, currentFile);
 		this.sessionManager.saveSessions();

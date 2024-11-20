@@ -5,14 +5,17 @@ import { v4 as uuidv4 } from 'uuid'; // Add this import for generating unique ID
 import { chatPrompt } from '../../common/llms/aiPrompts';
 import { AIMessage } from '../../common/llms/aiClient';
 
+export interface ChatSession {
+	id: string;
+	name: string;
+	systemTime: number;
+	messages: AIMessage[];
+	overview: string;
+	codeMap: { [guid: string]: string };
+}
+
 export class SessionManager {
-	private chatSessions: {
-		id: string;
-		name: string;
-		systemTime: number;
-		messages: AIMessage[];
-		overview: string;
-	}[] = [];
+	private chatSessions: ChatSession[] = [];
 	private currentSessionId: string | null = null;
 	private readonly STORAGE_FILE_NAME = 'mode_chat_sessions.json';
 
@@ -29,7 +32,8 @@ export class SessionManager {
 				role: "system" as const,
 				content: chatPrompt
 			}],
-			overview: "New Chat"
+			overview: "New Chat",
+			codeMap: {}
 		};
 		
 		// Create a fresh copy of the session
@@ -109,5 +113,44 @@ export class SessionManager {
 			return freshSession;
 		}
 		return session;
+	}
+
+	public setCodeMapEntry(sessionId: string, guid: string, codeText: string) {
+		const session = this.chatSessions.find(s => s.id === sessionId);
+		if (session) {
+			session.codeMap[guid] = codeText;
+			this.saveSessions();
+		}
+	}
+
+	public getCodeMapEntry(sessionId: string, guid: string): string | null {
+		const session = this.chatSessions.find(s => s.id === sessionId);
+		return session ? session.codeMap[guid] || null : null;
+	}
+
+	public extractAndSetCodeBlocks(sessionId: string, fullText: string, fileUrls: string[]) {
+		const codeChangesRegex = /{{code_changes}}([\s\S]*?){{\/code_changes}}/g;
+		const codeIdRegex = /{{ci}}(.*?){{\/ci}}/;
+		const filePathRegex = /{{fp}}(.*?){{\/fp}}/;
+
+		let codeChangesMatch;
+		while ((codeChangesMatch = codeChangesRegex.exec(fullText)) !== null) {
+			const codeChangesContent = codeChangesMatch[1];
+			const idMatch = codeIdRegex.exec(codeChangesContent);
+			const filePathMatch = filePathRegex.exec(codeChangesContent);
+
+			if (idMatch && filePathMatch) {
+				const guid = idMatch[1].trim();
+				const filePath = filePathMatch[1].trim();
+				const fileName = path.basename(filePath);
+
+				// Check if the file name is in the fileUrls
+				// only set the code map entry if the file is in the fileUrls array
+				if (fileUrls.some(url => path.basename(url) === fileName)) {
+					const codeText = codeChangesContent;
+					this.setCodeMapEntry(sessionId, guid, codeText);
+				}
+			}
+		}
 	}
 }

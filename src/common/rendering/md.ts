@@ -9,16 +9,17 @@ export function createMarkdownIt() {
                 try {
                     const lines = str.split('\n');
                     const { filename, fileUri } = detectFileNameUri(lines[0]);
-                    const codeContent = filename ? lines.slice(1).join('\n') : str;
+                    const codeId = lines[1] ? lines[1].trim() : '';
+                    const codeContent = filename ? lines.slice(2).join('\n') : str;
 
-                    // Escape HTML characters in the filename
+                    // Escape HTML characters in the filename and codeId
                     const escapedFilename = filename ? escapeHtml(filename) : '';
-
                     const highlightedCode = hljs.highlight(codeContent, { language: lang }).value;
                     
                     const codeHeaderDiv = `<div class="chat-code-header">
                         ${escapedFilename ? `<div class="filename">${escapedFilename}</div>
-                        <div class="file-uri hidden">${fileUri}</div>` : ''}
+                        <div class="file-uri hidden">${fileUri}</div>
+                        <div class="code-id hidden">${codeId}</div>` : ''}
                         <div class="buttons">
                             <button id="copy-code-button" class="icon-button" title="Copy"><i class="codicon codicon-copy"></i></button>
                             <button id="merge-button" class="icon-button" title="Apply with AI"><i class="codicon codicon-sparkle-filled"></i></button>

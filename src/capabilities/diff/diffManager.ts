@@ -10,13 +10,16 @@ import { DIFF_MESSAGES } from '../../common/user-messages/messages';
 import { ErrorMessages } from '../../common/user-messages/errorMessages';
 import { diffMergePrompt } from '../../common/llms/aiPrompts';
 import { getDiffProgressMessage } from '../../common/user-messages/messages';
+import { SessionManager } from '../chat/chatSessionManager';
 
 export class DiffManager {
     private _applyChangesButton?: vscode.StatusBarItem;
     private _diffEditor?: vscode.TextEditor;
     constructor(
         private readonly _outputChannel: vscode.OutputChannel,
-        private readonly _apiKeyManager: ApiKeyManager) {
+        private readonly _apiKeyManager: ApiKeyManager,
+        private readonly _sessionManager: SessionManager
+    ) {
     }
 
     private async setupAIClient(progress: vscode.Progress<{ message?: string; increment?: number }>) {
@@ -57,7 +60,7 @@ export class DiffManager {
     }
 
     private async handleAIResponse(
-        content: string,
+        proposedChanges: string,
         chunks: string[],
         progress: vscode.Progress<{ message?: string; increment?: number }>,
         progressMessage: string
@@ -67,12 +70,12 @@ export class DiffManager {
             increment: 2.5
         });
 
-        const CHANGES_PATTERN = /<changes>[\s\S]*?<\/changes>/g;
-        const LINE_PATTERN = /<i>(\d+(?:\.\d+)?)<\/i>(?:<r>|<m>([\s\S]*?)<\/m>|<a>([\s\S]*?)<\/a>)/g;
+        console.log("proposedChanges", proposedChanges);
+
+        const LINE_PATTERN = /{{i}}(\d+(?:\.\d+)?){{\/i}}(?:{{r}}|{{m}}([\s\S]*?){{\/m}}|{{a}}([\s\S]*?){{\/a}}|{{c}}([\s\S]*?){{\/c}})/g;
 
         if (chunks.length === 0) {
-            const proposedContent = content.replace(CHANGES_PATTERN, '').trim();
-            return [proposedContent];
+            return [proposedChanges.trim()];
         }
 
         type LineEntry = [number, number, string];
@@ -83,57 +86,57 @@ export class DiffManager {
             return entry;
         });
 
-        const changesMatches = content.match(CHANGES_PATTERN);
-        if (changesMatches) {
-            const newLines: LineEntry[] = [];
+        const lineMatches = proposedChanges.matchAll(LINE_PATTERN);
+        for (const lineMatch of Array.from(lineMatches)) {
+            const lineNumberStr = lineMatch[1];
+            const modifyContent = lineMatch[2];
+            const addContent = lineMatch[3];
+            const existingContent = lineMatch[4];
 
-            changesMatches.forEach(match => {
-                const lineMatches = match.matchAll(LINE_PATTERN);
+            // Adjust index to be zero-based
+            const [baseNum, fraction] = lineNumberStr.split('.');
+            const primaryIndex = parseInt(baseNum, 10) - 1;  // Decrement by 1
+            const secondaryIndex = fraction ? parseInt(fraction, 10) : 0;
 
-                for (const lineMatch of Array.from(lineMatches)) {
-                    const lineNumberStr = lineMatch[1];
-                    const modifyContent = lineMatch[2];
-                    const addContent = lineMatch[3];
+            if (primaryIndex < 0 || primaryIndex >= chunks.length) {
+                continue;
+            }
 
-                    // Adjust index to be zero-based
-                    const [baseNum, fraction] = lineNumberStr.split('.');
-                    const primaryIndex = parseInt(baseNum, 10) - 1;  // Decrement by 1
-                    const secondaryIndex = fraction ? parseInt(fraction, 10) : 0;
+            const key = `${primaryIndex}_${secondaryIndex}`;
+            const existingIndex = linesMap.get(key);
 
-                    if (primaryIndex < 0 || primaryIndex >= chunks.length) {
-                        continue;
-                    }
-
-                    const key = `${primaryIndex}_${secondaryIndex}`;
-                    const existingIndex = linesMap.get(key);
-
-                    if (addContent !== undefined) {
-                        const newIndex = lines.length;
-                        lines.push([primaryIndex, secondaryIndex, addContent]);
-                        linesMap.set(`${primaryIndex}_${secondaryIndex}`, newIndex);
-                    } else if (modifyContent !== undefined && existingIndex !== undefined) {
-                        lines[existingIndex][2] = modifyContent;
-                    } else if (existingIndex !== undefined) {
-                        lines[existingIndex] = [-1, -1, '']; // Mark for removal
-                        linesMap.delete(key);
-                    }
-                }
-            });
-
-            lines = lines.filter(([p]) => p !== -1)
-                .sort(([p1, s1], [p2, s2]) => (p1 === p2) ? s1 - s2 : p1 - p2);
+            if (addContent !== undefined) {
+                const newIndex = lines.length;
+                lines.push([primaryIndex, secondaryIndex, addContent]);
+                linesMap.set(`${primaryIndex}_${secondaryIndex}`, newIndex);
+            } else if (modifyContent !== undefined && existingIndex !== undefined) {
+                lines[existingIndex][2] = modifyContent;
+            } else if (existingContent !== undefined && existingIndex !== undefined) {
+                lines[existingIndex][2] = existingContent;
+            } else if (existingIndex !== undefined) {
+                lines[existingIndex] = [-1, -1, '']; // Mark for removal
+                linesMap.delete(key);
+            }
         }
+
+        console.log("linesMap");
+        // Print the linesMap in the specified format
+        lines.forEach(([primaryIndex, secondaryIndex, content]) => {
+            const lineIndex = secondaryIndex > 0 ? `${primaryIndex + 1}.${secondaryIndex}` : `${primaryIndex + 1}`;
+            console.log(`{{i}}${lineIndex}{{/i}}{{v}}${content}{{/v}}`);
+        });
+
+        lines = lines.filter(([p]) => p !== -1)
+            .sort(([p1, s1], [p2, s2]) => (p1 === p2) ? s1 - s2 : p1 - p2);
 
         progress.report({
             message: `${progressMessage} 100%`,
             increment: 2.5
         });
-
         return lines.map(([_, __, content]) => content);
     }
 
-
-    private async prepareAIDiff(originalUri: vscode.Uri, proposedChanges: string): Promise<vscode.Uri | null> {
+    private async prepareAIDiff(originalUri: vscode.Uri, proposedChanges: string, pregeneratedChanges: boolean = false): Promise<vscode.Uri | null> {
         return vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             title: DIFF_MESSAGES.PROGRESS_TITLE,
@@ -177,45 +180,49 @@ export class DiffManager {
                     increment: 5
                 });
 
-                await vscode.commands.executeCommand('vscode.diff',
-                    originalUri,
-                    tempUri,
-                    `Changes for ${path.basename(originalUri.fsPath)}`,
-                    { preview: true }
-                );
-
                 // AI Processing stage (15-95%)
-                const messages = this.createInitialMessages(chunks.join('\n'), proposedChanges);
-                let processedTokens = 0;
-                const estimatedTotalTokens = proposedChanges.length / 4; // Rough estimate
+                if (pregeneratedChanges) {
+                    // skip the AI processing stage
+                    const updatedChunks = await this.handleAIResponse(proposedChanges, lines as string[], progress, getDiffProgressMessage('FINALIZING', 97.5));
+                    await fs.promises.truncate(tempFilePath, 0);
+                    await fs.promises.writeFile(tempFilePath, updatedChunks.join('\n'));
+                    progress.report({
+                        message: getDiffProgressMessage('FINALIZING', 100),
+                        increment: 2.5
+                    });
+                } else {
+                    const messages = this.createInitialMessages(chunks.join('\n'), proposedChanges);
+                    let processedTokens = 0;
+                    const estimatedTotalTokens = proposedChanges.length / 4; // Rough estimate
 
-                await aiClient.chat(this._outputChannel, messages, {
-                    onToken: () => {
-                        processedTokens++;
-                        if (processedTokens % 20 === 0) { // Update every 20 tokens
-                            const aiProgress = Math.min(95, 15 + (processedTokens / estimatedTotalTokens) * 80);
+                    await aiClient.chat(this._outputChannel, messages, {
+                        onToken: () => {
+                            processedTokens++;
+                            if (processedTokens % 20 === 0) { // Update every 20 tokens
+                                const aiProgress = Math.min(95, 15 + (processedTokens / estimatedTotalTokens) * 80);
+                                progress.report({
+                                    message: getDiffProgressMessage('AI_PROCESSING', aiProgress),
+                                    increment: 1
+                                });
+                            }
+                        },
+                        onComplete: async (content: string) => {
+                            console.log("Changes received", content);
+                            // Finalizing stage (95-100%)
                             progress.report({
-                                message: getDiffProgressMessage('AI_PROCESSING', aiProgress),
-                                increment: 1
+                                message: getDiffProgressMessage('FINALIZING', 95),
+                                increment: 2.5
+                            });
+                            const updatedChunks = await this.handleAIResponse(content, lines as string[], progress, getDiffProgressMessage('FINALIZING', 97.5));
+                            await fs.promises.truncate(tempFilePath, 0);
+                            await fs.promises.writeFile(tempFilePath, updatedChunks.join('\n'));
+                            progress.report({
+                                message: getDiffProgressMessage('FINALIZING', 100),
+                                increment: 2.5
                             });
                         }
-                    },
-                    onComplete: async (content: string) => {
-                        console.log("Changes received", content);
-                        // Finalizing stage (95-100%)
-                        progress.report({
-                            message: getDiffProgressMessage('FINALIZING', 95),
-                            increment: 2.5
-                        });
-                        const updatedChunks = await this.handleAIResponse(content, lines as string[], progress, getDiffProgressMessage('FINALIZING', 97.5));
-                        await fs.promises.truncate(tempFilePath, 0);
-                        await fs.promises.writeFile(tempFilePath, updatedChunks.join('\n'));
-                        progress.report({
-                            message: getDiffProgressMessage('FINALIZING', 100),
-                            increment: 2.5
-                        });
-                    }
-                });
+                    });
+                }
 
                 return tempUri;
             } catch (error) {
@@ -226,7 +233,7 @@ export class DiffManager {
         });
     }
 
-    async showDiff(rawCode: string, fileUri: string) {
+    async showDiff(rawCode: string, fileUri: string, codeId: string) {
         // Remove any existing "Apply Changes" button and open diff
         this.removeExistingDiffs();
 
@@ -235,7 +242,12 @@ export class DiffManager {
             return; // Abort if no file was resolved
         }
 
-        const modifiedUri = await this.prepareAIDiff(originalUri, rawCode);
+        let modifiedUri: vscode.Uri | null;
+
+        const proposedChanges = codeId ? this._sessionManager.getCurrentSession().codeMap[codeId] : rawCode;
+        const usePregeneratedChanges = !!(codeId && proposedChanges && proposedChanges.trim() !== '');
+        modifiedUri = await this.prepareAIDiff(originalUri, proposedChanges || '', usePregeneratedChanges);
+
         // Return early if user cancelled the merge operation
         if (!modifiedUri) {
             return;

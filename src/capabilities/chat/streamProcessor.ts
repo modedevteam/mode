@@ -9,8 +9,11 @@ export class StreamProcessor {
 	private currentLanguage = '';
 	private buffer = '';
 	private renderedContent = '';
-	private isExpectingFilename = false;
+	private isExpectingFilePath = false;
 	private isInCodeAnalysis = false;
+	private isInChangeAnalysis = false;
+	private tempFilePath: string | null = null;
+	private isExpectingLanguage = false;
 
 	constructor(
 		private readonly _view: vscode.WebviewView,
@@ -30,60 +33,108 @@ export class StreamProcessor {
 	}
 
 	private processLine(line: string): void {
-		if (line.includes('<code_analysis>')) {
+
+		// Ignore lines within {{cl}} blocks
+		if (line.includes('{{cl}}') || line.includes('{{/cl}}')) {
+			return;
+		}
+
+		// Start and end {{code_analysis}} blocks
+		if (line.includes('{{code_analysis}}')) {
 			this.isInCodeAnalysis = true;
 			return;
 		}
-		if (line.includes('</code_analysis>')) {
+
+		// End {{code_analysis}} blocks
+		if (line.includes('{{/code_analysis}}')) {
 			this.isInCodeAnalysis = false;
 			return;
 		}
-		
-		if (this.isInCodeAnalysis) {
+
+		// Start and end {{change_analysis}} blocks
+		if (line.includes('{{change_analysis}}')) {
+			this.isInChangeAnalysis = true;
 			return;
 		}
 
-		if (this.isExpectingFilename) {
-			const { filename, fileUri } = detectFileNameUri(line);
+		// End {{change_analysis}} blocks
+		if (line.includes('{{/change_analysis}}')) {
+			this.isInChangeAnalysis = false;
+			return;
+		}
 
-			// Signal the start of the code block
-			this._view.webview.postMessage({
-				command: 'chatStream',
-				action: 'startCodeBlock',
-				language: this.currentLanguage,
-				filename: filename || undefined,  	// Use detected filename or undefined if not found
-				fileUri: fileUri || undefined  		// Use detected file URI or undefined if not found
-			});
+		// Start and end {{code_changes}} blocks
+		if (line.includes('{{code_changes}}')) {
+			this.isInCodeBlock = true;
+			this.isExpectingFilePath = true;
+			return;
+		}
 
-			// Reset the flag
-			this.isExpectingFilename = false;
+		// End {{code_changes}} blocks
+		if (line.includes('{{/code_changes}}')) {
+			this.isInCodeBlock = false;
+			this._view.webview.postMessage({ command: 'chatStream', action: 'endCodeBlock' });
+			return;
+		}
 
-			// If we got a filename, we don't need to process the line as code
-			if (filename) {
+		// Ignore lines within {{code_analysis}} or {{change_analysis}} blocks
+		if (this.isInCodeAnalysis || this.isInChangeAnalysis) {
+			return;
+		}
+
+		// Extract file path from {{fp}} tag
+		if (this.isExpectingFilePath) {
+			const fpMatch = line.match(/{{fp}}(.*?){{\/fp}}/);
+			if (fpMatch) {
+				this.tempFilePath = fpMatch[1];
+				this.isExpectingFilePath = false;
+				this.isExpectingLanguage = true; // Now expect the language
 				return;
 			}
 		}
 
-		if (line.trim().startsWith('```')) {
-			this.handleCodeBlockDelimiter(line);
-		} else if (this.isInCodeBlock) {
-			this.processCodeLine(line);
-		} else {
-			this.processMarkdownLine(line);
+		// Extract language from {{l}} tag
+		if (this.isExpectingLanguage) {
+			const langMatch = line.match(/{{l}}(.*?){{\/l}}/);
+			if (langMatch && this.tempFilePath) {
+				const language = langMatch[1];
+				const { filename, fileUri } = detectFileNameUri(this.tempFilePath);
+
+				// Set the current language
+				this.currentLanguage = language || '';
+
+				// Signal the start of the code block
+				this._view.webview.postMessage({
+					command: 'chatStream',
+					action: 'startCodeBlock',
+					language: language || undefined,  	// Use detected language or undefined if not found
+					filename: filename || undefined,  	// Use detected filename or undefined if not found
+					fileUri: fileUri || undefined  		// Use detected file URI or undefined if not found
+				});
+
+				// Reset the temporary file path and language expectation
+				this.tempFilePath = null;
+				this.isExpectingLanguage = false;
+				return;
+			}
 		}
-	}
 
-	private handleCodeBlockDelimiter(line: string): void {
-		this.isInCodeBlock = !this.isInCodeBlock;
+		// Process lines within {{code_changes}} blocks
 		if (this.isInCodeBlock) {
-			// Signal that we're expecting a filename on the next line
-			this.isExpectingFilename = true;
+			// Process only lines with {{a}} or {{m}} tags
+			const addMatch = line.match(/{{a}}(.*?){{\/a}}/);
+			const modMatch = line.match(/{{m}}(.*?){{\/m}}/);
+			const contextMatch = line.match(/{{c}}(.*?){{\/c}}/);
 
-			// Set the current language, the code block will started after we get the filename
-			this.currentLanguage = line.substring(3).trim();
+			if (addMatch || modMatch || contextMatch) {
+				const codeContent = addMatch?.[1] || modMatch?.[1] || contextMatch?.[1];
+				if (codeContent) {
+					this.processCodeLine(codeContent);
+				}
+			}
 		} else {
-			this._view.webview.postMessage({ command: 'chatStream', action: 'endCodeBlock' });
-			this.currentLanguage = '';
+			// Process lines outside {{code_changes}} blocks
+			this.processMarkdownLine(line);
 		}
 	}
 

@@ -1,22 +1,25 @@
 import * as vscode from 'vscode';
 import { AIMessage } from '../../common/llms/aiClient';
 import MarkdownIt = require('markdown-it');
-import * as fs from 'fs';
 import { StreamProcessor } from './streamProcessor';
 import { AIClient } from '../../common/llms/aiClient';
+import { formatFileContent, processLLMOutput } from '../../common/rendering/llmTranslationUtils';
+import { SessionManager } from './chatSessionManager';
 
 // New class to handle message processing
 export class MessageHandler {
 	private streamProcessor: StreamProcessor;
 	private isCancelled = false;
+	private sessionManager: SessionManager;
 
 	constructor(
 		private readonly _view: vscode.WebviewView,
 		private readonly aiClient: AIClient | null,
 		private readonly md: MarkdownIt,
-		private readonly chatSession: AIMessage[]
+		sessionManager: SessionManager
 	) {
 		this.streamProcessor = new StreamProcessor(_view, md);
+		this.sessionManager = sessionManager;
 	}
 
 	public stopGeneration() {
@@ -30,17 +33,20 @@ export class MessageHandler {
 		images: { id: string; data: string; fileName?: string }[],
 		codeSnippets: { fileName: string; range: string; code: string }[] = [],
 		fileUrls: string[] = [],
-		currentFile: string | null = null
+		currentFilePath: string | null = null
 	): Promise<void> {
 		try {
 			this.isCancelled = false;
 
-			// Add the user message, the system message was previously added in chatSessionManager.ts
-			this.chatSession.push({ role: "user", content: message, name: "Mode" });
+			// Access messages from sessionManager
+			const messages = this.sessionManager.getCurrentSession().messages;
+
+			// Add the user message
+			messages.push({ role: "user", content: message, name: "Mode" });
 
 			// Add each image as a separate message
 			images.forEach(image => {
-				this.chatSession.push({
+				messages.push({
 					role: "user",
 					content: image.data,
 					type: 'image'
@@ -49,48 +55,34 @@ export class MessageHandler {
 
 			// Add each code snippet as a separate message
 			codeSnippets.forEach(snippet => {
-				this.chatSession.push({
+				messages.push({
 					role: "user",
-					content: `File: ${snippet.fileName} (${snippet.range})\n\n${snippet.code}`
+					content: `{{Code Snippet}}${snippet.fileName} (${snippet.range})\n\n${snippet.code}{{/Code Snippet}}`
 				});
 			});
 
 			// Add current file as a separate message
-			if (currentFile) {
-				this.chatSession.push({
+			if (currentFilePath) {
+				messages.push({
 					role: "user",
-					content: `Current File: ${currentFile}`
+					content: `{{Current File Path}}${currentFilePath}{{/Current File Path}}`
 				});
 			}
 
-			// Add each file URL as a separate message with its content, symbols, and URI
+			// Format the file contents
 			for (const fileUrl of fileUrls) {
-				// Convert the file URL to a path using vscode.Uri
-				const uri = vscode.Uri.parse(fileUrl);
-				const filePath = uri.fsPath;
-
-				// Check if the document is open and get its content including unsaved changes
-				const openDocument = vscode.workspace.textDocuments.find(doc => doc.uri.toString() === uri.toString());
-				const fileContent = openDocument ? openDocument.getText() : fs.readFileSync(filePath, 'utf-8');
-
-				// Get document symbols
-				const symbols = await vscode.commands.executeCommand<vscode.SymbolInformation[]>('vscode.executeDocumentSymbolProvider', uri);
-
-				// Format symbols as a string
-				const symbolsString = symbols?.map(symbol =>
-					`${symbol.kind}: ${symbol.name} (${symbol.location.range.start.line}-${symbol.location.range.end.line})`
-				).join('\n') || 'No symbols found';
-
-				this.chatSession.push({
+				const formattedFileContent = (await formatFileContent(fileUrl)).join('\n');
+				console.log("file content", formattedFileContent);
+				messages.push({
 					role: "user",
-					content: `File URL: ${fileUrl}\nURI: ${uri.toString()}\n\nSymbols:\n${symbolsString}\n\nContent:\n${fileContent}`
+					content: formattedFileContent
 				});
 			}
 
 			// call LLM provider and stream the response
 			let finalRenderedContent = '';
 			let isFirstToken = true;
-			await this.aiClient!.chat(outputChannel, this.chatSession as AIMessage[], {
+			await this.aiClient!.chat(outputChannel, messages as AIMessage[], {
 				onToken: (token) => {
 					if (this.isCancelled) {
 						return;
@@ -108,21 +100,25 @@ export class MessageHandler {
 					}
 
 					// save the fullText for diagnostic purposes
-					this.chatSession.push({
+					this.sessionManager.getCurrentSession().messages.push({
 						role: "assistant",
 						content: fullText,
 						name: "Mode.Diagnostics.Chat"
 					});
 
-					// Remove code_analysis blocks before rendering
-					const processedText = fullText.replace(/<code_analysis>[\s\S]*?<\/code_analysis>/g, '');
-					finalRenderedContent = this.md.render(processedText);
+					// Extract and set code blocks in the session manager
+					const sessionId = this.sessionManager.getCurrentSessionId();
+					this.sessionManager.extractAndSetCodeBlocks(sessionId!, fullText, fileUrls);
+
+					// process the LLM output to format the code changes
+					const processedTextWithCodeChanges = processLLMOutput(fullText);
+					finalRenderedContent = this.md.render(processedTextWithCodeChanges);
 				}
 			});
 
 			// Save the rendered content to the chat session
 			if (!this.isCancelled) {
-				this.chatSession.push({
+				this.sessionManager.getCurrentSession().messages.push({
 					role: "assistant",
 					content: finalRenderedContent,
 					name: "Mode"
