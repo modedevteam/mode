@@ -7,11 +7,11 @@
 
 Mode is the first personal AI code copilot that connects directly to your favorite language models. Harness the full power of AI assistants without the risks of third-party servers and the hassles of token limits and upgrade fees.
 
-### 🌟🌟 Weekly Launch Highlight 🌟🌟
+### 🌟🌟 Weekly Highlight 🌟🌟
 
-You can now add files and images as context just by @-mentioning them without breaking your flow.
+Merge is now faster and more accurate!
 
-![Mention](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/AtMentionContext.gif)
+![Merge](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/FastMerge.gif)
 
 ## Why Mode?
 

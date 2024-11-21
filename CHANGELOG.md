@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.8] - 2024-11-21
+### Added
+* Merge is now faster and more accurate
+* Option to copy a previous question
+
 ## [1.0.7] - 2024-11-15
 ### Added
 * Users can now configure their own models
