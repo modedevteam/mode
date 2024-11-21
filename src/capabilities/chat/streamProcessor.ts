@@ -22,7 +22,7 @@ export class StreamProcessor {
 
 	public async processToken(token: string): Promise<void> {
 		this.buffer += token;
-		
+
 		// Process complete lines if we have any
 		while (this.buffer.includes('\n')) {
 			const newlineIndex = this.buffer.indexOf('\n');
@@ -139,7 +139,7 @@ export class StreamProcessor {
 	}
 
 	private processCodeLine(line: string): void {
-		const formattedContent = hljs.highlight(line, { language: this.currentLanguage }).value + '<br>';
+		const formattedContent = hljs.highlight(line.replace(/\t/g, '    '), { language: this.currentLanguage }).value + '<br>';
 		this._view.webview.postMessage({ command: 'chatStream', action: 'addCodeWord', word: formattedContent });
 	}
 

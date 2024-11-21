@@ -5,7 +5,8 @@ export function processLLMOutput(text: string): string {
 	// Remove code_analysis blocks before rendering
 	const processedText = text
 		.replace(/{{code_analysis}}[\s\S]*?{{\/code_analysis}}/g, '')
-		.replace(/{{change_analysis}}[\s\S]*?{{\/change_analysis}}/g, '');
+		.replace(/{{change_analysis}}[\s\S]*?{{\/change_analysis}}/g, '')
+		.replace(/\t/g, '    ');
 	
 	const codeChangesRegex = /{{code_changes}}([\s\S]*?){{\/code_changes}}/g;
 	return processedText.replace(codeChangesRegex, (codeBlock) => {
