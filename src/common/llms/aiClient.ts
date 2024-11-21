@@ -166,12 +166,12 @@ export class AIClient {
         const response = await this.openaiClient.chat.completions.create({
             model: this.model,
             messages: messages.map(msg => ({
-                role: msg.role,
+                role: this.model.startsWith('o1') && msg.role === 'system' ? 'user' : msg.role,
                 content: typeof msg.content === 'string' && msg.content.startsWith('data:image')
                     ? AIClient.formatImageContent('openai', msg.content)
                     : msg.content
             })),
-            max_tokens: 4096,
+            [this.model.startsWith('o1') ? 'max_completion_tokens' : 'max_tokens']: 4096,
             stream: true
         }) as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.9] - 2024-11-21
+### Added
+* Client upgrades to support OpenAI o1 models
+
 ## [1.0.8] - 2024-11-21
 ### Added
 * Merge is now faster and more accurate
