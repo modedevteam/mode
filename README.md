@@ -1,6 +1,6 @@
 ![GitHub issues](https://img.shields.io/github/issues/modedevteam/mode-community)
 ![Follow](https://img.shields.io/twitter/follow/modedevteam?style=social)
-[![Join our Discord](https://img.shields.io/badge/Join%20us%20on-Discord-7289DA?logo=discord&logoColor=white)](https://discord.gg/XHxbjcRM)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Us-blue)](https://discord.gg/CrBwcSEE)
 ![Early Access](https://img.shields.io/badge/status-early%20access-007FFF)
 
 # Mode
