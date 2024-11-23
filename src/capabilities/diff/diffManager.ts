@@ -72,7 +72,7 @@ export class DiffManager {
 
         console.log("proposedChanges", proposedChanges);
 
-        const LINE_PATTERN = /{{i}}(\d+(?:\.\d+)?){{\/i}}(?:{{r}}|{{m}}([\s\S]*?){{\/m}}|{{a}}([\s\S]*?){{\/a}}|{{c}}([\s\S]*?){{\/c}})/g;
+        const LINE_PATTERN = /{{i}}(\d+(?:\.\d+)?){{\/i}}(?:{{r}}|{{m}}([\s\S]*?){{\/m}}|{{a}}([\s\S]*?){{\/a}})/g;
 
         if (chunks.length === 0) {
             return [proposedChanges.trim()];
@@ -91,7 +91,6 @@ export class DiffManager {
             const lineNumberStr = lineMatch[1];
             const modifyContent = lineMatch[2];
             const addContent = lineMatch[3];
-            const existingContent = lineMatch[4];
 
             // Adjust index to be zero-based
             const [baseNum, fraction] = lineNumberStr.split('.');
@@ -111,8 +110,6 @@ export class DiffManager {
                 linesMap.set(`${primaryIndex}_${secondaryIndex}`, newIndex);
             } else if (modifyContent !== undefined && existingIndex !== undefined) {
                 lines[existingIndex][2] = modifyContent;
-            } else if (existingContent !== undefined && existingIndex !== undefined) {
-                lines[existingIndex][2] = existingContent;
             } else if (existingIndex !== undefined) {
                 lines[existingIndex] = [-1, -1, '']; // Mark for removal
                 linesMap.delete(key);

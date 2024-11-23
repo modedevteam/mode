@@ -50,7 +50,6 @@ Guidelines:
 - Do not return your response in HTML format
 - Consider edge cases and best practices 
 - Include error handling
-- Document complex logic
 - Provide actionable responses
 
 1. Brief Explanation
@@ -79,10 +78,7 @@ Guidelines:
    {{fp}}/path/to/file.ts{{/fp}}
    {{ci}}block_[timestamp]_[hash]{{/ci}}
    {{l}}typescript{{/l}}
-   {{i}}[line number]{{/i}}{{c}}[context line, unchanged code]{{/c}}
-   {{i}}[line number]{{/i}}{{r}}
-   {{i}}[line number]{{/i}}{{m}}[modified line]{{/m}}
-   {{i}}[line number.increment]{{/i}}{{a}}[new line]{{/a}}
+   {{i}}[line number]{{/i}}{{c}}[context line with original indentation]{{/c}}
    {{/code_changes}}
 
    Code Identifier Rules:
@@ -92,76 +88,82 @@ Guidelines:
    - Example: block_1679529600_8f4e2d1c
 
    Line Number Rules:
-   - Use exact original file line numbers
-   - For context: {{i}}X{{/i}}{{c}}code{{/c}} shows unchanged surrounding code
-   - For removals: {{i}}X{{/i}}{{r}} removes line X
-   - For changes: {{i}}X{{/i}}{{m}}new code{{/m}} modifies line X
-   - For additions: {{i}}X.Y{{/i}}{{a}}new code{{/a}} adds after line X
-   - Use .1, .2, etc. for multiple additions after the same line
-   - Line operations can be in any order
+   1. General Rules:
+      - Each line number MUST be unique - never reuse a number
+      - Maintain strict numerical order including decimals
+      - Never use {{v}} tags in output (only used in input)
+      - Preserve exact indentation from original file
+      
+   2. Line Operations:
+      - Context (unchanged): {{c}} with exact original line number and original indentation
+      - Modifications: {{m}} with exact original line number and original indentation
+      - Removals: {{r}} with exact original line number
+      - Insertions before line N: Use (N-1).1, (N-1).2, etc. with {{a}}, matching indentation of context
+      - Insertions after line N: Use N.1, N.2, etc. with {{a}}, matching indentation of context
+
+   3. Critical Rules:
+      - NEVER modify the same line number twice
+      - NEVER use decimals for existing line numbers
+      - ALWAYS maintain numerical order
+      - ALWAYS use {{c}} for context lines
+      - NEVER skip steps in decimal progression (.1, .2, .3...)
+      
+   4. Indentation Rules:
+      - ALWAYS copy exact indentation style from original file (spaces vs tabs)
+      - ALWAYS preserve exact number of tabs/spaces from original
+      - For new lines, match indentation of surrounding context exactly
+      - For comments, align with the line they document
+      - For block comments, align asterisks vertically
+      - For nested blocks, maintain same indent depth as sibling lines
+      - When adding new blocks, indent one level deeper than parent
+      - Never mix tabs and spaces unless original file does
+      - When in doubt, count the exact spaces/tabs from similar lines nearby
 
 Example Response:
 
 User: "Add error handling to this function"
-{{Code Snippet}}process.ts (lines 3-8)
-async function processData() {
-  const result = await fetch(url);
-  return result.json();
-}{{/Code Snippet}}
-
-{{code_analysis}}
-1. Current Structure:
-   - Simple async function
-   - Direct fetch call
-   - No error handling
-
-2. Required Changes:
-   - Add try/catch block
-   - Include error logging
-   - Proper error propagation
-
-3. Impact:
-   - Improved reliability
-   - Better debugging
-   - Clearer error messages
-
-4. Implementation Plan:
-   - Wrap existing code in try
-   - Add catch with logging
-   - Throw typed error
-{{/code_analysis}}
-
-{{change_analysis}}
-1. Context needed around function
-2. Modify function opening for try block
-3. Keep fetch and return statements
-4. Add catch block after return
-5. Include comprehensive error handling
-{{/change_analysis}}
 
 {{code_changes}}
 {{fp}}/src/utils/process.ts{{/fp}}
-{{ci}}block_1700432156_a7b3c9d8{{/ci}}
+{{ci}}block_1700432157_b8c4d9e0{{/ci}}
 {{l}}typescript{{/l}}
-{{i}}2{{/i}}{{c}}// Handle external API data processing{{/c}}
-{{i}}3{{/i}}{{m}}async function processData() {{{/m}}
-{{i}}3.1{{/i}}{{a}}  try {{{/a}}
-{{i}}4{{/i}}{{c}}  const result = await fetch(url);{{/c}}
-{{i}}5{{/i}}{{c}}  return result.json();{{/c}}
-{{i}}8.1{{/i}}{{a}}  } catch (error) {{{/a}}
-{{i}}8.2{{/i}}{{a}}    console.error('Data processing failed:', error);{{/a}}
-{{i}}8.3{{/i}}{{a}}    throw new ProcessingError('Failed to process data', { cause: error });{{/a}}
-{{i}}8.4{{/i}}{{a}}  }{{/a}}
-{{i}}9{{/i}}{{c}}}{{/c}}
+{{i}}4{{/i}}{{c}}    const config = require('./config');{{/c}}
+{{i}}4.1{{/i}}{{a}}    import { ProcessingError } from './errors';{{/a}}
+{{i}}4.2{{/i}}{{a}}    import { validateInput } from './validation';{{/a}}
+{{i}}5{{/i}}{{c}}    {{/c}}
+{{i}}5.1{{/i}}{{a}}    /**{{/a}}
+{{i}}5.2{{/i}}{{a}}     * Processes data with error handling and validation{{/a}}
+{{i}}5.3{{/i}}{{a}}     */{{/a}}
+{{i}}6{{/i}}{{m}}    async function processData(input: string) {{{/m}}
+{{i}}6.1{{/i}}{{a}}        try {{{/a}}
+{{i}}6.2{{/i}}{{a}}            // Validate input before processing{{/a}}
+{{i}}6.3{{/i}}{{a}}            validateInput(input);{{/a}}
+{{i}}7{{/i}}{{c}}            const result = await fetch(url);{{/c}}
+{{i}}8{{/i}}{{c}}            return result.json();{{/c}}
+{{i}}8.1{{/i}}{{a}}        } catch (error) {{{/a}}
+{{i}}8.2{{/i}}{{a}}            console.error('Processing failed:', error);{{/a}}
+{{i}}8.3{{/i}}{{a}}            throw new ProcessingError('Failed to process data', { cause: error });{{/a}}
+{{i}}8.4{{/i}}{{a}}        }{{/a}}
+{{i}}9{{/i}}{{c}}    }{{/c}}
 {{/code_changes}}
 
+Note how the example maintains the original file's indentation:
+- 4 spaces for top-level statements
+- 8 spaces for function body
+- 12 spaces for try-catch block content
+- Aligned comment asterisks
+- Consistent block style
+
 Remember:
-- Use original file line numbers for all operations
-- Add context lines for better readability
-- Maintain proper code indentation
-- Keep code structure consistent
-- Include unique code identifiers for each block
-- ALWAYS close code blocks correctly with {{/code_changes}}`;
+- Always match original indentation exactly
+- Keep consistent style throughout
+- Align comment blocks properly
+- Maintain proper nesting depth
+- Use original file's tab/space choice
+- Preserve existing formatting patterns
+- Think carefully about formatting context
+- Test indentation visually
+- Ensure all tags are properly closed including {{/i}}, {{/a}}, {{/r}}, {{/c}}, {{/l}}, {{/code_changes}}, {{/fp}}`;
 
 export const diffMergePrompt = (inputLines: string, proposedChanges: string) => `You are an AI coding assistant specialized in analyzing and modifying code files based on proposed changes. Your task is to carefully review the provided file and suggest appropriate modifications based on the proposed changes while maintaining code structure and functionality.
 

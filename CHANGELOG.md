@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.10] - 2024-11-23
+### Fixed
+* Improved Merge performance and accuracy
+* The last used model is now saved immediately
+* Discord Link
+
 ## [1.0.9] - 2024-11-21
 ### Added
 * Client upgrades to support OpenAI o1 models
