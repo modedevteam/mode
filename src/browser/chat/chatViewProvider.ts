@@ -387,6 +387,13 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 			});
 		}
 	}
+
+	public reloadView() {
+		if (this._view) {
+			// Reset the HTML content of the webview
+			this._view.webview.html = this._getHtmlForWebview(this._view.webview);
+		}
+	}
 }
 
 class ModifiedContentProvider implements vscode.TextDocumentContentProvider {

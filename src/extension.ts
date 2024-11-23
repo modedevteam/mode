@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import { ModeChatViewProvider } from './browser/chat/chatViewProvider';
-import { WelcomeViewProvider } from './browser/welcome/welcomeViewProvider';
 import { ApiKeyManager } from './common/llms/aiApiKeyManager';
 import { AIModel } from './common/llms/aiModel';
 import { AskModeCodeActionProvider } from './capabilities/quickfix/askModeCodeActionProvider';
@@ -33,9 +32,19 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Register the command to open Mode
 	const disposable = vscode.commands.registerCommand('mode.openChat', async (diagnosticMessage?: string, lineNumber?: number) => {
 		try {
+			// Reload the view
+			provider.reloadView();
+
+			// Focus the chat view
 			await vscode.commands.executeCommand('mode.chatView.focus');
+
+			// Reset the chat session
 			provider.resetChatSession();
+
+			// Handle text selection
 			provider.handleTextSelection();
+
+			// Handle the current file selection
 			provider.handleCurrentFileSelection();
 
 			// Handle the diagnostic message and line number if they're provided
@@ -83,22 +92,6 @@ export async function activate(context: vscode.ExtensionContext) {
 			providedCodeActionKinds: AskModeCodeActionProvider.providedCodeActionKinds
 		})
 	);
-
-	// Create the welcome view provider
-	const welcomeProvider = new WelcomeViewProvider(context.extensionUri);
-
-	// Add a command to show the welcome page
-	context.subscriptions.push(
-		vscode.commands.registerCommand('mode.showWelcomePage', () => {
-			welcomeProvider.show();
-		})
-	);
-
-	// Show the welcome page when the extension is activated for the first time
-	if (context.globalState.get('modeWelcomeShown') !== true) {
-		vscode.commands.executeCommand('mode.showWelcomePage');
-		context.globalState.update('modeWelcomeShown', true);
-	}
 }
 
 export async function deactivate(context: vscode.ExtensionContext) {
