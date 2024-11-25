@@ -104,7 +104,7 @@
 		"configuration": {
 			"title": "Mode",
 			"properties": {
-				"mode.providers": {
+				"mode.chat.providers": {
 					"order": 0,
 					"type": "array",
 					"items": {
@@ -181,7 +181,7 @@
 							"visible": true
 						}
 					],
-					"markdownDescription": "Configure AI providers and their models. Add or update models as they become available. To set up API keys, [click here](command:mode.manageApiKeys) or use 'Mode: Manage API Keys' command."
+					"markdownDescription": "Configure AI providers and their models for Mode Chat. Add or update models as they become available. To set up API keys, [click here](command:mode.manageApiKeys) or use 'Mode: Manage API Keys' command."
 				},
 				"mode.excludePatterns": {
 					"order": 1,

@@ -51,7 +51,7 @@ export class AIModel {
     }
 
     private static getModelInfoFromConfig(modelKey: string): ModelInfo | undefined {
-        const providers = vscode.workspace.getConfiguration('mode').get<ProviderConfig[]>('providers') || [];
+        const providers = vscode.workspace.getConfiguration('mode').get<ProviderConfig[]>('chat.providers') || [];
         
         for (const provider of providers) {
             if (provider.visible && provider.models.includes(modelKey)) {
@@ -65,7 +65,7 @@ export class AIModel {
     }
 
     private static getModelsFromConfig(): Record<string, ModelInfo> {
-        const providers = vscode.workspace.getConfiguration('mode').get<ProviderConfig[]>('providers') || [];
+        const providers = vscode.workspace.getConfiguration('mode').get<ProviderConfig[]>('chat.providers') || [];
         const modelMap: ModelConfigMap = {};
 
         for (const provider of providers) {
