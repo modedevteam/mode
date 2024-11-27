@@ -22,7 +22,8 @@ declare function acquireVsCodeApi(): any;
     const chatInputContainer = document.getElementById('chat-input-container') as HTMLDivElement;
     const messageInput = document.getElementById('message-input') as HTMLTextAreaElement;
     const sendButton = document.getElementById('send-button') as HTMLButtonElement;
-
+    let currentCodeContainer: HTMLDivElement | null = null;
+    let currentMarkdownContainer: HTMLDivElement | null = null;
     // Message handling functions
     function sendMessage() {
         if (isStreaming || isProcessing) {
@@ -219,48 +220,88 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                 isStreaming = false;
                 isProcessing = false;
                 updateSendButtonState();
-                currentResponseElement!.innerHTML = message.message.finalRenderedContent;
                 currentResponseElement = null;
                 break;
-            case 'addWord':
+            case 'addMarkdownLine':
                 hideProcessingAnimation();
-                addWordToResponse(message.word);
+                if (currentMarkdownContainer) {
+                    if (message.lines) {
+                        // Replace the entire HTML if 'lines' is present
+                        currentMarkdownContainer.innerHTML = message.lines;
+                    } else {
+                        // Append the line if 'lines' is not present
+                        currentMarkdownContainer.innerHTML += message.line;
+                    }
+                }
+                chatOutput.scrollTop = chatOutput.scrollHeight;
                 break;
-            case 'addCodeWord':
+            case 'addCodeLine':
                 hideProcessingAnimation();
                 if (currentCodeContainer) {
-                    currentCodeContainer.innerHTML += `${message.word}`;
+                    if (message.code) {
+                        currentCodeContainer.innerHTML = `<pre><code class="language-${message.language}">${message.code}</code></pre>`;
+                    } else {
+                        currentCodeContainer.innerHTML += `${message.codeLine}`;
+                    }
+                    // Scroll to the bottom of the code container
+                    currentCodeContainer.scrollTop = currentCodeContainer.scrollHeight;
                 }
                 break;
             case 'startCodeBlock': {
                 hideProcessingAnimation();
-                // Always add the code header
                 const codeHeader = document.createElement('div');
                 codeHeader.className = 'chat-code-header';
                 codeHeader.innerHTML = `
                     <div class="filename" data-file-uri="${message.fileUri || ''}">${message.filename || ''}</div>
-                    <div class="file-uri hidden">${message.fileUri || ''}</div>
                     <div class="buttons">
                         <i class="codicon codicon-loading codicon-modifier-spin"></i>
                     </div>
                 `;
                 currentResponseElement!.appendChild(codeHeader);
 
-                // Prepare the code container right after the header
                 currentCodeContainer = document.createElement('div');
                 currentCodeContainer.className = 'chat-code-container';
                 currentResponseElement!.appendChild(currentCodeContainer);
 
-                // Set the language
                 currentCodeContainer.innerHTML = `<pre><code class="language-${message.language}">`;
                 break;
             }
             case 'endCodeBlock': {
                 hideProcessingAnimation();
                 if (currentCodeContainer) {
-                    currentCodeContainer.innerHTML += '</code></pre>'; // Close the code block
-                    currentCodeContainer = null; // Reset the code container pointer
+                    const codeHeaderDiv = `
+                        <div class="filename" data-file-uri="${message.fileUri || ''}">${message.filename || ''}</div>
+                        <div class="file-uri hidden">${message.fileUri || ''}</div>
+                        <div class="code-id hidden">${message.codeId || ''}</div>
+                        <div class="buttons">
+                            <button id="copy-code-button" class="icon-button" title="Copy"><i class="codicon codicon-copy"></i></button>
+                            <button id="merge-button" class="icon-button" title="Apply with AI"><i class="codicon codicon-sparkle-filled"></i></button>
+                        </div>
+                    `;
+
+                    const codeHeader = currentCodeContainer.previousElementSibling;
+                    if (codeHeader) {
+                        codeHeader.innerHTML = codeHeaderDiv;
+                    }
+
+                    currentCodeContainer.innerHTML = `<pre><code class="language-${message.language}">${message.code}</code></pre>`;
+                    currentCodeContainer = null;
                 }
+                break;
+            }
+            case 'startMarkdownBlock': {
+                hideProcessingAnimation();
+                currentMarkdownContainer = document.createElement('div');
+                currentMarkdownContainer.className = 'chat-markdown-container';
+                currentResponseElement!.appendChild(currentMarkdownContainer);
+                break;
+            }
+            case 'endMarkdownBlock': {
+                hideProcessingAnimation();
+                if (currentMarkdownContainer) {
+                    currentMarkdownContainer.innerHTML = message.lines;
+                }
+                currentMarkdownContainer = null; // Reset the markdown container pointer
                 break;
             }
         }
@@ -270,11 +311,6 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
         currentResponseElement = document.createElement('div');
         currentResponseElement.className = 'message assistant';
         chatOutput.appendChild(currentResponseElement);
-    }
-
-    function addWordToResponse(word: string) {
-        currentResponseElement!.innerHTML += word;
-        chatOutput.scrollTop = chatOutput.scrollHeight;
     }
     //#endregion
 
@@ -389,7 +425,6 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
 
     // code state variables
     const addedCodeSnippets = new Set<string>();
-    let currentCodeContainer: HTMLDivElement | null = null;
 
     // code pill functions
     function removeHighlightCode(fileName: string, range: string) {

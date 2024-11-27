@@ -849,7 +849,7 @@ li {
     /* Prevent breaking words */
     white-space: pre;
     /* Preserve whitespace and line breaks */
-    max-height: 900px;
+    max-height: 50vh;
     /* Limit the height of the container */
     overflow-y: auto;
     /* Add vertical scrollbar if content exceeds max-height */

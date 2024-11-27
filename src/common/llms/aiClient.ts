@@ -6,6 +6,7 @@ import { Mistral } from '@mistralai/mistralai';
 import { GoogleAIFileManager } from "@google/generative-ai/server";
 import crypto from 'crypto';
 import * as vscode from 'vscode';
+import { LLMChatParams } from './llmChatParams';
 
 export interface AIMessage {
     role: 'user' | 'assistant' | 'system';
@@ -132,7 +133,8 @@ export class AIClient {
             system: systemMessage,
             messages: nonSystemMessages,
             max_tokens: 4096,
-            stream: true
+            stream: true,
+            temperature: LLMChatParams.temperature
         });
 
         try {
@@ -172,7 +174,8 @@ export class AIClient {
                     : msg.content
             })),
             [this.model.startsWith('o1') ? 'max_completion_tokens' : 'max_tokens']: 4096,
-            stream: true
+            stream: true,
+            temperature: LLMChatParams.temperature
         }) as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
 
         try {
@@ -218,6 +221,9 @@ export class AIClient {
 
         const chat = model.startChat({
             history: processedMessages.slice(0, -1),
+            generationConfig: {
+                temperature: LLMChatParams.temperature
+            }
         });
 
         const lastMessage = processedMessages[processedMessages.length - 1];
@@ -260,7 +266,8 @@ export class AIClient {
                 messages: filteredMessages.map(msg => ({
                     role: msg.role,
                     content: msg.content
-                }))
+                })),
+                temperature: LLMChatParams.temperature
             });
 
             for await (const chunk of response) {
@@ -299,7 +306,8 @@ export class AIClient {
                     role: msg.role,
                     content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
                 })),
-                stream: true
+                stream: true,
+                temperature: LLMChatParams.temperature
             });
 
             for await (const chunk of chatStreamResponse) {

@@ -103,6 +103,11 @@ Guidelines:
 
    3. Critical Rules:
       - NEVER modify the same line number twice
+      - NEVER use whole numbers for new additions - they are reserved for existing file lines
+      - When adding a complete new method/block, use a SINGLE contiguous sequence of fractional indices
+        Example: Adding a new method after line 389:
+        389.1, 389.2, 389.3, 389.4, etc. for the entire method
+      - Only use different base numbers when actually interleaving with existing code
       - NEVER use decimals for existing line numbers
       - ALWAYS maintain numerical order
       - ALWAYS use {{c}} for context lines

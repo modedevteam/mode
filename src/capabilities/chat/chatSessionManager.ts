@@ -128,29 +128,7 @@ export class SessionManager {
 		return session ? session.codeMap[guid] || null : null;
 	}
 
-	public extractAndSetCodeBlocks(sessionId: string, fullText: string, fileUrls: string[]) {
-		const codeChangesRegex = /{{code_changes}}([\s\S]*?){{\/code_changes}}/g;
-		const codeIdRegex = /{{ci}}(.*?){{\/ci}}/;
-		const filePathRegex = /{{fp}}(.*?){{\/fp}}/;
-
-		let codeChangesMatch;
-		while ((codeChangesMatch = codeChangesRegex.exec(fullText)) !== null) {
-			const codeChangesContent = codeChangesMatch[1];
-			const idMatch = codeIdRegex.exec(codeChangesContent);
-			const filePathMatch = filePathRegex.exec(codeChangesContent);
-
-			if (idMatch && filePathMatch) {
-				const guid = idMatch[1].trim();
-				const filePath = filePathMatch[1].trim();
-				const fileName = path.basename(filePath);
-
-				// Check if the file name is in the fileUrls
-				// only set the code map entry if the file is in the fileUrls array
-				if (fileUrls.some(url => path.basename(url) === fileName)) {
-					const codeText = codeChangesContent;
-					this.setCodeMapEntry(sessionId, guid, codeText);
-				}
-			}
-		}
+	public setCodeBlock(sessionId: string, codeId: string, codeBlock: string) {
+		this.setCodeMapEntry(sessionId, codeId, codeBlock);
 	}
 }

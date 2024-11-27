@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import MarkdownIt = require('markdown-it');
-import { createMarkdownIt as createMarkdown } from '../../common/rendering/md';
 import { SessionManager } from './chatSessionManager';
 import { MessageHandler } from './messageHandler';
 import { AIClientFactory } from '../../common/llms/aiClientFactory';
@@ -18,7 +17,7 @@ export class ChatManager {
 		private readonly sessionManager: SessionManager,
 		context: vscode.ExtensionContext
 	) {
-		this.md = createMarkdown();
+		this.md = new MarkdownIt();
 		AIClientFactory.initialize(context);
 		this.currentModel = '';
 	}

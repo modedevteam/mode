@@ -1,42 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 
-export function processLLMOutput(text: string): string {
-	// Remove code_analysis blocks before rendering
-	const processedText = text
-		.replace(/{{code_analysis}}[\s\S]*?{{\/code_analysis}}/g, '')
-		.replace(/{{change_analysis}}[\s\S]*?{{\/change_analysis}}/g, '')
-		.replace(/\t/g, '    ');
-	
-	const codeChangesRegex = /{{code_changes}}([\s\S]*?){{\/code_changes}}/g;
-	return processedText.replace(codeChangesRegex, (codeBlock) => {
-		const lines = codeBlock.split('\n');
-		let formattedCode = '';
-		let language = '';
-		let filePath = '';
-		let codeIdentifier = '';
-
-		lines.forEach((line: string) => {
-			const matchLang = line.match(/{{l}}(.*?){{\/l}}/);
-			const matchFilePath = line.match(/{{fp}}(.*?){{\/fp}}/);
-			const matchCodeIdentifier = line.match(/{{ci}}(.*?){{\/ci}}/);
-			const matchCodeLine = line.match(/{{i}}\d+(\.\d+)?{{\/i}}{{[amc]}}(.*?){{\/[amc]}}/);
-
-			if (matchLang) {
-				language = matchLang[1];
-			} else if (matchFilePath) {
-				filePath = matchFilePath[1];
-			} else if (matchCodeIdentifier) {
-				codeIdentifier = matchCodeIdentifier[1];
-			} else if (matchCodeLine) {
-				formattedCode += matchCodeLine[2] + '\n';
-			}
-		});
-
-		return `\`\`\`${language}\n${filePath}\n${codeIdentifier}\n${formattedCode}\`\`\``;
-	});
-}
-
 /**
  * Formats the content of a file into a structured array of strings with LLM-compatible markers.
  * Handles both open documents in the editor and files from the filesystem.

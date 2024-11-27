@@ -3,23 +3,21 @@ import { AIMessage } from '../../common/llms/aiClient';
 import MarkdownIt = require('markdown-it');
 import { StreamProcessor } from './streamProcessor';
 import { AIClient } from '../../common/llms/aiClient';
-import { formatFileContent, processLLMOutput } from '../../common/rendering/llmTranslationUtils';
+import { formatFileContent } from '../../common/rendering/llmTranslationUtils';
 import { SessionManager } from './chatSessionManager';
 
 // New class to handle message processing
 export class MessageHandler {
 	private streamProcessor: StreamProcessor;
 	private isCancelled = false;
-	private sessionManager: SessionManager;
 
 	constructor(
 		private readonly _view: vscode.WebviewView,
 		private readonly aiClient: AIClient | null,
 		private readonly md: MarkdownIt,
-		sessionManager: SessionManager
+		private readonly sessionManager: SessionManager
 	) {
-		this.streamProcessor = new StreamProcessor(_view, md);
-		this.sessionManager = sessionManager;
+		this.streamProcessor = new StreamProcessor(_view, md, this.sessionManager);
 	}
 
 	public stopGeneration() {
@@ -99,31 +97,20 @@ export class MessageHandler {
 						return;
 					}
 
-					// save the fullText for diagnostic purposes
+					// Send buffered markdown lines as a complete formatted block
+					this.streamProcessor.finalizeProcessing();
+
+					// save the raw full text for diagnostic purposes
 					this.sessionManager.getCurrentSession().messages.push({
 						role: "assistant",
 						content: fullText,
 						name: "Mode.Diagnostics.Chat"
 					});
-
-					// Extract and set code blocks in the session manager
-					const sessionId = this.sessionManager.getCurrentSessionId();
-					this.sessionManager.extractAndSetCodeBlocks(sessionId!, fullText, fileUrls);
-
-					// process the LLM output to format the code changes
-					const processedTextWithCodeChanges = processLLMOutput(fullText);
-					finalRenderedContent = this.md.render(processedTextWithCodeChanges);
 				}
 			});
 
 			// Save the rendered content to the chat session
 			if (!this.isCancelled) {
-				this.sessionManager.getCurrentSession().messages.push({
-					role: "assistant",
-					content: finalRenderedContent,
-					name: "Mode"
-				});
-
 				// Send the rendered content with the endStream message
 				this._view.webview.postMessage({
 					command: 'chatStream',
