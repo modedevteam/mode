@@ -98,6 +98,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 								content: message.content,
 								name: "Mode"
 							});
+							this._sessionManager.saveSessions();
 						}
 						break;
 					case 'modelSelected':

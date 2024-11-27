@@ -79,17 +79,44 @@ export class MessageHandler {
 
 			// call LLM provider and stream the response
 			let isFirstToken = true;
+			// Create a queue to store tokens
+			const tokenQueue: string[] = [];
+			let processing = false;
+
+			// Function to process tokens from the queue
+			const processQueue = async () => {
+				if (processing) return;
+				processing = true;
+
+				while (tokenQueue.length > 0) {
+					const token = tokenQueue.shift();
+					if (token) {
+						this.streamProcessor.processToken(token);
+					}
+					// Introduce a small delay to simulate a steady processing pace
+					await new Promise(resolve => setTimeout(resolve, 100));
+				}
+
+				processing = false;
+			};
+
 			await this.aiClient!.chat(outputChannel, messages as AIMessage[], {
 				onToken: (token) => {
 					if (this.isCancelled) {
 						return;
 					}
+
 					if (isFirstToken) {
 						// notify webview to start streaming on first token
 						this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
 						isFirstToken = false;
 					}
-					this.streamProcessor.processToken(token);
+
+					// Add the current token to the queue
+					tokenQueue.push(token);
+
+					// Start processing the queue
+					processQueue();
 				},
 				onComplete: (fullText) => {
 					if (this.isCancelled) {
