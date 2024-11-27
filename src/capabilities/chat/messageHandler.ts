@@ -78,7 +78,6 @@ export class MessageHandler {
 			}
 
 			// call LLM provider and stream the response
-			let finalRenderedContent = '';
 			let isFirstToken = true;
 			await this.aiClient!.chat(outputChannel, messages as AIMessage[], {
 				onToken: (token) => {
@@ -109,13 +108,11 @@ export class MessageHandler {
 				}
 			});
 
-			// Save the rendered content to the chat session
+			// Mark the end of the stream
 			if (!this.isCancelled) {
-				// Send the rendered content with the endStream message
 				this._view.webview.postMessage({
 					command: 'chatStream',
-					action: 'endStream',
-					message: { finalRenderedContent: finalRenderedContent }
+					action: 'endStream'
 				});
 			}
 		} catch (error) {

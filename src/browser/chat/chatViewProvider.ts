@@ -89,8 +89,16 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 					case 'cancelMessage':
 						this._chatManager?.stopGeneration();
 						break;
-					case 'openNewChat':
-						vscode.commands.executeCommand('mode.openChat');
+					case 'chatSession':
+						if (message.action === 'new') {
+							vscode.commands.executeCommand('mode.openChat');
+						} else if (message.action === 'save' && message.content) {
+							this._sessionManager.getCurrentSession().messages.push({
+								role: "assistant",
+								content: message.content,
+								name: "Mode"
+							});
+						}
 						break;
 					case 'modelSelected':
 						AIModel.setLastUsedModel(message.model);

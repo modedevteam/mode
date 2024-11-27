@@ -220,6 +220,16 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                 isStreaming = false;
                 isProcessing = false;
                 updateSendButtonState();
+
+                // Send a message to the extension to save the chat session
+                if (currentResponseElement?.innerHTML) {
+                    vscode.postMessage({
+                        command: 'chatSession',
+                        action: 'save',
+                        content: currentResponseElement.innerHTML
+                    });
+                }
+
                 currentResponseElement = null;
                 break;
             case 'addMarkdownLine':
@@ -739,7 +749,7 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
         // new chat button
         const newChatButton = document.getElementById('new-chat-button') as HTMLButtonElement;
         newChatButton.addEventListener('click', () => {
-            vscode.postMessage({ command: 'openNewChat' });
+            vscode.postMessage({ command: 'chatSession', action: 'new' });
         });
     }
     //#endregion
