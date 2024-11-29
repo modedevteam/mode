@@ -4,7 +4,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CohereClientV2 as Cohere } from 'cohere-ai';
 import { Mistral } from '@mistralai/mistralai';
 import { GoogleAIFileManager } from "@google/generative-ai/server";
-import crypto from 'crypto';
 import * as vscode from 'vscode';
 import { LLMChatParams } from './llmChatParams';
 
@@ -132,7 +131,7 @@ export class AIClient {
             model: this.model,
             system: systemMessage,
             messages: nonSystemMessages,
-            max_tokens: 4096,
+            max_tokens: 8192,
             stream: true,
             temperature: LLMChatParams.temperature
         });
@@ -173,7 +172,7 @@ export class AIClient {
                     ? AIClient.formatImageContent('openai', msg.content)
                     : msg.content
             })),
-            [this.model.startsWith('o1') ? 'max_completion_tokens' : 'max_tokens']: 4096,
+            [this.model.startsWith('o1') ? 'max_completion_tokens' : 'max_tokens']: this.model.startsWith('o1') ? 32768 : 16384,
             stream: true,
             temperature: LLMChatParams.temperature
         }) as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
@@ -222,7 +221,8 @@ export class AIClient {
         const chat = model.startChat({
             history: processedMessages.slice(0, -1),
             generationConfig: {
-                temperature: LLMChatParams.temperature
+                temperature: LLMChatParams.temperature,
+                maxOutputTokens: 8192
             }
         });
 
