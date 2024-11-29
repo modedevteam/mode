@@ -197,6 +197,15 @@ export class DiffManager {
                         increment: 2.5
                     });
                 } else {
+
+                    // Just copy the proposed changes over if the soure is empty
+                    // No need to call LLM
+                    if (lines.length === 0 || (lines.length === 1 && lines[0].trim() === '')) {
+                        // Directly write the proposed changes to the temp file
+                        await fs.promises.writeFile(tempFilePath, proposedChanges);
+                        return tempUri;
+                    }
+
                     const messages = this.createInitialMessages(chunks.join('\n'), proposedChanges);
                     let processedTokens = 0;
                     const estimatedTotalTokens = proposedChanges.length / 4; // Rough estimate
