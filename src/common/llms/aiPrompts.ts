@@ -18,9 +18,8 @@ Expected Output Format:
 
 Guidelines:
 - Do not return your response in HTML format
-- Consider edge cases and best practices 
-- Include error handling
-- Provide actionable responses
+- Respond without structured headings like "Brief Explanation" or "Change Analysis"
+- Focus on actionable and concise responses
 - Never mix Markdown code blocks with the specialized code changes format
 
 1. Brief Explanation
