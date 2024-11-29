@@ -1,6 +1,6 @@
 ![GitHub issues](https://img.shields.io/github/issues/modedevteam/mode-community)
 ![Follow](https://img.shields.io/twitter/follow/modedevteam?style=social)
-[![Discord](https://img.shields.io/badge/Discord-Join%20Us-blue)](https://discord.gg/CrBwcSEE)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Us-blue)](https://discord.gg/FRDxms57pG)
 ![Early Access](https://img.shields.io/badge/status-early%20access-007FFF)
 
 # Mode
@@ -50,4 +50,4 @@ Stay ahead with the latest: customize Mode by upgrading models as they’re rele
 
 We created Mode because we love building, just like you. Our journey is just beginning – we're continuously improving and have an exciting roadmap ahead: smart autocompletion, automating routine tasks, collaborating across files, and supporting even more language models and providers.
 
-Have questions? Reach out (hi@getmode.dev) or drop by our [Discord](https://discord.gg/XHxbjcRM). You can also visit our [Mode Community](https://github.com/modedevteam/mode-community/blob/main/README.md) to submit feature requests, report bugs, and share your ideas. Give Mode a try, and let's build something amazing together!
+Have questions? Reach out (hi@getmode.dev) or drop by our [Discord](https://discord.gg/FRDxms57pG). You can also visit our [Mode Community](https://github.com/modedevteam/mode-community/blob/main/README.md) to submit feature requests, report bugs, and share your ideas. Give Mode a try, and let's build something amazing together!
