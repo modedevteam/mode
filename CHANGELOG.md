@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.11] - 2024-11-28
+### Fixed
+* Smoothen chat rendering
+* Increase max token limit to prevent unintentional trimming of response for more complex asks
+* Improved the prompt - the output is more conversational
+* Discord Link
+
+### Added
+* Renamed config mode.providers to mode.chat.providers to make room for future features
+
 ## [1.0.10] - 2024-11-23
 ### Fixed
 * Improved Merge performance and accuracy

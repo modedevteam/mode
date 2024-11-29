@@ -31,8 +31,8 @@ Add images, code snippets, and files to help set the broader context, especially
 
 ![Context](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/Context.gif)
 
-### Pair Program (Experimental)
-Mode intelligently applies suggestions, without breaking your changes, giving you a true pair-programming experience.
+### Auto Merge (Experimental)
+Mode intelligently applies suggestions, without breaking your changes, giving you a true pair-programming experience. *Right now, we recommend Anthropic and OpenAI models for best results here.*
 
 ![Pair](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/ApplyChanges.gif)
 
