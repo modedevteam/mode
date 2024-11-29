@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.12] - 2024-11-29
+### Added
+* Ollama support
+
 ## [1.0.11] - 2024-11-28
 ### Fixed
 * Increase max token limit to prevent unintentional trimming of response for more complex asks

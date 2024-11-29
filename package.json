@@ -2,7 +2,7 @@
 	"name": "mode",
 	"displayName": "Mode: Your Personal AI Code Copilot",
 	"description": "Mode directly connects to your favorite language models, providing secure, direct, and fully customizable AI coding support.",
-	"version": "1.0.11",
+	"version": "1.0.12",
 	"preRelease": true,
 	"publisher": "aruna-labs",
 	"homepage": "https://www.getmode.dev",
@@ -117,13 +117,34 @@
 									"anthropic",
 									"google",
 									"mistral",
-									"cohere"
+									"cohere",
+									"ollama"
 								]
 							},
 							"models": {
 								"type": "array",
 								"items": {
-									"type": "string"
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": "string"
+										},
+										"endpoint": {
+											"type": "string"
+										},
+										"vision": {
+											"type": "boolean",
+											"default": false
+										},
+										"context": {
+											"type": "boolean",
+											"default": true,
+											"markdownDescription": "Whether the model supports large context inputs needed for some Mode features (like Merge). Turned off for small local models."
+										}
+									},
+									"required": [
+										"name"
+									]
 								}
 							},
 							"visible": {
@@ -141,42 +162,86 @@
 						{
 							"name": "openai",
 							"models": [
-								"gpt-4o",
-								"gpt-4o-mini",
-								"o1-preview",
-								"o1-mini"
+								{
+									"name": "gpt-4o",
+									"vision": true
+								},
+								{
+									"name": "gpt-4o-mini",
+									"vision": true
+								},
+								{
+									"name": "o1-preview"
+								},
+								{
+									"name": "o1-mini"
+								}
 							],
 							"visible": true
 						},
 						{
 							"name": "anthropic",
 							"models": [
-								"claude-3-5-sonnet-latest",
-								"claude-3-5-haiku-20241022"
+								{
+									"name": "claude-3-5-sonnet-latest",
+									"vision": true
+								},
+								{
+									"name": "claude-3-5-haiku-20241022",
+									"vision": true
+								}
 							],
 							"visible": true
 						},
 						{
 							"name": "google",
 							"models": [
-								"gemini-1.5-flash",
-								"gemini-1.5-pro"
+								{
+									"name": "gemini-1.5-flash"
+								},
+								{
+									"name": "gemini-1.5-pro"
+								}
 							],
 							"visible": true
 						},
 						{
 							"name": "mistral",
 							"models": [
-								"mistral-large-latest",
-								"codestral-latest"
+								{
+									"name": "mistral-large-latest"
+								},
+								{
+									"name": "codestral-latest"
+								}
 							],
 							"visible": true
 						},
 						{
 							"name": "cohere",
 							"models": [
-								"command-r-plus-08-2024",
-								"command-light"
+								{
+									"name": "command-r-plus-08-2024"
+								},
+								{
+									"name": "command-light"
+								}
+							],
+							"visible": true
+						},
+						{
+							"name": "ollama",
+							"models": [
+								{
+									"name": "llama3.2",
+									"endpoint": "http://localhost:11434/v1",
+									"context": false
+								},
+								{
+									"name": "deepseek-coder",
+									"endpoint": "http://localhost:11434/v1",
+									"context": false
+								}
 							],
 							"visible": true
 						}

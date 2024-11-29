@@ -11,6 +11,7 @@ import { ErrorMessages } from '../../common/user-messages/errorMessages';
 import { diffMergePrompt } from '../../common/llms/aiPrompts';
 import { getDiffProgressMessage } from '../../common/user-messages/messages';
 import { SessionManager } from '../chat/chatSessionManager';
+import { AIClientFactory } from '../../common/llms/aiClientFactory';
 
 export class DiffManager {
     private _applyChangesButton?: vscode.StatusBarItem;
@@ -30,17 +31,13 @@ export class DiffManager {
         }
 
         progress.report({ message: getDiffProgressMessage('AI_INIT'), increment: 2.5 });
-        const apiKey = await this._apiKeyManager.getApiKey(modelInfo.provider);
-        if (!apiKey) {
-            throw new Error(`No API key found for provider: ${modelInfo.provider}`);
+
+        const result = await AIClientFactory.createClient(modelInfo.provider, currentModel);
+        if (!result.success || !result.client) {
+            throw new Error(result.message || 'Failed to create AI client');
         }
 
-        const clientConfig = AIModel.getClientConfig(currentModel, apiKey);
-        if (!clientConfig) {
-            throw new Error('Failed to create AI client configuration');
-        }
-
-        return new AIClient(clientConfig);
+        return result.client;
     }
 
     private async prepareTemporaryFiles(chunks: string[]) {

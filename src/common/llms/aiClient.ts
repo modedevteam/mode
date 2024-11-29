@@ -16,8 +16,9 @@ export interface AIMessage {
 
 export interface AIClientConfig {
     provider: string;
-    apiKey: string;
-    model?: string;
+    apiKey?: string;
+    model: string;
+    endpoint?: string;
 }
 
 export interface StreamCallbacks {
@@ -42,24 +43,28 @@ export class AIClient {
         switch (config.provider) {
             case 'anthropic':
                 this.anthropicClient = new anthropic.Anthropic({ apiKey: config.apiKey });
-                this.model = config.model || 'claude-3-sonnet-20240229';
+                this.model = config.model;
                 break;
             case 'openai':
                 this.openaiClient = new OpenAI({ apiKey: config.apiKey });
-                this.model = config.model || 'gpt-4-turbo-preview';
+                this.model = config.model;
                 break;
             case 'google':
-                this.googleClient = new GoogleGenerativeAI(config.apiKey);
-                this.googleFileManager = new GoogleAIFileManager(config.apiKey);
-                this.model = config.model || 'gemini-pro';
+                this.googleClient = new GoogleGenerativeAI(config.apiKey!);
+                this.googleFileManager = new GoogleAIFileManager(config.apiKey!);
+                this.model = config.model;
                 break;
             case 'cohere':
                 this.cohereClient = new Cohere({ token: config.apiKey });
-                this.model = config.model || 'command';
+                this.model = config.model;
                 break;
             case 'mistral':
                 this.mistralClient = new Mistral({ apiKey: config.apiKey });
-                this.model = config.model || 'mistral-medium';
+                this.model = config.model;
+                break;
+            case 'ollama':
+                this.openaiClient = new OpenAI({ baseURL: config.endpoint });
+                this.model = config.model;
                 break;
         }
     }
@@ -95,6 +100,8 @@ export class AIClient {
                     return this.cohereChat(filteredMessages, callbacks);
                 case 'mistral':
                     return this.mistralChat(filteredMessages, callbacks);
+                case 'ollama':
+                    return this.openaiChat(filteredMessages, callbacks);
                 default:
                     throw new Error(`Unsupported provider: ${this.provider}`);
             }

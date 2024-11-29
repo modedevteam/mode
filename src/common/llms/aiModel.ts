@@ -3,7 +3,12 @@ import * as vscode from 'vscode';
 
 interface ProviderConfig {
     name: string;
-    models: string[];
+    models: {
+        name: string;
+        endpoint?: string;
+        vision?: boolean;
+        context?: boolean;
+    }[];
     visible: boolean;
 }
 
@@ -13,6 +18,7 @@ interface ModelConfigMap {
 
 export interface ModelInfo {
     provider: string;
+    endpoint?: string;
 }
 
 export class AIModel {
@@ -54,9 +60,11 @@ export class AIModel {
         const providers = vscode.workspace.getConfiguration('mode').get<ProviderConfig[]>('chat.providers') || [];
         
         for (const provider of providers) {
-            if (provider.visible && provider.models.includes(modelKey)) {
+            const model = provider.models.find(model => model.name === modelKey);
+            if (provider.visible && model) {
                 return {
-                    provider: provider.name
+                    provider: provider.name,
+                    endpoint: model.endpoint
                 };
             }
         }
@@ -71,7 +79,7 @@ export class AIModel {
         for (const provider of providers) {
             if (provider.visible) {
                 for (const model of provider.models) {
-                    modelMap[model] = {
+                    modelMap[model.name] = {
                         provider: provider.name
                     };
                 }
@@ -79,5 +87,33 @@ export class AIModel {
         }
 
         return modelMap;
+    }
+
+    public static supportsContext(modelKey: string): boolean {
+        const modelInfo = this.getModelInfoFromConfig(modelKey);
+        if (!modelInfo) return true;
+
+        const providers = vscode.workspace.getConfiguration('mode').get<ProviderConfig[]>('chat.providers') || [];
+        for (const provider of providers) {
+            const model = provider.models.find(model => model.name === modelKey);
+            if (model) {
+                return model.context !== false;
+            }
+        }
+        return true;
+    }
+
+    public static supportsVision(modelKey: string): boolean {
+        const modelInfo = this.getModelInfoFromConfig(modelKey);
+        if (!modelInfo) return false;
+
+        const providers = vscode.workspace.getConfiguration('mode').get<ProviderConfig[]>('chat.providers') || [];
+        for (const provider of providers) {
+            const model = provider.models.find(model => model.name === modelKey);
+            if (model && model.vision) {
+                return true;
+            }
+        }
+        return false;
     }
 } 

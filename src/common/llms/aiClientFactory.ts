@@ -1,6 +1,7 @@
 import { AIClient, AIClientConfig } from './aiClient';
 import { ApiKeyManager } from './aiApiKeyManager';
 import * as vscode from 'vscode';
+import { AIModel } from './aiModel';
 
 export class AIClientFactory {
     private static instances: Map<string, AIClient> = new Map();
@@ -14,7 +15,7 @@ export class AIClientFactory {
 
     public static async createClient(
         provider: string,
-        model?: string
+        model: string
     ): Promise<{ success: boolean; message?: string; client?: AIClient }> {
         const instanceKey = `${provider}-${model || 'default'}`;
 
@@ -24,20 +25,28 @@ export class AIClientFactory {
             return { success: true, client: existingClient };
         }
 
-        // Create new instance
-        const apiKey = await this.apiKeyManager?.getApiKey(provider);
-        if (!apiKey) {
-            return {
-                success: false,
-                message: `APIKey.${provider}.Missing`
-            };
+        let apiKey: string | undefined;
+        // Fetch API key if not ollama
+        if (provider !== 'ollama') {
+            apiKey = await this.apiKeyManager?.getApiKey(provider);
+            if (!apiKey) {
+                return {
+                    success: false,
+                    message: `APIKey.${provider}.Missing`
+                };
+            }
         }
+
+        // Get model info
+        const modelInfo = AIModel.getModelInfo(model);
+        const endpoint = modelInfo!.endpoint;
 
         try {
             const config: AIClientConfig = {
                 provider,
                 apiKey,
-                model
+                model,
+                endpoint // pass endpoint if available
             };
 
             const client = new AIClient(config);

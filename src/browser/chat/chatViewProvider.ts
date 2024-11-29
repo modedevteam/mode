@@ -118,17 +118,29 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 		currentFile: string | null = null,
 		selectedModel: string
 	) {
-		// add the currently opened files to the fileUrls so users don't have to manually add them
-		// only include files, not output channel, terminal, etc.
-		const openedFileUrls = vscode.window.visibleTextEditors
-			.filter(editor => editor.document.uri.scheme === 'file') // Filter to include only file URIs
-			.map(editor => editor.document.uri.toString());
+		// Check if the selected model supports large context
+		const modelSupportsContext = AIModel.supportsContext(selectedModel);
 
-		// merge the currently opened files with the manually added files, keeping only unique values
-		fileUrls = [...new Set([...fileUrls, ...openedFileUrls])];
+		if (modelSupportsContext) {
+			// Add the currently opened files to the fileUrls so users don't have to manually add them
+			// Only include files, not output channel, terminal, etc.
+			const openedFileUrls = vscode.window.visibleTextEditors
+				.filter(editor => editor.document.uri.scheme === 'file') // Filter to include only file URIs
+				.map(editor => editor.document.uri.toString());
+
+			// Merge the currently opened files with the manually added files, keeping only unique values
+			fileUrls = [...new Set([...fileUrls, ...openedFileUrls])];
+		} else {
+			// Clear fileUrls if model does not support large context
+			fileUrls = [];
+		}
 
 		if (this._chatManager) {
-			this._chatManager.sendMessage(this._outputChannel, message, images, codeSnippets, fileUrls, currentFile, selectedModel);
+			// Check if the selected model supports images
+			const modelSupportsImages = AIModel.supportsVision(selectedModel);
+			const imagesToSend = modelSupportsImages ? images : [];
+
+			this._chatManager.sendMessage(this._outputChannel, message, imagesToSend, codeSnippets, fileUrls, currentFile, selectedModel);
 		}
 	}
 
