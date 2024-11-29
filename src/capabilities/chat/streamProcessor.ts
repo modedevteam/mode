@@ -298,7 +298,13 @@ export class StreamProcessor {
 		this.collectedMarkdownLines = [];
 	}
 
-	public finalizeProcessing(): void {
+	public finalize(): void {
+		// Process any remaining content in the buffer as one line
+		if (this.buffer.length > 0) {
+			this.processLine(this.buffer);
+			this.buffer = ''; // Clear the buffer after processing
+		}
+
 		// Send the buffered markdown lines while signalling the end of a markdown block
 		this.endMarkdownBlock();
 	}

@@ -70,8 +70,6 @@ export class DiffManager {
             increment: 2.5
         });
 
-        console.log("proposedChanges", proposedChanges);
-
         const LINE_PATTERN = /{{i}}(\d+(?:\.\d+)?){{\/i}}(?:{{r}}|{{m}}([\s\S]*?){{\/m}}|{{a}}([\s\S]*?){{\/a}})/g;
 
         if (chunks.length === 0) {
@@ -124,13 +122,6 @@ export class DiffManager {
                 linesMap.delete(key);
             }
         }
-
-        console.log("linesMap");
-        // Print the linesMap in the specified format
-        lines.forEach(([primaryIndex, secondaryIndex, content]) => {
-            const lineIndex = secondaryIndex > 0 ? `${primaryIndex + 1}.${secondaryIndex}` : `${primaryIndex + 1}`;
-            console.log(`{{i}}${lineIndex}{{/i}}{{v}}${content}{{/v}}`);
-        });
 
         lines = lines.filter(([p]) => p !== -1)
             .sort(([p1, s1], [p2, s2]) => (p1 === p2) ? s1 - s2 : p1 - p2);
@@ -222,7 +213,6 @@ export class DiffManager {
                             }
                         },
                         onComplete: async (content: string) => {
-                            console.log("Changes received", content);
                             // Finalizing stage (95-100%)
                             progress.report({
                                 message: getDiffProgressMessage('FINALIZING', 95),

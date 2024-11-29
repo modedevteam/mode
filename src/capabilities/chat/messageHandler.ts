@@ -70,7 +70,6 @@ export class MessageHandler {
 			// Format the file contents
 			for (const fileUrl of fileUrls) {
 				const formattedFileContent = (await formatFileContent(fileUrl)).join('\n');
-				console.log("file content", formattedFileContent);
 				messages.push({
 					role: "user",
 					content: formattedFileContent
@@ -79,26 +78,6 @@ export class MessageHandler {
 
 			// call LLM provider and stream the response
 			let isFirstToken = true;
-			// Create a queue to store tokens
-			const tokenQueue: string[] = [];
-			let processing = false;
-
-			// Function to process tokens from the queue
-			const processQueue = async () => {
-				if (processing) return;
-				processing = true;
-
-				while (tokenQueue.length > 0) {
-					const token = tokenQueue.shift();
-					if (token) {
-						this.streamProcessor.processToken(token);
-					}
-					// Introduce a small delay to simulate a steady processing pace
-					await new Promise(resolve => setTimeout(resolve, 100));
-				}
-
-				processing = false;
-			};
 
 			await this.aiClient!.chat(outputChannel, messages as AIMessage[], {
 				onToken: (token) => {
@@ -112,19 +91,15 @@ export class MessageHandler {
 						isFirstToken = false;
 					}
 
-					// Add the current token to the queue
-					tokenQueue.push(token);
-
-					// Start processing the queue
-					processQueue();
+					this.streamProcessor.processToken(token);
 				},
 				onComplete: (fullText) => {
 					if (this.isCancelled) {
 						return;
 					}
 
-					// Send buffered markdown lines as a complete formatted block
-					this.streamProcessor.finalizeProcessing();
+									// Send buffered markdown lines as a complete formatted block
+				this.streamProcessor.finalize();
 
 					// save the raw full text for diagnostic purposes
 					this.sessionManager.getCurrentSession().messages.push({
@@ -135,13 +110,13 @@ export class MessageHandler {
 				}
 			});
 
-			// Mark the end of the stream
-			if (!this.isCancelled) {
-				this._view.webview.postMessage({
-					command: 'chatStream',
-					action: 'endStream'
-				});
-			}
+				// Mark the end of the stream
+				if (!this.isCancelled) {
+					this._view.webview.postMessage({
+						command: 'chatStream',
+						action: 'endStream'
+					});
+				}
 		} catch (error) {
 			let errorMessage: string;
 			let fullError: string;
