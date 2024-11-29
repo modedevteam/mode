@@ -5,6 +5,7 @@ import { MessageHandler } from './messageHandler';
 import { AIClientFactory } from '../../common/llms/aiClientFactory';
 import { AIClient, AIMessage } from '../../common/llms/aiClient';
 import { AIModel } from '../../common/llms/aiModel';
+import { StreamProcessor } from './streamProcessor';
 
 export class ChatManager {
 	private aiClient: AIClient | null = null;
@@ -109,12 +110,22 @@ export class ChatManager {
 			this._view.webview.postMessage({ command: 'clearChat' });
 			// Render the messages in the session
 			session.messages.forEach((message: AIMessage) => {
-				if ((message.role === 'user' || message.role === 'assistant') && message.name === 'Mode') {
-					this._view.webview.postMessage({
-						command: 'addMessage',
-						role: message.role,
-						content: message.content
-					});
+				if (message.name === 'Mode') {
+					if (message.role === 'user') {
+						this._view.webview.postMessage({
+							command: 'addMessage',
+							role: message.role,
+							content: message.content
+						});
+					} else if (message.role === 'assistant') {
+						// Process the message content line by line using the stream processor
+						const streamProcessor = new StreamProcessor(this._view, this.md, this.sessionManager);
+						this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
+						for (const line of (message.content as string).split('\n')) {
+							streamProcessor.processLine(line);
+						}
+						this._view.webview.postMessage({ command: 'chatStream', action: 'endStream' });
+					}
 				}
 			});
 		}

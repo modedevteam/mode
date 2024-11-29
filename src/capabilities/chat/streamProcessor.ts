@@ -47,7 +47,7 @@ export class StreamProcessor {
 	 * The LLM may return a code block in the markdown output (when explaining code) or in the code_changes block
 	 * when suggesting changes to code.
 	 */
-	private processLine(line: string): void {
+	public processLine(line: string): void {
 		if (this.ignoreAnalysisBlocks(line)) {
 			return;
 		}
@@ -216,7 +216,7 @@ export class StreamProcessor {
 		// Occasionally send the buffered code lines
 		if (this.collectedCodeLines.length % 5 === 0) { // Example condition: every 5 lines
 			const bufferedContent = this.collectedCodeLines.join('\n');
-			const highlightedCodeBlock = hljs.highlight(bufferedContent, { language: this.currentLanguage }).value;
+			const highlightedCodeBlock = hljs.highlight(bufferedContent.replace(/\t/g, '    '), { language: this.currentLanguage }).value;
 			this._view.webview.postMessage({
 				command: 'chatStream',
 				action: 'addCodeLine',
@@ -262,7 +262,7 @@ export class StreamProcessor {
 	private endCodeBlock(): void {
 		// Process and send collected code lines with highlight.js when the code block ends
 		const fullCodeBlock = this.collectedCodeLines.join('\n');
-		const highlightedCodeBlock = hljs.highlight(fullCodeBlock, { language: this.currentLanguage }).value;
+		const highlightedCodeBlock = hljs.highlight(fullCodeBlock.replace(/\t/g, '    '), { language: this.currentLanguage }).value;
 		this._view.webview.postMessage({
 			command: 'chatStream',
 			action: 'endCodeBlock',

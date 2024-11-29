@@ -5,7 +5,7 @@ import { SearchUtils } from './searchUtils';
 // Detects a filename from a line of text. Returns the filename if detected, or null if no filename is detected.
 export function detectFileNameUri(line: string): { filename: string | null, fileUri: string | null } {
     const trimmedLine = line.trim();
-    
+
     // Combined pattern for various comment styles
     const commentPatterns = [
         /\/\*\s*(\/.+?)\s*\*\//, // /* /path/file.ext */
@@ -63,7 +63,7 @@ export class FileResolver {
     static async resolveFile(fileUri: string): Promise<vscode.Uri | undefined> {
         // 1. Early return if no file specified
         if (!fileUri) {
-            return this.showFileOptions();
+            return this.showFileOptions(fileUri);
         }
 
         // 2. Search for specified file
@@ -100,9 +100,10 @@ export class FileResolver {
         }
     }
 
-    private static async showFileOptions(fileUri?: string): Promise<vscode.Uri | undefined> {
+    private static async showFileOptions(fileUri: string): Promise<vscode.Uri | undefined> {
         const activeEditor = vscode.window.activeTextEditor;
-        const options = this.getFileOptions(activeEditor);
+        const fileName = fileUri ? path.basename(fileUri) : undefined;
+        const options = this.getFileOptions(fileName, activeEditor);
 
         const choice = await vscode.window.showQuickPick(options, {
             placeHolder: fileUri
@@ -110,23 +111,23 @@ export class FileResolver {
                 : 'No file specified. What would you like to do?'
         });
 
-        return this.handleOptionChoice(choice, activeEditor);
+        return this.handleOptionChoice(fileName, choice, activeEditor);
     }
 
-    private static getFileOptions(activeEditor: vscode.TextEditor | undefined) {
+    private static getFileOptions(fileName: string | undefined, activeEditor: vscode.TextEditor | undefined) {
         return [
             {
+                label: "$(file-add) Create new file",
+                description: fileName ? `${fileName}` : '',
+                value: 'create'
+            },
+            {
                 label: "$(file) Apply to current file",
-                description: activeEditor 
-                    ? vscode.workspace.asRelativePath(activeEditor.document.uri) 
+                description: activeEditor
+                    ? vscode.workspace.asRelativePath(activeEditor.document.uri)
                     : "No file open",
                 value: 'current',
                 disabled: !activeEditor
-            },
-            {
-                label: "$(file-add) Create new file",
-                description: "Create a new file in the workspace",
-                value: 'create'
             },
             {
                 label: "$(search) Search workspace",
@@ -141,16 +142,17 @@ export class FileResolver {
     }
 
     private static async handleOptionChoice(
+        fileName: string | undefined,
         choice: { value: string } | undefined,
         activeEditor: vscode.TextEditor | undefined
     ): Promise<vscode.Uri | undefined> {
         if (!choice) return undefined;
 
         switch (choice.value) {
+            case 'create':
+                return this.createNewFile(fileName);
             case 'current':
                 return activeEditor?.document.uri;
-            case 'create':
-                return this.createNewFile();
             case 'search':
                 return this.showFileSearch();
             default:
@@ -183,7 +185,7 @@ export class FileResolver {
         return selected?.uri;
     }
 
-    private static async createNewFile(): Promise<vscode.Uri | undefined> {
+    private static async createNewFile(newFileName?: string): Promise<vscode.Uri | undefined> {
         // First try to get the directory of the active file
         const activeEditor = vscode.window.activeTextEditor;
         let targetFolder: vscode.Uri;
@@ -215,11 +217,18 @@ export class FileResolver {
             }
         }
 
-        // Get filename from user
-        const fileName = await vscode.window.showInputBox({
-            prompt: 'Enter the new file name',
-            placeHolder: 'example.ts'
-        });
+        let fileName: string | undefined;
+
+        if (!newFileName) {
+            // Get filename from user
+            fileName = await vscode.window.showInputBox({
+                prompt: 'Enter the new file name',
+                placeHolder: 'example.ts'
+            });
+        } else {
+            // Extract filename from fileUri
+            fileName = newFileName;
+        }
 
         if (!fileName) return undefined;
 

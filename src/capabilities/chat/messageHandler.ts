@@ -130,7 +130,7 @@ export class MessageHandler {
 					this.sessionManager.getCurrentSession().messages.push({
 						role: "assistant",
 						content: fullText,
-						name: "Mode.Diagnostics.Chat"
+						name: "Mode"
 					});
 				}
 			});

@@ -97,7 +97,8 @@ export class DiffManager {
             const primaryIndex = parseInt(baseNum, 10) - 1;  // Decrement by 1
             const secondaryIndex = fraction ? parseInt(fraction, 10) : 0;
 
-            if (primaryIndex < 0 || primaryIndex >= chunks.length) {
+            // Skip if the primary index is out of bounds
+            if (primaryIndex < 0) {
                 continue;
             }
 
@@ -105,13 +106,21 @@ export class DiffManager {
             const existingIndex = linesMap.get(key);
 
             if (addContent !== undefined) {
-                const newIndex = lines.length;
-                lines.push([primaryIndex, secondaryIndex, addContent]);
-                linesMap.set(`${primaryIndex}_${secondaryIndex}`, newIndex);
+                if (existingIndex !== undefined) {
+                    // Override the existing value
+                    lines[existingIndex][2] = addContent;
+                } else {
+                    // Add new entry
+                    const newIndex = lines.length;
+                    lines.push([primaryIndex, secondaryIndex, addContent]);
+                    linesMap.set(key, newIndex);
+                }
             } else if (modifyContent !== undefined && existingIndex !== undefined) {
+                // Modify existing content
                 lines[existingIndex][2] = modifyContent;
             } else if (existingIndex !== undefined) {
-                lines[existingIndex] = [-1, -1, '']; // Mark for removal
+                // Mark for removal
+                lines[existingIndex] = [-1, -1, ''];
                 linesMap.delete(key);
             }
         }
