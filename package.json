@@ -104,7 +104,7 @@
 		"configuration": {
 			"title": "Mode",
 			"properties": {
-				"mode.chat.providers": {
+				"mode.providers": {
 					"order": 0,
 					"type": "array",
 					"items": {
@@ -136,10 +136,14 @@
 											"type": "boolean",
 											"default": false
 										},
-										"context": {
+										"largeContext": {
 											"type": "boolean",
 											"default": true,
 											"markdownDescription": "Whether the model supports large context inputs needed for some Mode features (like Merge). Turned off for small local models."
+										},
+										"autocomplete": {
+											"type": "boolean",
+											"default": false
 										}
 									},
 									"required": [
@@ -168,7 +172,8 @@
 								},
 								{
 									"name": "gpt-4o-mini",
-									"vision": true
+									"vision": true,
+									"autocomplete": true
 								},
 								{
 									"name": "o1-preview"
@@ -188,7 +193,8 @@
 								},
 								{
 									"name": "claude-3-5-haiku-20241022",
-									"vision": true
+									"vision": true,
+									"autocomplete": true
 								}
 							],
 							"visible": true
@@ -197,7 +203,8 @@
 							"name": "google",
 							"models": [
 								{
-									"name": "gemini-1.5-flash"
+									"name": "gemini-1.5-flash",
+									"autocomplete": true
 								},
 								{
 									"name": "gemini-1.5-pro"
@@ -212,7 +219,8 @@
 									"name": "mistral-large-latest"
 								},
 								{
-									"name": "codestral-latest"
+									"name": "codestral-latest",
+									"autocomplete": true
 								}
 							],
 							"visible": true
@@ -224,7 +232,8 @@
 									"name": "command-r-plus-08-2024"
 								},
 								{
-									"name": "command-light"
+									"name": "command-light",
+									"autocomplete": true
 								}
 							],
 							"visible": true
@@ -235,12 +244,14 @@
 								{
 									"name": "llama3.2",
 									"endpoint": "http://localhost:11434/v1",
-									"context": false
+									"largeContext": false,
+									"autocomplete": true
 								},
 								{
 									"name": "deepseek-coder",
 									"endpoint": "http://localhost:11434/v1",
-									"context": false
+									"largeContext": false,
+									"autocomplete": true
 								}
 							],
 							"visible": true
@@ -248,8 +259,14 @@
 					],
 					"markdownDescription": "Configure AI providers and their models for Mode Chat. Add or update models as they become available. To set up API keys, [click here](command:mode.manageApiKeys) or use 'Mode: Manage API Keys' command."
 				},
-				"mode.excludePatterns": {
+				"mode.enableAutoComplete": {
 					"order": 1,
+					"type": "boolean",
+					"default": true,
+					"description": "Enable or disable AI-powered autocompletion"
+				},
+				"mode.excludePatterns": {
+					"order": 2,
 					"type": "array",
 					"items": {
 						"type": "string"
@@ -284,6 +301,7 @@
 		"obfuscate": "javascript-obfuscator out --output out --config obfuscator-config.json"
 	},
 	"devDependencies": {
+		"@types/lodash": "^4.17.13",
 		"@types/markdown-it": "^14.1.2",
 		"@types/node": "^22",
 		"@types/uuid": "^10.0.0",
@@ -304,9 +322,13 @@
 		"@vscode/codicons": "0.0.36",
 		"cohere-ai": "^7.14.0",
 		"highlight.js": "^11.10.0",
+		"lodash": "^4.17.21",
 		"markdown-it": "^14.1.0",
 		"openai": "^4.72.0",
-		"uuid": "^11.0.3"
+		"uuid": "^11.0.3",
+		"vscode-languageclient": "^9.0.1",
+		"vscode-languageserver": "^9.0.1",
+		"vscode-languageserver-textdocument": "^1.0.12"
 	},
 	"icon": "media/Mode.png",
 	"files": [

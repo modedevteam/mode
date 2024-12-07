@@ -4,7 +4,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CohereClientV2 as Cohere } from 'cohere-ai';
 import { Mistral } from '@mistralai/mistralai';
 import { GoogleAIFileManager } from "@google/generative-ai/server";
-import * as vscode from 'vscode';
 import { LLMChatParams } from './llmChatParams';
 
 export interface AIMessage {
@@ -85,7 +84,7 @@ export class AIClient {
         });
     }
 
-    async chat(outputChannel: vscode.OutputChannel, messages: AIMessage[], callbacks: StreamCallbacks): Promise<string> {
+    async chat(messages: AIMessage[], callbacks: StreamCallbacks): Promise<string> {
         try {
             const filteredMessages = this.filterDiagnosticMessages(messages);
 
@@ -107,8 +106,6 @@ export class AIClient {
             }
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-            outputChannel.appendLine(`\n\nMode Client Error: ${errorMessage}`);
-            outputChannel.show();
             throw error;
         }
     }

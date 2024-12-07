@@ -4,14 +4,16 @@ import { SessionManager } from './chatSessionManager';
 import { MessageHandler } from './messageHandler';
 import { AIClientFactory } from '../../common/llms/aiClientFactory';
 import { AIClient, AIMessage } from '../../common/llms/aiClient';
-import { AIModel } from '../../common/llms/aiModel';
+import { AIModelUtils } from '../../common/llms/aiModelUtils';
 import { StreamProcessor } from './streamProcessor';
+import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
 
 export class ChatManager {
 	private aiClient: AIClient | null = null;
 	private md: MarkdownIt;
 	private currentModel: string;
 	private currentHandler: MessageHandler | null = null;
+	private readonly context: vscode.ExtensionContext;
 
 	constructor(
 		private readonly _view: vscode.WebviewView,
@@ -19,14 +21,16 @@ export class ChatManager {
 		context: vscode.ExtensionContext
 	) {
 		this.md = new MarkdownIt();
-		AIClientFactory.initialize(context);
 		this.currentModel = '';
+		this.context = context;
 	}
 
 	private async initializeClient(selectedModel: string): Promise<{ success: boolean; message?: string }> {
 		if (this.currentModel !== selectedModel || !this.aiClient) {
-			const provider = AIModel.getModelInfo(selectedModel)!.provider;
-			const result = await AIClientFactory.createClient(provider, selectedModel);
+			const modelInfo = AIModelUtils.getModelInfo(selectedModel)!;
+			const provider = modelInfo.provider;
+			const apiKey = await new ApiKeyManager(this.context).getApiKey(provider);
+			const result = await AIClientFactory.createClient(provider, selectedModel, apiKey, modelInfo.endpoint);
 			if (result.success && result.client) {
 				this.aiClient = result.client;
 				this.currentModel = selectedModel;
@@ -66,7 +70,7 @@ export class ChatManager {
 			this.md,
 			this.sessionManager
 		);
-		await this.currentHandler.handleMessage(outputChannel, message, images, codeSnippets, fileUrls, currentFile);
+		await this.currentHandler.handleMessage(message, images, codeSnippets, fileUrls, currentFile);
 		this.sessionManager.saveSessions();
 
 		// Generate overview
@@ -82,7 +86,7 @@ export class ChatManager {
 
 		try {
 			let overview = '';
-			await this.aiClient.chat(outputChannel, [
+			await this.aiClient.chat([
 				{ role: "system", "content": "Summarize the current conversation in five or fewer meaningful words. If the conversation cannot be summarized, respond with 'New Chat'." },
 				{ role: "user", content: message }
 			], {

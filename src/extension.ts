@@ -1,12 +1,16 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { ModeChatViewProvider } from './browser/chat/chatViewProvider';
 import { ApiKeyManager } from './common/llms/aiApiKeyManager';
-import { AIModel } from './common/llms/aiModel';
+import { AIModelUtils } from './common/llms/aiModelUtils';
 import { AskModeCodeActionProvider } from './capabilities/quickfix/askModeCodeActionProvider';
 import { ErrorMessages } from './common/user-messages/errorMessages';
+import { LanguageServerClient } from './capabilities/autocomplete/client';
 
 // Add at the top of the file, outside the activate function
 const LICENSE_CHECK_INTERVAL = 1000 * 60 * 60 * 24; // 24 hours in milliseconds
+
+let languageClient: LanguageServerClient;
 
 export async function activate(context: vscode.ExtensionContext) {
 
@@ -15,7 +19,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(outputChannel);
 	
 	// Initialize default AI model settings
-	AIModel.initialize(context);
+	AIModelUtils.initialize(context);
 
 	// Initialize API Key Manager
 	const apiKeyManager = new ApiKeyManager(context);
@@ -92,7 +96,15 @@ export async function activate(context: vscode.ExtensionContext) {
 			providedCodeActionKinds: AskModeCodeActionProvider.providedCodeActionKinds
 		})
 	);
+
+	// Initialize the language server client
+	const serverModule = context.asAbsolutePath(
+		path.join('out', 'capabilities', 'autocomplete', 'server.js')
+	  );
+	languageClient = new LanguageServerClient(serverModule, context);
+	await languageClient.start();
 }
 
 export async function deactivate(context: vscode.ExtensionContext) {
+	return languageClient?.stop();
 }

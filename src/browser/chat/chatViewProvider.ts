@@ -4,7 +4,7 @@ import * as path from 'path';
 import { ChatViewHtmlGenerator } from './chatViewHtmlGenerator';
 import { DiffManager } from '../../capabilities/diff/diffManager';
 import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
-import { AIModel } from '../../common/llms/aiModel';
+import { AIModelUtils } from '../../common/llms/aiModelUtils';
 import { ErrorMessages } from '../../common/user-messages/errorMessages';
 import { SearchUtils } from '../../common/io/searchUtils';
 import { SessionManager } from '../../capabilities/chat/chatSessionManager';
@@ -95,7 +95,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 						}
 						break;
 					case 'modelSelected':
-						AIModel.setLastUsedModel(message.model);
+						AIModelUtils.setLastUsedModel(message.model);
 						break;
 				}
 			});
@@ -119,7 +119,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 		selectedModel: string
 	) {
 		// Check if the selected model supports large context
-		const modelSupportsContext = AIModel.supportsContext(selectedModel);
+		const modelSupportsContext = AIModelUtils.supportsLargeContext(selectedModel);
 
 		if (modelSupportsContext) {
 			// Add the currently opened files to the fileUrls so users don't have to manually add them
@@ -137,7 +137,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 
 		if (this._chatManager) {
 			// Check if the selected model supports images
-			const modelSupportsImages = AIModel.supportsVision(selectedModel);
+			const modelSupportsImages = AIModelUtils.supportsVision(selectedModel);
 			const imagesToSend = modelSupportsImages ? images : [];
 
 			this._chatManager.sendMessage(this._outputChannel, message, imagesToSend, codeSnippets, fileUrls, currentFile, selectedModel);

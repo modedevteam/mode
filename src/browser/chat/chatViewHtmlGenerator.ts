@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { AIModel } from '../../common/llms/aiModel';
+import { AIModelUtils } from '../../common/llms/aiModelUtils';
 
 export class ChatViewHtmlGenerator {
 	constructor(private readonly _extensionUri: vscode.Uri) { }
@@ -73,8 +73,8 @@ export class ChatViewHtmlGenerator {
 	}
 
 	private _getDropdownHtml(): string {
-		const models = AIModel.getAllModels();
-		const defaultModel = AIModel.getLastUsedModel();
+		const models = AIModelUtils.getAllModels();
+		const defaultModel = AIModelUtils.getLastUsedModel();
 		
 		const modelOptions = Object.entries(models)
 			.map(([modelId]) => `

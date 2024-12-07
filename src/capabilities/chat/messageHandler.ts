@@ -26,7 +26,6 @@ export class MessageHandler {
 	}
 
 	public async handleMessage(
-		outputChannel: vscode.OutputChannel,
 		message: string,
 		images: { id: string; data: string; fileName?: string }[],
 		codeSnippets: { fileName: string; range: string; code: string }[] = [],
@@ -79,7 +78,7 @@ export class MessageHandler {
 			// call LLM provider and stream the response
 			let isFirstToken = true;
 
-			await this.aiClient!.chat(outputChannel, messages as AIMessage[], {
+			await this.aiClient!.chat(messages as AIMessage[], {
 				onToken: (token) => {
 					if (this.isCancelled) {
 						return;

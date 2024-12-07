@@ -3,8 +3,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { FileResolver } from '../../common/io/fileUtils';
 import * as os from 'os';
-import { AIModel } from '../../common/llms/aiModel';
-import { AIClient, AIMessage } from '../../common/llms/aiClient';
+import { AIModelUtils } from '../../common/llms/aiModelUtils';
+import { AIMessage } from '../../common/llms/aiClient';
 import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
 import { DIFF_MESSAGES } from '../../common/user-messages/messages';
 import { ErrorMessages } from '../../common/user-messages/errorMessages';
@@ -24,15 +24,16 @@ export class DiffManager {
     }
 
     private async setupAIClient(progress: vscode.Progress<{ message?: string; increment?: number }>) {
-        const currentModel = AIModel.getLastUsedModel();
-        const modelInfo = AIModel.getModelInfo(currentModel);
+        const currentModel = AIModelUtils.getLastUsedModel();
+        const modelInfo = AIModelUtils.getModelInfo(currentModel);
         if (!modelInfo) {
             throw new Error('No model configuration found');
         }
 
         progress.report({ message: getDiffProgressMessage('AI_INIT'), increment: 2.5 });
 
-        const result = await AIClientFactory.createClient(modelInfo.provider, currentModel);
+        const apiKey = await this._apiKeyManager.getApiKey(modelInfo.provider);
+        const result = await AIClientFactory.createClient(modelInfo.provider, currentModel, apiKey, modelInfo.endpoint);
         if (!result.success || !result.client) {
             throw new Error(result.message || 'Failed to create AI client');
         }
@@ -198,7 +199,7 @@ export class DiffManager {
                     let processedTokens = 0;
                     const estimatedTotalTokens = proposedChanges.length / 4; // Rough estimate
 
-                    await aiClient.chat(this._outputChannel, messages, {
+                    await aiClient.chat(messages, {
                         onToken: () => {
                             processedTokens++;
                             if (processedTokens % 20 === 0) { // Update every 20 tokens

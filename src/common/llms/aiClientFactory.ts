@@ -1,45 +1,31 @@
 import { AIClient, AIClientConfig } from './aiClient';
-import { ApiKeyManager } from './aiApiKeyManager';
-import * as vscode from 'vscode';
-import { AIModel } from './aiModel';
 
 export class AIClientFactory {
     private static instances: Map<string, AIClient> = new Map();
-    private static apiKeyManager: ApiKeyManager;
 
     private constructor() { } // Prevent instantiation
 
-    public static initialize(context: vscode.ExtensionContext): void {
-        AIClientFactory.apiKeyManager = new ApiKeyManager(context);
-    }
-
     public static async createClient(
         provider: string,
-        model: string
+        model: string,
+        apiKey: string | undefined,
+        endpoint: string | undefined
     ): Promise<{ success: boolean; message?: string; client?: AIClient }> {
         const instanceKey = `${provider}-${model || 'default'}`;
+
+        // Validate API key is provided for non-local providers
+        if (provider.toLowerCase() !== 'ollama' && !apiKey) {
+            return {
+                success: false,
+                message: 'API key must be provided for non-local providers'
+            };
+        }
 
         // Return existing instance if available
         const existingClient = this.instances.get(instanceKey);
         if (existingClient) {
             return { success: true, client: existingClient };
         }
-
-        let apiKey: string | undefined;
-        // Fetch API key if not ollama
-        if (provider !== 'ollama') {
-            apiKey = await this.apiKeyManager?.getApiKey(provider);
-            if (!apiKey) {
-                return {
-                    success: false,
-                    message: `APIKey.${provider}.Missing`
-                };
-            }
-        }
-
-        // Get model info
-        const modelInfo = AIModel.getModelInfo(model);
-        const endpoint = modelInfo!.endpoint;
 
         try {
             const config: AIClientConfig = {
