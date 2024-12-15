@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.13] - 2024-12-14
+### Added
+* Autocomplete (experimental)
+
 ## [1.0.12] - 2024-11-29
 ### Added
 * Ollama support

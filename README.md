@@ -9,9 +9,9 @@ Mode is the first personal AI code copilot that connects directly to your favori
 
 ### 🌟🌟 Weekly Highlight 🌟🌟
 
-Ollama support is here! Check out our thread on [Reddit](https://www.reddit.com/r/Python/comments/185558x/mode_ai_code_copilot_now_supports_ollama/)! 
+Autocomplete is here! This experimental version is constantly improving—updates are rolling out daily!
 
-![Ollama](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/Ollama.gif)
+![Autocomplete](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/Autocomplete.gif)
 
 ## Why Mode?
 
