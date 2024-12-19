@@ -175,7 +175,7 @@
 									"autocomplete": true
 								},
 								{
-									"name": "o1-preview"
+									"name": "o1"
 								},
 								{
 									"name": "o1-mini"
@@ -191,7 +191,7 @@
 									"vision": true
 								},
 								{
-									"name": "claude-3-5-haiku-20241022",
+									"name": "claude-3-5-haiku-latest",
 									"vision": true,
 									"autocomplete": true
 								}
@@ -201,6 +201,14 @@
 						{
 							"name": "google",
 							"models": [
+								{
+									"name": "gemini-2.0-flash-exp",
+									"autocomplete": true
+								},
+								{
+									"name": "gemini-2.0-flash-thinking-exp",
+									"autocomplete": true
+								},
 								{
 									"name": "gemini-1.5-flash",
 									"autocomplete": true
