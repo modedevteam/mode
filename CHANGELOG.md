@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.14] - 2024-12-19
+### Added
+Add the latest o1 and gemini 2 (thinking) models
+
 ## [1.0.13] - 2024-12-14
 ### Added
 * Autocomplete (experimental)
