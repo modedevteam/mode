@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.15] - 2024-12-21
+### Added
+OpenRouter and LM Studio Support
+
+
 ## [1.0.14] - 2024-12-19
 ### Added
 Add the latest o1 and gemini 2 (thinking) models

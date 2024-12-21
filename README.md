@@ -9,7 +9,9 @@ Mode is the first personal AI code copilot that connects directly to your favori
 
 ### 🌟🌟 Weekly Highlight 🌟🌟
 
-Autocomplete is here! This experimental version is constantly improving—updates are rolling out daily!
+* Google Gemini 2 is here!
+* Mode now supports OpenRouter and LM Studio!
+* Autocomplete is here! This experimental version is constantly improving—updates are rolling out daily!
 
 ![Autocomplete](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/Autocomplete.gif)
 
