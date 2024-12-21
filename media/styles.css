@@ -418,7 +418,7 @@ body {
     display: flex;
     align-items: center;
     transition: background-color 0.2s ease;
-    font-size: 13px;
+    font-size: 11px;
     font-family: var(--vscode-font-family);
     white-space: nowrap;
     overflow: hidden;
@@ -446,7 +446,7 @@ body {
 .dropdown-toggle .selected-model {
     margin-right: 2px;
     /* Reduced from 4px to 2px */
-    font-size: 13px;
+    font-size: 11px;
 }
 
 /* Hide the dropdown arrow when showing selected option */
