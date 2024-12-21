@@ -43,34 +43,42 @@ Guidelines:
    - Dependencies between changes
    {{/change_analysis}}
 
-4. Code Changes
-   Format:
+4. Code changes in ONE of these two formats:
+
+   Option 1 - Simple Code Snippets (using Markdown):
+   \`\`\`typescript
+   function example() {
+      // Your code here
+   }
+   \`\`\`
+
+   Option 2 - File Changes (using specialized tags):
    {{code_changes}}
    {{fp}}/path/to/file.ts{{/fp}}
    {{ci}}block_[timestamp]_[hash]{{/ci}}
    {{l}}typescript{{/l}}
-   {{i}}[line number]{{/i}}{{c}}[context line with original indentation]{{/c}}
+   {{i}}4{{/i}}{{c}}    const config = require('./config');{{/c}}
    {{/code_changes}}
 
-   Code Identifier Rules:
+   1. Code Identifier Rules:
    - Format: block_[timestamp]_[hash]
    - timestamp: Unix timestamp in seconds
    - hash: First 8 characters of SHA-256 hash of file path + initial line content
    - Example: block_1679529600_8f4e2d1c
 
-   Line Number Rules:
-   1. General Rules:
-      - Each line number MUST be unique - never reuse a number
-      - Maintain strict numerical order including decimals
-      - Never use {{v}} tags in output (only used in input)
-      - Preserve exact indentation from original file
-      
-   2. Line Operations:
-      - Context (unchanged): {{c}} with exact original line number and original indentation
-      - Modifications: {{m}} with exact original line number and original indentation
-      - Removals: {{r}} with exact original line number
-      - Insertions before line N: Use (N-1).1, (N-1).2, etc. with {{a}}, matching indentation of context
-      - Insertions after line N: Use N.1, N.2, etc. with {{a}}, matching indentation of context
+   2. Line Number Rules:
+      1. General Rules:
+         - Each line number MUST be unique - never reuse a number
+         - Maintain strict numerical order including decimals
+         - Never use {{v}} tags in output (only used in input)
+         - Preserve exact indentation from original file
+
+      2. Line Operations:
+         - Context (unchanged): {{c}} with exact original line number and original indentation
+         - Modifications: {{m}} with exact original line number and original indentation
+         - Removals: {{r}} with exact original line number
+         - Insertions before line N: Use (N-1).1, (N-1).2, etc. with {{a}}, matching indentation of context
+         - Insertions after line N: Use N.1, N.2, etc. with {{a}}, matching indentation of context
 
    3. Critical Rules:
       - NEVER modify the same line number twice
