@@ -45,6 +45,13 @@ export class ApiKeyManager {
             keyPrefix: '',
             secretKey: 'mode.key.mistral',
             url: 'https://console.mistral.ai/api-keys/'
+        },
+        {
+            id: 'openrouter',
+            name: 'OpenRouter',
+            keyPrefix: '',
+            secretKey: 'mode.key.openrouter',
+            url: 'https://openrouter.ai/docs/api-keys'
         }
     ];
 

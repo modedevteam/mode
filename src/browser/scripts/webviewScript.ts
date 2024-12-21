@@ -897,7 +897,6 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                 friendlyMessage += `${reason.toLowerCase()} `;
             }
             friendlyMessage += `(${category.toLowerCase()}).`;
-            friendlyMessage += ' <a href="#" class="open-settings">Open settings</a>';
         }
 
         // Render the error message

@@ -65,6 +65,17 @@ export class AIClient {
                 this.openaiClient = new OpenAI({ baseURL: config.endpoint });
                 this.model = config.model;
                 break;
+            case 'openrouter':
+                this.openaiClient = new OpenAI({
+                    baseURL: config.endpoint ? config.endpoint : "https://openrouter.ai/api/v1",
+                    apiKey: config.apiKey,
+                    defaultHeaders: {
+                        "HTTP-Referer": "https://getmode.dev",
+                        "X-Title": "Mode",
+                    }
+                });
+                this.model = config.model;
+                break;
         }
     }
 
@@ -101,6 +112,8 @@ export class AIClient {
                     return this.mistralChat(filteredMessages, callbacks);
                 case 'ollama':
                     return this.openaiChat(filteredMessages, callbacks);
+                case 'openrouter':
+                    return this.openaiChat(filteredMessages, callbacks);
                 default:
                     throw new Error(`Unsupported provider: ${this.provider}`);
             }
@@ -125,8 +138,8 @@ export class AIClient {
                 role: msg.role as 'user' | 'assistant',
                 content: typeof msg.content === 'string' && msg.content.startsWith('data:image')
                     ? AIClient.formatImageContent('anthropic', msg.content)
-                    : Array.isArray(msg.content) 
-                        ? msg.content 
+                    : Array.isArray(msg.content)
+                        ? msg.content
                         : [{ type: 'text', text: msg.content as string }]
             }));
 
@@ -339,8 +352,8 @@ export class AIClient {
             case 'anthropic':
                 return [{
                     type: "image",
-                    source: { 
-                        type: "base64", 
+                    source: {
+                        type: "base64",
                         media_type: imageData.startsWith('data:image/png') ? 'image/png' : 'image/jpeg',
                         data: imageData.replace(/^data:image\/(png|jpeg);base64,/, '')
                     }
@@ -350,9 +363,9 @@ export class AIClient {
                     text: "Describe this image."
                 }];
             case 'openai':
-                return [{ 
-                    type: "image_url", 
-                    image_url: { url: imageData } 
+                return [{
+                    type: "image_url",
+                    image_url: { url: imageData }
                 }];
             case 'google':
                 return [{

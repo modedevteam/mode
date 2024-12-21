@@ -114,6 +114,7 @@
 								"enum": [
 									"openai",
 									"anthropic",
+									"openrouter",
 									"google",
 									"mistral",
 									"cohere",
@@ -199,6 +200,22 @@
 							"visible": true
 						},
 						{
+							"name": "openrouter",
+							"models": [
+								{
+									"name": "anthropic/claude-3.5-haiku-20241022",
+									"autocomplete": true
+								},
+								{
+									"name": "openai/o1"
+								},
+								{
+									"name": "x-ai/grok-2-1212"
+								}
+							],
+							"visible": true
+						},
+						{
 							"name": "google",
 							"models": [
 								{
@@ -246,7 +263,7 @@
 							"visible": true
 						},
 						{
-							"name": "ollama",
+							"name": "local",
 							"models": [
 								{
 									"name": "llama3.2",

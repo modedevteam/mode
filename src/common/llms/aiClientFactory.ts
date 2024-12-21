@@ -14,10 +14,10 @@ export class AIClientFactory {
         const instanceKey = `${provider}-${model || 'default'}`;
 
         // Validate API key is provided for non-local providers
-        if (provider.toLowerCase() !== 'ollama' && !apiKey) {
+        if (provider.toLowerCase() !== 'local' && !apiKey) {
             return {
                 success: false,
-                message: 'API key must be provided for non-local providers'
+                message: `apikey.${provider}.missing`
             };
         }
 
