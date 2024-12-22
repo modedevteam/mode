@@ -1,9 +1,15 @@
 # Changelog
 
+## [1.0.16] - 2024-12-22
+### Added
+* Allow users to disable Mode's default prompts or define their own
+
+### Fixed
+* Fixed the local provider not working
+
 ## [1.0.15] - 2024-12-21
 ### Added
 OpenRouter and LM Studio Support
-
 
 ## [1.0.14] - 2024-12-19
 ### Added

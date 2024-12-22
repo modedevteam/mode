@@ -2,7 +2,7 @@
 	"name": "mode",
 	"displayName": "Mode: Your Personal AI Code Copilot",
 	"description": "Mode directly connects to your favorite language models, providing secure, direct, and fully customizable AI coding support.",
-	"version": "1.0.15",
+	"version": "1.0.16",
 	"publisher": "aruna-labs",
 	"homepage": "https://www.getmode.dev",
 	"private": true,
