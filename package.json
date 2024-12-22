@@ -283,7 +283,7 @@
 					],
 					"markdownDescription": "Configure AI providers and their models for Mode Chat. Add or update models as they become available. To set up API keys, [click here](command:mode.manageApiKeys) or use 'Mode: Manage API Keys' command."
 				},
-				"mode.enableAutoComplete": {
+				"mode.autocomplete.enabled": {
 					"order": 1,
 					"type": "boolean",
 					"default": true,

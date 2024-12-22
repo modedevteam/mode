@@ -14,7 +14,7 @@ export function getModeConfig() {
  */
 export function isAutoCompleteEnabled(): boolean {
     const config = getModeConfig();
-    return config.get<boolean>('enableAutoComplete', true);
+    return config.get<boolean>('autocomplete.enabled', true);
 }
 
 /**
