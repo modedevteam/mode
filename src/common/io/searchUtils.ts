@@ -1,6 +1,7 @@
 // Moving search logic from chatViewProvider.ts to a dedicated utility file
 
 import * as vscode from 'vscode';
+import { getExcludePatterns } from '../configUtils';
 import * as path from 'path';
 
 export interface FileQuickPickItem extends vscode.QuickPickItem {
@@ -14,8 +15,7 @@ export class SearchUtils {
      * Gets the exclude patterns from workspace configuration
      */
     static getExcludePatterns(): string {
-        const config = vscode.workspace.getConfiguration('mode');
-        const excludePatterns = config.get<string[]>('excludePatterns', []);
+        const excludePatterns = getExcludePatterns();
         return excludePatterns.length > 0 ? `{${excludePatterns.join(',')}}` : '';
     }
 

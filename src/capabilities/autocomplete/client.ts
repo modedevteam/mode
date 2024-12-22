@@ -22,6 +22,7 @@ import {
 } from 'vscode-languageclient/node';
 import { CompletionItem } from 'vscode-languageserver-protocol';
 import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
+import { isAutoCompleteEnabled } from '../../common/configUtils';
 import { AIModelUtils } from '../../common/llms/aiModelUtils';
 import { State } from 'vscode-languageclient';
 import { Logger } from './logging';
@@ -132,8 +133,7 @@ export class LanguageServerClient {
     };
 
     // Only register the inline completion provider if autocomplete is enabled
-    const config = workspace.getConfiguration('mode');
-    const autoCompleteEnabled = config.get<boolean>('enableAutoComplete', true);
+    const autoCompleteEnabled = isAutoCompleteEnabled();
 
     if (autoCompleteEnabled) {
       // Register the provider for all languages
@@ -161,8 +161,7 @@ export class LanguageServerClient {
 
   public async start(): Promise<void> {
     try {
-      const config = workspace.getConfiguration('mode');
-      const autoCompleteEnabled = config.get<boolean>('enableAutoComplete', true);
+      const autoCompleteEnabled = isAutoCompleteEnabled();
 
       if (!autoCompleteEnabled) {
         Logger.info('[Client] Skipping language server start - autocomplete is disabled');

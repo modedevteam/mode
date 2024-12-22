@@ -1,10 +1,11 @@
 import type { AIClientConfig } from './aiClient';
 import * as vscode from 'vscode';
+import { getProviders } from '../configUtils';
 import { ModelConfigMap, ModelInfo, ProviderConfig, PROVIDERS_CONFIG_KEY } from './aiModel';
 
 export class AIModelUtils {
     static getProvider(provider: string): ProviderConfig | undefined {
-        const providers = vscode.workspace.getConfiguration('mode').get<ProviderConfig[]>(PROVIDERS_CONFIG_KEY) || [];
+        const providers = getProviders(PROVIDERS_CONFIG_KEY);
         return providers.find(p => p.name === provider && p.visible);
     }
 
@@ -42,7 +43,7 @@ export class AIModelUtils {
     }
 
     private static getModelInfoFromConfig(modelKey: string): ModelInfo | undefined {
-        const providers = vscode.workspace.getConfiguration('mode').get<ProviderConfig[]>(PROVIDERS_CONFIG_KEY) || [];
+        const providers = getProviders(PROVIDERS_CONFIG_KEY);
         
         for (const provider of providers) {
             const model = provider.models.find(model => model.name === modelKey);
@@ -58,7 +59,7 @@ export class AIModelUtils {
     }
 
     private static getModelsFromConfig(): Record<string, ModelInfo> {
-        const providers = vscode.workspace.getConfiguration('mode').get<ProviderConfig[]>(PROVIDERS_CONFIG_KEY) || [];
+        const providers = getProviders(PROVIDERS_CONFIG_KEY);
         const modelMap: ModelConfigMap = {};
 
         for (const provider of providers) {
@@ -78,7 +79,7 @@ export class AIModelUtils {
         const modelInfo = this.getModelInfoFromConfig(modelKey);
         if (!modelInfo) return true;
 
-        const providers = vscode.workspace.getConfiguration('mode').get<ProviderConfig[]>(PROVIDERS_CONFIG_KEY) || [];
+        const providers = getProviders(PROVIDERS_CONFIG_KEY);
         for (const provider of providers) {
             const model = provider.models.find(model => model.name === modelKey);
             if (model) {
@@ -92,7 +93,7 @@ export class AIModelUtils {
         const modelInfo = this.getModelInfoFromConfig(modelKey);
         if (!modelInfo) return false;
 
-        const providers = vscode.workspace.getConfiguration('mode').get<ProviderConfig[]>(PROVIDERS_CONFIG_KEY) || [];
+        const providers = getProviders(PROVIDERS_CONFIG_KEY);
         for (const provider of providers) {
             const model = provider.models.find(model => model.name === modelKey);
             if (model && model.vision) {
@@ -106,7 +107,7 @@ export class AIModelUtils {
         const modelInfo = this.getModelInfoFromConfig(modelKey);
         if (!modelInfo) return false;
 
-        const providers = vscode.workspace.getConfiguration('mode').get<ProviderConfig[]>(PROVIDERS_CONFIG_KEY) || [];
+        const providers = getProviders(PROVIDERS_CONFIG_KEY);
         for (const provider of providers) {
             const model = provider.models.find(model => model.name === modelKey);
             if (model && model.autocomplete) {
@@ -126,7 +127,7 @@ export class AIModelUtils {
         const modelInfo = this.getModelInfoFromConfig(modelKey);
         if (!modelInfo) return modelKey;
 
-        const providers = vscode.workspace.getConfiguration('mode').get<ProviderConfig[]>(PROVIDERS_CONFIG_KEY) || [];
+        const providers = getProviders(PROVIDERS_CONFIG_KEY);
         const provider = providers.find(p => p.name === modelInfo.provider);
         
         if (provider) {
