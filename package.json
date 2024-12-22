@@ -268,13 +268,11 @@
 								{
 									"name": "llama3.2",
 									"endpoint": "http://localhost:11434/v1",
-									"largeContext": false,
 									"autocomplete": true
 								},
 								{
 									"name": "deepseek-coder",
 									"endpoint": "http://localhost:11434/v1",
-									"largeContext": false,
 									"autocomplete": true
 								}
 							],
