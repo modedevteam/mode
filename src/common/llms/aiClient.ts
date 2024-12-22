@@ -61,7 +61,7 @@ export class AIClient {
                 this.mistralClient = new Mistral({ apiKey: config.apiKey });
                 this.model = config.model;
                 break;
-            case 'ollama':
+            case 'local':
                 this.openaiClient = new OpenAI({ baseURL: config.endpoint });
                 this.model = config.model;
                 break;
@@ -110,7 +110,7 @@ export class AIClient {
                     return this.cohereChat(filteredMessages, callbacks);
                 case 'mistral':
                     return this.mistralChat(filteredMessages, callbacks);
-                case 'ollama':
+                case 'local':
                     return this.openaiChat(filteredMessages, callbacks);
                 case 'openrouter':
                     return this.openaiChat(filteredMessages, callbacks);

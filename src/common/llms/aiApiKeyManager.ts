@@ -179,6 +179,11 @@ export class ApiKeyManager {
     }
 
     public async getApiKey(providerId: string): Promise<string | undefined> {
+        // We don't need an API key for the local provider
+        if (providerId.toLowerCase() === 'local') {
+            return undefined;
+        }
+
         const provider = ApiKeyManager.API_PROVIDERS.find(p => p.id === providerId);
         if (!provider) {
             throw new Error(`Unknown provider: ${providerId}`);

@@ -118,7 +118,7 @@
 									"google",
 									"mistral",
 									"cohere",
-									"ollama"
+									"local"
 								]
 							},
 							"models": {
