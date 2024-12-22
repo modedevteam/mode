@@ -34,3 +34,27 @@ export function getExcludePatterns(): string[] {
 export function getProviders(configKey: string): ProviderConfig[] {
     return getModeConfig().get<ProviderConfig[]>(configKey) || [];
 }
+
+/**
+ * Gets the prompt override from autocomplete configuration
+ * @returns The prompt override string if set, empty string otherwise
+ */
+export function getPromptOverride(): string {
+    return getModeConfig().get<string>('autocomplete.promptOverride', '');
+}
+
+/**
+ * Gets the chat pre-prompt configuration
+ * @returns boolean indicating if pre-prompt is disabled
+ */
+export function getChatPrePromptDisabled(): boolean {
+    return getModeConfig().get<boolean>('chat.disablePrePrompt', false);
+}
+
+/**
+ * Gets the chat prompt override configuration
+ * @returns The prompt override string if set
+ */
+export function getChatPromptOverride(): string | undefined {
+    return getModeConfig().get<string>('chat.promptOverride');
+}

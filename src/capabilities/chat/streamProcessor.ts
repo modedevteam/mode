@@ -3,6 +3,7 @@ import MarkdownIt = require('markdown-it');
 import hljs from 'highlight.js';
 import { detectFileNameUri } from '../../common/io/fileUtils';
 import { SessionManager } from './chatSessionManager';
+import { getChatPrePromptDisabled } from '../../common/configUtils';
 
 // New StreamProcessor class
 export class StreamProcessor {
@@ -270,7 +271,8 @@ export class StreamProcessor {
 			filename: this.filename || undefined,
 			fileUri: this.fileUri || undefined,
 			codeId: this.codeId || undefined,
-			language: this.currentLanguage || undefined // Send the language
+			language: this.currentLanguage || undefined, // Send the language
+			showAIMerge: !getChatPrePromptDisabled()
 		});
 		this.collectedCodeLines = []; // Clear the collected lines
 

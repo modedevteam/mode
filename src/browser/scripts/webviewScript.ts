@@ -275,7 +275,8 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                         <div class="code-id hidden">${message.codeId || ''}</div>
                         <div class="buttons">
                             <button id="copy-code-button" class="icon-button" title="Copy"><i class="codicon codicon-copy"></i></button>
-                            <button id="merge-button" class="icon-button" title="Apply with AI"><i class="codicon codicon-sparkle-filled"></i></button>
+                            ${message.showAIMerge ? `<button id="merge-button" class="icon-button" title="Apply with AI"><i class="codicon codicon-sparkle-filled"></i></button>` : ''}
+                        </div>
                         </div>
                     `;
 

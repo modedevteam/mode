@@ -23,9 +23,11 @@ import {
 import { CompletionItem } from 'vscode-languageserver-protocol';
 import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
 import { isAutoCompleteEnabled } from '../../common/configUtils';
+import { getPromptOverride } from '../../common/configUtils';
 import { AIModelUtils } from '../../common/llms/aiModelUtils';
 import { State } from 'vscode-languageclient';
 import { Logger } from './logging';
+import { codeCompletionPrompt } from '../../common/llms/aiPrompts';
 
 export class LanguageServerClient {
   private client: LanguageClient;
@@ -150,13 +152,20 @@ export class LanguageServerClient {
     const modelInfo = AIModelUtils.getModelInfo(autocompleteModel)!;
     const apiKey = await apiKeyManager.getApiKey(modelInfo.provider);
     const endpoint = modelInfo.endpoint || undefined;
+    const prompt = this.getPrompt();
     
     return { 
       apiKey,
       model: autocompleteModel,
       provider: modelInfo.provider,
-      endpoint
+      endpoint,
+      prompt
     };
+  }
+
+  private getPrompt(): string {
+    const promptOverride = getPromptOverride();
+    return promptOverride || codeCompletionPrompt;
   }
 
   public async start(): Promise<void> {
