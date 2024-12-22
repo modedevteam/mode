@@ -3,7 +3,7 @@ import MarkdownIt = require('markdown-it');
 import hljs from 'highlight.js';
 import { detectFileNameUri } from '../../common/io/fileUtils';
 import { SessionManager } from './chatSessionManager';
-import { getChatPrePromptDisabled } from '../../common/configUtils';
+import { getChatPrePromptDisabled, getChatPromptOverride } from '../../common/configUtils';
 
 // New StreamProcessor class
 export class StreamProcessor {
@@ -264,6 +264,11 @@ export class StreamProcessor {
 		// Process and send collected code lines with highlight.js when the code block ends
 		const fullCodeBlock = this.collectedCodeLines.join('\n');
 		const highlightedCodeBlock = hljs.highlight(fullCodeBlock.replace(/\t/g, '    '), { language: this.currentLanguage }).value;
+		
+		// Check if the user has defined a custom prompt
+		const chatPromptOverride = getChatPromptOverride();
+		const isEmptyOverride = chatPromptOverride === null || chatPromptOverride === undefined || chatPromptOverride.trim() === '';
+		
 		this._view.webview.postMessage({
 			command: 'chatStream',
 			action: 'endCodeBlock',
@@ -272,7 +277,7 @@ export class StreamProcessor {
 			fileUri: this.fileUri || undefined,
 			codeId: this.codeId || undefined,
 			language: this.currentLanguage || undefined, // Send the language
-			showAIMerge: !getChatPrePromptDisabled()
+			showAIMerge: !getChatPrePromptDisabled() && isEmptyOverride
 		});
 		this.collectedCodeLines = []; // Clear the collected lines
 
