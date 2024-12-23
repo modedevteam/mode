@@ -9,3 +9,4 @@ package-lock.json
 
 # Ignore distribution build output
 dist/
+.DS_Store
