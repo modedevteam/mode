@@ -1,7 +1,9 @@
 ![GitHub issues](https://img.shields.io/github/issues/modedevteam/mode-community)
 ![Follow](https://img.shields.io/twitter/follow/modedevteam?style=social)
 [![Discord](https://img.shields.io/badge/Discord-Join%20Us-blue)](https://discord.gg/FRDxms57pG)
-![Early Access](https://img.shields.io/badge/status-early%20access-007FFF)
+![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/aruna-labs.mode)
+![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/stars/aruna-labs.mode)
+![Visual Studio Marketplace Last Updated](https://img.shields.io/visual-studio-marketplace/last-updated/aruna-labs.mode)
 
 # Mode
 
