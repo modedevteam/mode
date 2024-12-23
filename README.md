@@ -1,7 +1,10 @@
 ![GitHub issues](https://img.shields.io/github/issues/modedevteam/mode-community)
 ![Follow](https://img.shields.io/twitter/follow/modedevteam?style=social)
 [![Discord](https://img.shields.io/badge/Discord-Join%20Us-blue)](https://discord.gg/FRDxms57pG)
-![Early Access](https://img.shields.io/badge/status-early%20access-007FFF)
+[![Early Access](https://img.shields.io/badge/status-early%20access-007FFF)](https://marketplace.visualstudio.com/items?itemName=aruna-labs.mode)
+[![VSCode Extension Installs](https://img.shields.io/vscode-marketplace/i/aruna-labs.mode.svg)](https://marketplace.visualstudio.com/items?itemName=aruna-labs.mode)
+![VSCode Extension Downloads](https://img.shields.io/vscode-marketplace/d/aruna-labs.mode.svg)
+![VSCode Extension Rating](https://img.shields.io/vscode-marketplace/r/aruna-labs.mode.svg)
 
 # Mode
 
