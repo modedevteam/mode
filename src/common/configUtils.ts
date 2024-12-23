@@ -47,7 +47,7 @@ export function getPromptOverride(): string {
  * Gets the chat pre-prompt configuration
  * @returns boolean indicating if pre-prompt is disabled
  */
-export function getChatPrePromptDisabled(): boolean {
+export function isChatPrePromptDisabled(): boolean {
     return getModeConfig().get<boolean>('chat.disablePrePrompt', false);
 }
 
@@ -57,4 +57,9 @@ export function getChatPrePromptDisabled(): boolean {
  */
 export function getChatPromptOverride(): string | undefined {
     return getModeConfig().get<string>('chat.promptOverride');
+}
+
+export function isPromptOverrideEmpty(): boolean {
+    const promptOverride = getChatPromptOverride();
+    return promptOverride === null || promptOverride === undefined || promptOverride.trim() === '';
 }

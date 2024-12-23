@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid'; // Add this import for generating unique IDs
 import { chatPrompt } from '../../common/llms/aiPrompts';
-import { getChatPrePromptDisabled, getChatPromptOverride } from '../../common/configUtils';
+import { isChatPrePromptDisabled, getChatPromptOverride, isPromptOverrideEmpty } from '../../common/configUtils';
 import { AIMessage } from '../../common/llms/aiClient';
 
 export interface ChatSession {
@@ -25,17 +25,17 @@ export class SessionManager {
 	}
 
 	public createNewSession() {
-		const disablePrePrompt = getChatPrePromptDisabled();
 		const promptOverride = getChatPromptOverride();
-		const initialPrompt = promptOverride || chatPrompt;
+		const disableSystemPrompt = isChatPrePromptDisabled() && isPromptOverrideEmpty();
+		const systemPrompt = disableSystemPrompt ? '' : (promptOverride || chatPrompt);
 
 		const newSession = {
 			id: uuidv4(),
 			name: `Session ${this.chatSessions.length + 1}`,
 			systemTime: Date.now(),
-			messages: disablePrePrompt ? [] : [{
+			messages: disableSystemPrompt ? [] : [{
 				role: "system" as const,
-				content: initialPrompt
+				content: systemPrompt
 			}],
 			overview: "New Chat",
 			codeMap: {}
