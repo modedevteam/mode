@@ -50,7 +50,7 @@ export class LanguageServerClient {
     };
 
     // Initialize options synchronously
-    let initOptions: any = {};
+    const initOptions: any = {};
 
     // Updated client options
     const clientOptions: LanguageClientOptions = {
