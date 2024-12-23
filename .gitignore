@@ -9,3 +9,6 @@ package-lock.json
 
 # Ignore distribution build output
 dist/
+
+# Ingore any file with .lockb extension
+*.lockb
