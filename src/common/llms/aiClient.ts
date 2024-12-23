@@ -62,7 +62,8 @@ export class AIClient {
                 this.model = config.model;
                 break;
             case 'local':
-                this.openaiClient = new OpenAI({ baseURL: config.endpoint });
+                // dummy api key to allow local mode to work
+                this.openaiClient = new OpenAI({ baseURL: config.endpoint, apiKey: "local"});
                 this.model = config.model;
                 break;
             case 'openrouter':
