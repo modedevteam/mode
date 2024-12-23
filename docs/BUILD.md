@@ -10,13 +10,7 @@ npm install
 
 ## build and compile
 npm run compile 
-```
 
-## Build & Install via Bun
-```
-## install dependencies
-bun install
-
-## build and compile
-bun run compile 
+## to preview changes while building
+npm run watch
 ```
