@@ -63,3 +63,12 @@ export function isPromptOverrideEmpty(): boolean {
     const promptOverride = getChatPromptOverride();
     return promptOverride === null || promptOverride === undefined || promptOverride.trim() === '';
 }
+
+export function getChatAdditionalPrompt(): string | undefined {
+    return getModeConfig().get<string>('chat.additionalPrompt');
+}
+
+export function isChatAdditionalPromptEmpty(): boolean {
+    const additionalPrompt = getChatAdditionalPrompt();
+    return additionalPrompt === null || additionalPrompt === undefined || additionalPrompt.trim() === '';
+}

@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid'; // Add this import for generating unique IDs
 import { chatPrompt } from '../../common/llms/aiPrompts';
-import { isChatPrePromptDisabled, getChatPromptOverride, isPromptOverrideEmpty } from '../../common/configUtils';
+import { isChatPrePromptDisabled, getChatPromptOverride, isPromptOverrideEmpty, getChatAdditionalPrompt, isChatAdditionalPromptEmpty } from '../../common/configUtils';
 import { AIMessage } from '../../common/llms/aiClient';
 
 export interface ChatSession {
@@ -25,9 +25,15 @@ export class SessionManager {
 	}
 
 	public createNewSession() {
+		// Get the prompt override and check if we should add a system prompt
 		const promptOverride = getChatPromptOverride();
 		const disableSystemPrompt = isChatPrePromptDisabled() && isPromptOverrideEmpty();
-		const systemPrompt = disableSystemPrompt ? '' : (promptOverride || chatPrompt);
+		let systemPrompt = disableSystemPrompt ? '' : (promptOverride || chatPrompt);
+
+		// Retrieve and append the additional sysem prompt if it exists
+		if (!isChatAdditionalPromptEmpty()) {
+			systemPrompt += ` ${getChatAdditionalPrompt()}`;
+		}
 
 		const newSession = {
 			id: uuidv4(),

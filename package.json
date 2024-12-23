@@ -281,32 +281,38 @@
 					],
 					"markdownDescription": "Configure AI providers and their models for Mode Chat. Add or update models as they become available. To set up API keys, [click here](command:mode.manageApiKeys) or use 'Mode: Manage API Keys' command."
 				},
-				"mode.chat.disablePrePrompt": {
+				"mode.chat.additionalPrompt": {
 					"order": 1,
+					"type": "string",
+					"default": "",
+					"markdownDescription": "Add an additional prompt to the system prompt. This prompt will be added after the default system prompt."
+				},
+				"mode.chat.disablePrePrompt": {
+					"order": 2,
 					"type": "boolean",
 					"default": false,
 					"markdownDescription": "Prevent Mode from adding its own system prompt, providing a vanilla experience."
 				},
 				"mode.chat.promptOverride": {
-					"order": 2,
+					"order": 3,
 					"type": "string",
 					"default": "",
 					"markdownDescription": "Replace Mode's default system prompt with your custom prompt. Examples: 'You are a helpful assistant.', 'Provide concise and accurate answers.', or 'Assist the user with coding queries in a friendly manner.'"
 				},
 				"mode.autocomplete.enabled": {
-					"order": 3,
+					"order": 4,
 					"type": "boolean",
 					"default": true,
 					"description": "Enable or disable AI-powered autocompletion"
 				},
 				"mode.autocomplete.promptOverride": {
-					"order": 4,
+					"order": 5,
 					"type": "string",
 					"default": "",
 					"markdownDescription": "Provide a custom prompt in markdown format for AI-powered autocompletion"
 				},
 				"mode.excludePatterns": {
-					"order": 5,
+					"order": 6,
 					"type": "array",
 					"items": {
 						"type": "string"
