@@ -9,3 +9,4 @@ package-lock.json
 
 # Ignore distribution build output
 dist/
+.vscode-test/
