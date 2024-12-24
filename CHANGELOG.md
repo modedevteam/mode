@@ -1,11 +1,22 @@
 # Changelog
 
-## [1.0.16] - 2024-12-22
+## [1.0.16] - 2024-12-24
 ### Added
-* Allow users to disable Mode's default prompts or define their own
+- Configurable display name for models
+- VSCode marketplace badges
+- Dummy API key for OpenAI SDK to work with local endpoints
+- Introduced the ability to add an additional prompt, disable default prompts, and define your own
 
 ### Fixed
-* Fixed the local provider not working
+- Resolved issue where Prompt Override didn't work
+
+### Changed
+- Updated `README.md`
+- Made Show AI merge more stringent
+
+### Removed
+- Deleted unnecessary package file
+- Removed context restrictions for local models
 
 ## [1.0.15] - 2024-12-21
 ### Added
