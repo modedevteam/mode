@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.17] - 2024-12-24
+### Added
+- Introduced documentation for the project's core features and usage guidelines (usermanual.md)
+### Fixed
+- Removed unncessary tags
+
 ## [1.0.16] - 2024-12-24
 ### Added
 - Configurable display name for models

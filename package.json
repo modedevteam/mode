@@ -2,7 +2,7 @@
 	"name": "mode",
 	"displayName": "Mode: Your Personal AI Code Copilot",
 	"description": "Mode directly connects to your favorite language models, providing secure, direct, and fully customizable AI coding support.",
-	"version": "1.0.16",
+	"version": "1.0.17",
 	"publisher": "aruna-labs",
 	"homepage": "https://www.getmode.dev",
 	"private": true,
@@ -285,14 +285,14 @@
 							"models": [
 								{
 									"name": "llama3.2",
-									"displayName": "Llama 3.2",
-									"endpoint": "http://localhost:11434/v1",
+									"displayName": "Llama 3.2 (Ollama)",
+									"endpoint": "http://localhost:1234/v1",
 									"autocomplete": true
 								},
 								{
-									"name": "deepseek-coder",
-									"displayName": "DeepSeek Coder",
-									"endpoint": "http://localhost:11434/v1",
+									"name": "llama-3.2-3b-instruct",
+									"displayName": "Llama 3.2 (LM Studio)",
+									"endpoint": "http://localhost:1234/v1",
 									"autocomplete": true
 								}
 							],
