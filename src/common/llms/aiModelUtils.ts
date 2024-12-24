@@ -49,6 +49,8 @@ export class AIModelUtils {
             const model = provider.models.find(model => model.name === modelKey);
             if (provider.visible && model) {
                 return {
+                    name: model.name,
+                    displayName: model.displayName,
                     provider: provider.name,
                     endpoint: model.endpoint
                 };
@@ -66,6 +68,8 @@ export class AIModelUtils {
             if (provider.visible) {
                 for (const model of provider.models) {
                     modelMap[model.name] = {
+                        name: model.name,
+                        displayName: model.displayName,
                         provider: provider.name
                     };
                 }

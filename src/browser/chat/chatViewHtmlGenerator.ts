@@ -77,17 +77,22 @@ export class ChatViewHtmlGenerator {
 		const defaultModel = AIModelUtils.getLastUsedModel();
 		
 		const modelOptions = Object.entries(models)
-			.map(([modelId]) => `
-				<a href="#" data-option="${modelId}">
-					${modelId}
-				</a>
-			`)
+			.map(([modelId, modelData]) => {
+				const displayName = modelData.displayName || modelId;
+				return `
+					<a href="#" data-option="${modelId}">
+						${displayName}
+					</a>
+				`;
+			})
 			.join('');
+
+		const defaultDisplayName = models[defaultModel]?.displayName || defaultModel;
 
 		return `
 			<div class="dropdown">
 				<button class="dropdown-toggle" title="Select model">
-					<span class="selected-model">${defaultModel}</span>
+					<span class="selected-model" data-model-id="${defaultModel}">${defaultDisplayName}</span>
 					<i class="codicon codicon-chevron-down"></i>
 				</button>
 				<div class="dropdown-content">

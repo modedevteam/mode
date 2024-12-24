@@ -42,7 +42,7 @@ declare function acquireVsCodeApi(): any;
 
         // Get the selected model from the dropdown
         const selectedOptionSpan = document.querySelector('.selected-model') as HTMLSpanElement;
-        const selectedModel = selectedOptionSpan.textContent || 'gpt-4o'; // Default to gpt-4o if not set
+        const selectedModel = selectedOptionSpan.dataset.modelId;
 
         if (message || currentImages.length > 0 || highlightedCodeSnippets.length > 0) {
             isProcessing = true;
@@ -572,11 +572,16 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                 e.preventDefault();
                 const optionElement = e.target as HTMLAnchorElement;
                 if (optionElement.dataset.option) {
-                    selectedOptionSpan.textContent = optionElement.dataset.option;
+                    const modelId = optionElement.dataset.option;
+                    const modelDisplayName = optionElement.textContent?.trim() || modelId;
+
+                    selectedOptionSpan.textContent = modelDisplayName;
+                    selectedOptionSpan.dataset.modelId = modelId; // Ensure model-id is updated
+
                     // Notify extension about model change
                     vscode.postMessage({
                         command: 'modelSelected',
-                        model: optionElement.dataset.option
+                        model: modelId
                     });
                 }
                 dropdownContent.style.display = 'none';
@@ -742,6 +747,15 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
         newChatButton.addEventListener('click', () => {
             vscode.postMessage({ command: 'chatSession', action: 'new' });
         });
+
+        // Add event listener for manage-keys links using event delegation
+        chatOutput.addEventListener('click', (e) => {
+            const target = e.target as HTMLElement;
+            if (target.classList.contains('manage-keys')) {
+                e.preventDefault();
+                vscode.postMessage({ command: 'manageApiKeys' });
+            }
+        });
     }
     //#endregion
 
@@ -902,15 +916,6 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
 
         // Render the error message
         renderMessage(friendlyMessage, 'assistant');
-
-        // Add click event listener for the manage keys link
-        const manageKeysLink = chatOutput.querySelector('.manage-keys');
-        if (manageKeysLink) {
-            manageKeysLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                vscode.postMessage({ command: 'manageApiKeys' });
-            });
-        }
 
         // Reset streaming and processing states
         isStreaming = false;
