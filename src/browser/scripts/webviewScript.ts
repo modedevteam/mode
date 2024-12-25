@@ -1,4 +1,8 @@
-/// <reference lib="dom" />
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Aruna Labs, Inc. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 
 declare function acquireVsCodeApi(): any;
 

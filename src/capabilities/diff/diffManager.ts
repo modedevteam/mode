@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Aruna Labs, Inc. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -245,11 +250,9 @@ export class DiffManager {
             return; // Abort if no file was resolved
         }
 
-        let modifiedUri: vscode.Uri | null;
-
         const proposedChanges = codeId ? this._sessionManager.getCurrentSession().codeMap[codeId] : rawCode;
         const usePregeneratedChanges = !!(codeId && proposedChanges && proposedChanges.trim() !== '');
-        modifiedUri = await this.prepareAIDiff(originalUri, proposedChanges || '', usePregeneratedChanges);
+        const modifiedUri = await this.prepareAIDiff(originalUri, proposedChanges || '', usePregeneratedChanges);
 
         // Return early if user cancelled the merge operation
         if (!modifiedUri) {

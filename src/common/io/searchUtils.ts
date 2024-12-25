@@ -1,4 +1,8 @@
-// Moving search logic from chatViewProvider.ts to a dedicated utility file
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Aruna Labs, Inc. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 
 import * as vscode from 'vscode';
 import { getExcludePatterns } from '../configUtils';

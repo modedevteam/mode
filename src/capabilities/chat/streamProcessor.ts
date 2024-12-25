@@ -1,5 +1,10 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Aruna Labs, Inc. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 import * as vscode from 'vscode';
-import MarkdownIt = require('markdown-it');
+import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import { detectFileNameUri } from '../../common/io/fileUtils';
 import { SessionManager } from './chatSessionManager';

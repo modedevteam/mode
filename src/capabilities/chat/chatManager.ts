@@ -1,5 +1,10 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Aruna Labs, Inc. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 import * as vscode from 'vscode';
-import MarkdownIt = require('markdown-it');
+import MarkdownIt from 'markdown-it';
 import { SessionManager } from './chatSessionManager';
 import { MessageHandler } from './messageHandler';
 import { AIClientFactory } from '../../common/llms/aiClientFactory';

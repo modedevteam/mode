@@ -1,6 +1,11 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Aruna Labs, Inc. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 import * as vscode from 'vscode';
 import { AIMessage } from '../../common/llms/aiClient';
-import MarkdownIt = require('markdown-it');
+import MarkdownIt from 'markdown-it';
 import { StreamProcessor } from './streamProcessor';
 import { AIClient } from '../../common/llms/aiClient';
 import { formatFileContent } from '../../common/rendering/llmTranslationUtils';

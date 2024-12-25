@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Aruna Labs, Inc. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { ModeChatViewProvider } from './browser/chat/chatViewProvider';
@@ -17,13 +22,13 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Create output channel
 	const outputChannel = vscode.window.createOutputChannel('Mode');
 	context.subscriptions.push(outputChannel);
-	
+
 	// Initialize default AI model settings
 	AIModelUtils.initialize(context);
 
 	// Initialize API Key Manager
 	const apiKeyManager = new ApiKeyManager(context);
-	
+
 	// Register API Key Manager commands
 	context.subscriptions.push(...apiKeyManager.registerCommands());
 
@@ -100,7 +105,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Initialize the language server client
 	const serverModule = context.asAbsolutePath(
 		path.join('out', 'capabilities', 'autocomplete', 'server.js')
-	  );
+	);
 	languageClient = new LanguageServerClient(serverModule, context);
 	await languageClient.start();
 }
