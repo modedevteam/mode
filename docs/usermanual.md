@@ -1,3 +1,18 @@
+## Table of Contents
+- [Welcome to Mode](#welcome-to-mode)
+- [Installation](#installation)
+- [Features](#features)
+  - [Chat](#chat)
+  - [Auto Merge](#auto-merge)
+  - [Autocomplete](#autocomplete)
+- [Settings and Configuration](#settings-and-configuration)
+  - [Providers](#providers)
+  - [Prompt Customization](#prompt-customization)
+- [Common Use Cases](#common-use-cases)
+  - [Running Local Models](#running-local-models)
+- [FAQs](#faqs)
+- [Support](#support)
+
 # Mode User Manual
 
 ## Welcome to Mode
