@@ -4,6 +4,7 @@
 	"description": "Mode directly connects to your favorite language models, providing secure, direct, and fully customizable AI coding support.",
 	"version": "1.0.17",
 	"publisher": "aruna-labs",
+	"license": "MIT",
 	"homepage": "https://www.getmode.dev",
 	"private": true,
 	"keywords": [

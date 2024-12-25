@@ -4,6 +4,7 @@
 ![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/aruna-labs.mode)
 ![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/stars/aruna-labs.mode)
 ![Visual Studio Marketplace Last Updated](https://img.shields.io/visual-studio-marketplace/last-updated/aruna-labs.mode)
+[![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 
 # Mode
 
