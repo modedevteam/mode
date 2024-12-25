@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 // eslint-disable-next-line no-undef
 module.exports = {
 	root: true,
@@ -27,6 +26,6 @@ module.exports = {
 			" *  Copyright (c) Aruna Labs, Inc. All rights reserved.",
 			" *  Licensed under the MIT License. See LICENSE.md in the project root for license information.",
 			" *--------------------------------------------------------------------------------------------"
-		], 2]
+		], 1]
 	}
 };

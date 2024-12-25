@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 import { Connection } from 'vscode-languageserver/node';
 
 export const DEBUG_MODE = false;

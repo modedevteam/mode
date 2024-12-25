@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 export const ErrorMessages = {
     OPEN_CHAT_EXTENSION_ERROR: (error: unknown) =>
         `Error opening Mode chat: ${error instanceof Error ? error.message : String(error)}`,

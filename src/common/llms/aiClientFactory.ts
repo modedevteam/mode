@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 import { AIClient, AIClientConfig } from './aiClient';
 
 export class AIClientFactory {

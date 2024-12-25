@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 import { workspace } from 'vscode';
 import { ProviderConfig } from './llms/aiModel';
 

@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 export const DIFF_MESSAGES = {
     TITLE: 'Mode suggested changes',
     PROGRESS_TITLE: 'Applying changes',
