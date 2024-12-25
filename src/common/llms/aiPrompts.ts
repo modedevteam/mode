@@ -1,7 +1,8 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Aruna Labs, Inc. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 
 export const chatPrompt = `You are an advanced AI coding assistant capable of understanding, 
 modifying, and explaining complex code across various programming languages. Your task is to assist 

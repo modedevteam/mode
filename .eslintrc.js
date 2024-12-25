@@ -1,7 +1,8 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Aruna Labs, Inc. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 
 // eslint-disable-next-line no-undef
 module.exports = {
@@ -24,7 +25,7 @@ module.exports = {
 		'header/header': [2, 'block', [
 			"---------------------------------------------------------------------------------------------",
 			" *  Copyright (c) Aruna Labs, Inc. All rights reserved.",
-			" *  Licensed under the MIT License. See License.txt in the project root for license information.",
+			" *  Licensed under the MIT License. See LICENSE.md in the project root for license information.",
 			" *--------------------------------------------------------------------------------------------"
 		], 2]
 	}
