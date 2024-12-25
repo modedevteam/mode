@@ -1,7 +1,7 @@
 # Mode User Manual
 
 ## Welcome to Mode
-Mode is your Personal AI Code Copilot designed to streamline your coding process. With features like chat-based assistance, intelligent merge capabilities, and an upcoming autocomplete feature, Mode integrates directly with LLM providers like OpenAI to personalize your AI experience.
+Mode is your Personal AI Code Copilot designed to streamline your coding process. With features like chat-based assistance, intelligent merge, and autocomplete, Mode integrates directly with LLM providers to personalize your coding experience.
 
 ---
 
