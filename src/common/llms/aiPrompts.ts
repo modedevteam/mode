@@ -96,6 +96,7 @@ Guidelines:
       - ALWAYS maintain numerical order
       - ALWAYS use {{c}} for context lines
       - NEVER skip steps in decimal progression (.1, .2, .3...)
+      - ALWAYS preserve formatting from original file, for example, if the original file uses tabs, you must use tabs, if the original file uses spaces, you must use spaces
       
    4. Indentation Rules:
       - ALWAYS copy exact indentation style from original file (spaces vs tabs)
