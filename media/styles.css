@@ -1011,3 +1011,12 @@ code {
     font-weight: normal;
     font-style: normal;
 }
+
+.icon-button[data-active="true"] {
+    background-color: var(--vscode-button-background);
+    opacity: 1;
+}
+
+.icon-button[data-active="true"] i {
+    color: var(--vscode-button-foreground);
+}

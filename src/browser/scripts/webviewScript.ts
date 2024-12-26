@@ -598,6 +598,15 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
     function setupEventListeners() {
         messageInput.focus();
 
+        // autocode
+        const autocodeButton = document.getElementById('autocode-button');
+        if (autocodeButton) {
+            autocodeButton.addEventListener('click', () => {
+                const currentState = autocodeButton.getAttribute('data-active') === 'true';
+                autocodeButton.setAttribute('data-active', (!currentState).toString());
+            });
+        }
+
         // chat input
         sendButton.addEventListener('click', sendMessage);
         messageInput.addEventListener('input', activateInput);
