@@ -52,7 +52,8 @@ export class ChatManager {
 		codeSnippets: { fileName: string; range: string; code: string }[] = [],
 		fileUrls: string[] = [],
 		currentFile: string | null = null,
-		selectedModel: string
+		selectedModel: string,
+		auto: boolean
 	): Promise<void> {
 
 		const initResult = await this.initializeClient(selectedModel);
@@ -75,7 +76,7 @@ export class ChatManager {
 			this.md,
 			this.sessionManager
 		);
-		await this.currentHandler.handleMessage(message, images, codeSnippets, fileUrls, currentFile);
+		await this.currentHandler.handleMessage(message, images, codeSnippets, fileUrls, currentFile, auto);
 		this.sessionManager.saveSessions();
 
 		// Generate overview

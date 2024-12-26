@@ -35,7 +35,8 @@ export class MessageHandler {
 		images: { id: string; data: string; fileName?: string }[],
 		codeSnippets: { fileName: string; range: string; code: string }[] = [],
 		fileUrls: string[] = [],
-		currentFilePath: string | null = null
+		currentFilePath: string | null = null,
+		auto: boolean
 	): Promise<void> {
 		try {
 			this.isCancelled = false;
@@ -102,8 +103,8 @@ export class MessageHandler {
 						return;
 					}
 
-									// Send buffered markdown lines as a complete formatted block
-				this.streamProcessor.finalize();
+					// Send buffered markdown lines as a complete formatted block
+					this.streamProcessor.finalize();
 
 					// save the raw full text for diagnostic purposes
 					this.sessionManager.getCurrentSession().messages.push({
@@ -114,13 +115,16 @@ export class MessageHandler {
 				}
 			});
 
-				// Mark the end of the stream
-				if (!this.isCancelled) {
-					this._view.webview.postMessage({
-						command: 'chatStream',
-						action: 'endStream'
-					});
-				}
+			// tool calls
+
+
+			// Mark the end of the stream
+			if (!this.isCancelled) {
+				this._view.webview.postMessage({
+					command: 'chatStream',
+					action: 'endStream'
+				});
+			}
 		} catch (error) {
 			let errorMessage: string;
 			let fullError: string;

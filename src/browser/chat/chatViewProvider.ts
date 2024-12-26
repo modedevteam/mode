@@ -73,7 +73,8 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 							message.codeSnippets,
 							message.fileUrls,
 							message.currentFile,
-							message.selectedModel
+							message.selectedModel,
+							message.auto
 						);
 						break;
 					case 'showQuickPick':
@@ -121,7 +122,8 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 		codeSnippets: { fileName: string; range: string; code: string }[] = [],
 		fileUrls: string[] = [],
 		currentFile: string | null = null,
-		selectedModel: string
+		selectedModel: string,
+		auto: boolean
 	) {
 		// Add the currently opened files to the fileUrls so users don't have to manually add them
 		// Only include files, not output channel, terminal, etc.
@@ -137,7 +139,16 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 			const modelSupportsImages = AIModelUtils.supportsVision(selectedModel);
 			const imagesToSend = modelSupportsImages ? images : [];
 
-			this._chatManager.sendMessage(this._outputChannel, message, imagesToSend, codeSnippets, fileUrls, currentFile, selectedModel);
+			this._chatManager.sendMessage(
+				this._outputChannel,
+				message,
+				imagesToSend,
+				codeSnippets,
+				fileUrls,
+				currentFile,
+				selectedModel,
+				auto
+			);
 		}
 	}
 

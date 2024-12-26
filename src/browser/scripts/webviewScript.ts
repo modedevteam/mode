@@ -47,6 +47,10 @@ declare function acquireVsCodeApi(): any;
         const selectedOptionSpan = document.querySelector('.selected-model') as HTMLSpanElement;
         const selectedModel = selectedOptionSpan.dataset.modelId;
 
+        // Get the autocode button state
+        const autocodeButton = document.getElementById('autocode-button');
+        const auto = autocodeButton?.getAttribute('data-active') === 'true';
+
         if (message || currentImages.length > 0 || highlightedCodeSnippets.length > 0) {
             isProcessing = true;
             updateSendButtonState();
@@ -64,7 +68,8 @@ declare function acquireVsCodeApi(): any;
                 codeSnippets: highlightedCodeSnippets,
                 fileUrls: Array.from(addedFileUris),
                 currentFile: currentFilePill?.textContent,
-                selectedModel: selectedModel // Include the selected model
+                selectedModel: selectedModel,
+                auto: auto // Include the autocode state
             });
 
             // Clear the context after sending
@@ -557,6 +562,10 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
         const dropdownToggle = document.querySelector('.dropdown-toggle') as HTMLButtonElement;
         const dropdownContent = document.querySelector('.dropdown-content') as HTMLDivElement;
         const selectedOptionSpan = document.querySelector('.selected-model') as HTMLSpanElement;
+        const autocodeButton = document.getElementById('autocode-button') as HTMLButtonElement;
+
+        // Initial visibility check for autocode button
+        updateAutocodeButtonVisibility(selectedOptionSpan.dataset.modelId || '');
 
         dropdownToggle.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -579,7 +588,10 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                     const modelDisplayName = optionElement.textContent?.trim() || modelId;
 
                     selectedOptionSpan.textContent = modelDisplayName;
-                    selectedOptionSpan.dataset.modelId = modelId; // Ensure model-id is updated
+                    selectedOptionSpan.dataset.modelId = modelId;
+
+                    // Update autocode button visibility
+                    updateAutocodeButtonVisibility(modelId);
 
                     // Notify extension about model change
                     vscode.postMessage({
@@ -591,6 +603,15 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                 dropdownToggle.classList.remove('open');
             });
         });
+    }
+
+    // Add this new function to handle autocode button visibility
+    function updateAutocodeButtonVisibility(modelId: string) {
+        const autocodeButton = document.getElementById('autocode-button');
+        if (autocodeButton) {
+            const shouldShow = modelId.toLowerCase().includes('claude');
+            autocodeButton.style.display = shouldShow ? 'flex' : 'none';
+        }
     }
     //#endregion
 
