@@ -84,20 +84,6 @@ export class AIModelUtils {
         return modelMap;
     }
 
-    public static supportsLargeContext(modelKey: string): boolean {
-        const modelInfo = this.getModelInfoFromConfig(modelKey);
-        if (!modelInfo) return true;
-
-        const providers = getProviders(PROVIDERS_CONFIG_KEY);
-        for (const provider of providers) {
-            const model = provider.models.find(model => model.name === modelKey);
-            if (model) {
-                return model.largeContext !== false;
-            }
-        }
-        return true;
-    }
-
     public static supportsVision(modelKey: string): boolean {
         const modelInfo = this.getModelInfoFromConfig(modelKey);
         if (!modelInfo) return false;

@@ -10,7 +10,6 @@ export interface ProviderConfig {
         displayName?: string;
         endpoint?: string;
         vision?: boolean;
-        largeContext?: boolean;
         autocomplete?: boolean;
     }[];
     visible: boolean;
