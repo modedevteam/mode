@@ -30,24 +30,11 @@ export class SessionManager {
 	}
 
 	public createNewSession() {
-		// Get the prompt override and check if we should add a system prompt
-		const promptOverride = getChatPromptOverride();
-		const disableSystemPrompt = isChatPrePromptDisabled() && isPromptOverrideEmpty();
-		let systemPrompt = disableSystemPrompt ? '' : (promptOverride || chatPrompt);
-
-		// Retrieve and append the additional sysem prompt if it exists
-		if (!isChatAdditionalPromptEmpty()) {
-			systemPrompt += ` ${getChatAdditionalPrompt()}`;
-		}
-
 		const newSession = {
 			id: uuidv4(),
 			name: `Session ${this.chatSessions.length + 1}`,
 			systemTime: Date.now(),
-			messages: disableSystemPrompt ? [] : [{
-				role: "system" as const,
-				content: systemPrompt
-			}],
+			messages: [],
 			overview: "New Chat",
 			codeMap: {}
 		};

@@ -10,6 +10,14 @@ import { StreamProcessor } from './streamProcessor';
 import { AIClient } from '../../common/llms/aiClient';
 import { formatFileContent } from '../../common/rendering/llmTranslationUtils';
 import { SessionManager } from './chatSessionManager';
+import { chatPrompt } from '../../common/llms/aiPrompts';
+import {
+	isChatPrePromptDisabled,
+	getChatPromptOverride,
+	isPromptOverrideEmpty,
+	getChatAdditionalPrompt,
+	isChatAdditionalPromptEmpty
+} from '../../common/configUtils';
 
 // New class to handle message processing
 export class MessageHandler {
@@ -43,6 +51,24 @@ export class MessageHandler {
 
 			// Access messages from sessionManager
 			const messages = this.sessionManager.getCurrentSession().messages;
+
+			// If this is the first message in the conversation, add the system prompt
+			if (messages.length === 0) {
+				const promptOverride = getChatPromptOverride();
+				const disableSystemPrompt = isChatPrePromptDisabled() && isPromptOverrideEmpty();
+				let systemPrompt = disableSystemPrompt ? '' : (promptOverride || chatPrompt);
+
+				if (!isChatAdditionalPromptEmpty()) {
+					systemPrompt += ` ${getChatAdditionalPrompt()}`;
+				}
+
+				if (!disableSystemPrompt) {
+					messages.push({
+						role: "system" as const,
+						content: systemPrompt
+					});
+				}
+			}
 
 			// Add the user message
 			messages.push({ role: "user", content: message, name: "Mode" });
