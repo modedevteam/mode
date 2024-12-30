@@ -5,6 +5,7 @@
 
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import { REFERENCED_FILE_START, REFERENCED_FILE_END } from '../llms/aiPrompts';
 
 /**
  * Formats the content of a file into a structured array of strings with LLM-compatible markers.
@@ -24,17 +25,15 @@ export async function formatFileContent(fileUrl: string): Promise<string[]> {
 		const fileContent = openDocument ? openDocument.getText() : fs.readFileSync(filePath, 'utf-8');
 		
 		// Split content into lines and create formatted chunks
-		const fileName = uri.path.split('/').pop() || '';
 		const lines = fileContent.split('\n');
 		
 		return [
-			`{{Referenced File}}`,
-			`{{fn}}${fileName}{{/fn}}`,
+			`${REFERENCED_FILE_START}`,
 			`{{fp}}${uri.path}{{/fp}}`,
-			...lines.map((content, index) =>
-				`{{i}}${index + 1}{{/i}}{{v}}${content}{{/v}}`
+			...lines.map((content) =>
+				`{{fc}}${content}{{/fc}}`
 			),
-			`{{/Referenced File}}`
+			`${REFERENCED_FILE_END}`
 		];
 	} catch (error) {
 		console.error(`Error formatting file content: ${error}`);

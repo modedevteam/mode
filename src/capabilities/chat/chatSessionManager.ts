@@ -7,8 +7,6 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid'; // Add this import for generating unique IDs
-import { chatPrompt } from '../../common/llms/aiPrompts';
-import { isChatPrePromptDisabled, getChatPromptOverride, isPromptOverrideEmpty, getChatAdditionalPrompt, isChatAdditionalPromptEmpty } from '../../common/configUtils';
 import { AIMessage } from '../../common/llms/aiClient';
 
 export interface ChatSession {

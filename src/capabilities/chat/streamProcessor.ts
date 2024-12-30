@@ -8,27 +8,38 @@ import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import { detectFileNameUri } from '../../common/io/fileUtils';
 import { SessionManager } from './chatSessionManager';
-import { isChatPrePromptDisabled, getChatPromptOverride, isPromptOverrideEmpty } from '../../common/configUtils';
+import { isChatPrePromptDisabled, isPromptOverrideEmpty } from '../../common/configUtils';
+import { 
+	CODE_CHANGES_END, 
+	CODE_CHANGES_START, 
+	REPLACE_END, 
+	REPLACE_START, 
+	SEARCH_START,
+	SEARCH_END, 
+	FILE_PATH_START,
+	FILE_PATH_END,
+	LANGUAGE_MATCH
+} from '../../common/llms/aiPrompts';
 
 // New StreamProcessor class
 export class StreamProcessor {
 	private isInRegularCodeBlock = false;
 	private isInMergeCodeBlock = false;
+	private isInSearchBlock = false;
+	private isInReplaceBlock = false;
 	private currentLanguage = '';
 	private buffer = '';
 	private renderedContent = '';
 	private isExpectingFilePath = false;
-	private isInCodeAnalysis = false;
-	private isInChangeAnalysis = false;
+	private isInAnalysisBlock = false;
 	private tempFilePath: string | null = null;
 	private isExpectingLanguage = false;
-	private isExpectingCodeId = false;
-	private codeId: string | null = null;
 	private filename: string | null = null;
 	private fileUri: string | null = null;
 	private collectedCodeLines: string[] = [];
-	private collectedUnprocessedCodeLines: string[] = [];
 	private collectedMarkdownLines: string[] = [];
+	private collectedSearchLines: string[] = [];
+	private collectedReplaceLines: string[] = [];
 
 	constructor(
 		private readonly _view: vscode.WebviewView,
@@ -58,6 +69,31 @@ export class StreamProcessor {
 			return;
 		}
 
+		// Handle search block start
+		if (line.includes(SEARCH_START)) {
+			this.isInSearchBlock = true;
+			this.endMarkdownBlock();
+			return;
+		}
+
+		// Handle search block end
+		if (line.includes(SEARCH_END)) {
+			this.isInSearchBlock = false;
+			return;
+		}
+
+		// Handle replace block start
+		if (line.includes(REPLACE_START)) {
+			this.isInReplaceBlock = true;
+			return;
+		}
+
+		// Handle replace block end
+		if (line.includes(REPLACE_END)) {
+			this.isInReplaceBlock = false;
+			return;
+		}
+
 		// Detect start of markdown code block
 		if (line.trim().startsWith('```')) {
 			this.isInRegularCodeBlock = !this.isInRegularCodeBlock;
@@ -84,7 +120,7 @@ export class StreamProcessor {
 		}
 
 		// Start and end {{code_changes}} blocks
-		if (line.includes('{{code_changes}}')) {
+		if (line.includes(CODE_CHANGES_START)) {
 			this.isInMergeCodeBlock = true;
 			this.isExpectingFilePath = true;
 			this.endMarkdownBlock(); // Close the current markdown block
@@ -92,7 +128,8 @@ export class StreamProcessor {
 		}
 
 		// End {{code_changes}} blocks
-		if (line.includes('{{/code_changes}}')) {
+		if (line.includes(CODE_CHANGES_END)) {
+			this.processMergeBlock();
 			this.isInMergeCodeBlock = false;
 			this.endCodeBlock();
 
@@ -103,29 +140,18 @@ export class StreamProcessor {
 
 		// Extract file path from {{fp}} tag
 		if (this.isExpectingFilePath) {
-			const fpMatch = line.match(/{{fp}}(.*?){{\/fp}}/);
+			const fpMatch = line.match(new RegExp(`${FILE_PATH_START}(.*?)${FILE_PATH_END}`));
 			if (fpMatch) {
 				this.tempFilePath = fpMatch[1];
 				this.isExpectingFilePath = false;
-				this.isExpectingCodeId = true; // Now expect the code ID
-				return;
-			}
-		}
-
-		// Extract code ID from {{ci}} tag
-		if (this.isExpectingCodeId) {
-			const ciMatch = line.match(/{{ci}}(.*?){{\/ci}}/);
-			if (ciMatch) {
-				this.isExpectingCodeId = false;
-				this.codeId = ciMatch[1];
-				this.isExpectingLanguage = true; // Now expect the language
+				this.isExpectingLanguage = true; // Now expect language directly instead of code ID
 				return;
 			}
 		}
 
 		// Extract language from {{l}} tag
 		if (this.isExpectingLanguage) {
-			const langMatch = line.match(/{{l}}(.*?){{\/l}}/);
+			const langMatch = line.match(new RegExp(LANGUAGE_MATCH));
 			if (langMatch && this.tempFilePath) {
 				const language = langMatch[1];
 				const { filename, fileUri } = detectFileNameUri(this.tempFilePath);
@@ -151,20 +177,14 @@ export class StreamProcessor {
 			}
 		}
 
-		// Process lines within a merge code block
+		// Process lines within the {{code_changes}} block
 		if (this.isInMergeCodeBlock) {
-
-			// Collect unprocessed code lines for merge purposes
-			this.collectedUnprocessedCodeLines.push(line);
-
-			// Only process lines that match the specific tags
-			const addMatch = line.match(/{{a}}(.*?){{\/a}}/);
-			const modMatch = line.match(/{{m}}(.*?){{\/m}}/);
-			const contextMatch = line.match(/{{c}}(.*?){{\/c}}/);
-
-			if (addMatch || modMatch || contextMatch) {
-				const codeContent = addMatch?.[1] || modMatch?.[1] || contextMatch?.[1] || '';
-				this.processCodeLine(codeContent);
+			if (this.isInSearchBlock) {
+				this.collectedSearchLines.push(line);
+			} else if (this.isInReplaceBlock) {
+				this.collectedReplaceLines.push(line);
+				// also stream the line to the webview
+				this.processCodeLine(line);
 			}
 		} else if (this.isInRegularCodeBlock) {
 			// Process lines within a regular code block
@@ -179,32 +199,20 @@ export class StreamProcessor {
 	 * Ignore analysis blocks
 	 */
 	private ignoreAnalysisBlocks(line: string): boolean {
-		// Start and end {{code_analysis}} blocks
-		if (line.includes('{{code_analysis}}')) {
-			this.isInCodeAnalysis = true;
+		// Start and end {{analysis}} blocks
+		if (line.includes('{{analysis}}')) {
+			this.isInAnalysisBlock = true;
 			return true;
 		}
 
-		// End {{code_analysis}} blocks
-		if (line.includes('{{/code_analysis}}')) {
-			this.isInCodeAnalysis = false;
+		// End {{analysis}} blocks
+		if (line.includes('{{/analysis}}')) {
+			this.isInAnalysisBlock = false;
 			return true;
 		}
 
-		// Start and end {{change_analysis}} blocks
-		if (line.includes('{{change_analysis}}')) {
-			this.isInChangeAnalysis = true;
-			return true;
-		}
-
-		// End {{change_analysis}} blocks
-		if (line.includes('{{/change_analysis}}')) {
-			this.isInChangeAnalysis = false;
-			return true;
-		}
-
-		// Always ignore lines within {{code_analysis}} or {{change_analysis}} blocks
-		if (this.isInCodeAnalysis || this.isInChangeAnalysis) {
+		// Only check for analysis now
+		if (this.isInAnalysisBlock) {
 			return true;
 		}
 
@@ -273,20 +281,13 @@ export class StreamProcessor {
 		this._view.webview.postMessage({
 			command: 'chatStream',
 			action: 'endCodeBlock',
-			code: highlightedCodeBlock, // Send the highlighted code block
+			code: highlightedCodeBlock,
 			filename: this.filename || undefined,
 			fileUri: this.fileUri || undefined,
-			codeId: this.codeId || undefined,
-			language: this.currentLanguage || undefined, // Send the language
+			language: this.currentLanguage || undefined,
 			showAIMerge: !isChatPrePromptDisabled() && isPromptOverrideEmpty()
 		});
-		this.collectedCodeLines = []; // Clear the collected lines
-
-		// Invoke setCodeBlock with unprocessed code lines
-		const sessionId = this._sessionManager.getCurrentSessionId(); // Example method to get sessionId
-		const fullText = this.collectedUnprocessedCodeLines.join('\n'); // Use unprocessed code lines
-		this._sessionManager.setCodeBlock(sessionId!, this.codeId!, fullText);
-		this.collectedUnprocessedCodeLines = []; // Clear the unprocessed lines
+		this.collectedCodeLines = [];
 	}
 
 	public getRenderedContent(): string {
@@ -315,5 +316,34 @@ export class StreamProcessor {
 
 		// Send the buffered markdown lines while signalling the end of a markdown block
 		this.endMarkdownBlock();
+	}
+
+	private processMergeBlock(): void {
+		if (this.collectedSearchLines.length === 0 || this.collectedReplaceLines.length === 0) {
+			return;
+		}
+
+		// Generate a diff between search and replace blocks
+		const searchContent = this.collectedSearchLines.join('\n');
+		const replaceContent = this.collectedReplaceLines.join('\n');
+
+		// Send the diff to the webview
+		this._view.webview.postMessage({
+			command: 'chatStream',
+			action: 'endCodeBlock',
+			originalCode: hljs.highlight(searchContent.replace(/\t/g, '    '), { language: this.currentLanguage }).value,
+			code: hljs.highlight(replaceContent.replace(/\t/g, '    '), { language: this.currentLanguage }).value,
+			filename: this.filename || undefined,
+			fileUri: this.fileUri || undefined,
+			language: this.currentLanguage || undefined,
+			showAIMerge: !isChatPrePromptDisabled() && isPromptOverrideEmpty()
+		});
+
+		// Remove line number references
+		this.collectedSearchLines = [];
+		this.collectedReplaceLines = [];
+
+		// Start a new markdown block after the diff
+		this.startMarkdownBlock();
 	}
 }

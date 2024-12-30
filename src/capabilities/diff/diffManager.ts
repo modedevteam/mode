@@ -8,240 +8,19 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { FileResolver } from '../../common/io/fileUtils';
 import * as os from 'os';
-import { AIModelUtils } from '../../common/llms/aiModelUtils';
-import { AIMessage } from '../../common/llms/aiClient';
-import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
-import { DIFF_MESSAGES } from '../../common/user-messages/messages';
 import { ErrorMessages } from '../../common/user-messages/errorMessages';
-import { diffMergePrompt } from '../../common/llms/aiPrompts';
-import { getDiffProgressMessage } from '../../common/user-messages/messages';
 import { SessionManager } from '../chat/chatSessionManager';
-import { AIClientFactory } from '../../common/llms/aiClientFactory';
 
 export class DiffManager {
     private _applyChangesButton?: vscode.StatusBarItem;
     private _diffEditor?: vscode.TextEditor;
     constructor(
         private readonly _outputChannel: vscode.OutputChannel,
-        private readonly _apiKeyManager: ApiKeyManager,
         private readonly _sessionManager: SessionManager
     ) {
     }
 
-    private async setupAIClient(progress: vscode.Progress<{ message?: string; increment?: number }>) {
-        const currentModel = AIModelUtils.getLastUsedModel();
-        const modelInfo = AIModelUtils.getModelInfo(currentModel);
-        if (!modelInfo) {
-            throw new Error('No model configuration found');
-        }
-
-        progress.report({ message: getDiffProgressMessage('AI_INIT'), increment: 2.5 });
-
-        const apiKey = await this._apiKeyManager.getApiKey(modelInfo.provider);
-        const result = await AIClientFactory.createClient(modelInfo.provider, currentModel, apiKey, modelInfo.endpoint);
-        if (!result.success || !result.client) {
-            throw new Error(result.message || 'Failed to create AI client');
-        }
-
-        return result.client;
-    }
-
-    private async prepareTemporaryFiles(chunks: string[]) {
-        const tempDir = path.join(os.tmpdir(), 'vscode-chat-diffs');
-        await fs.promises.mkdir(tempDir, { recursive: true });
-        const rechunkedContent = chunks.join('\n').toString();
-        const tempFilePath = path.join(tempDir, 'final-file.txt');
-        await fs.promises.writeFile(tempFilePath, rechunkedContent);
-        return { tempFilePath, tempUri: vscode.Uri.file(tempFilePath) };
-    }
-
-    private createInitialMessages(combinedChunks: string, proposedChanges: string): AIMessage[] {
-        return [
-            { role: 'system', content: diffMergePrompt(combinedChunks, proposedChanges) },
-            { role: 'user', content: 'Return the modified chunks based on the file chunks and proposed changes' }
-        ];
-    }
-
-    private async handleAIResponse(
-        proposedChanges: string,
-        chunks: string[],
-        progress: vscode.Progress<{ message?: string; increment?: number }>,
-        progressMessage: string
-    ) {
-        progress.report({
-            message: `${progressMessage} 97.5%`,
-            increment: 2.5
-        });
-
-        const LINE_PATTERN = /{{i}}(\d+(?:\.\d+)?){{\/i}}(?:{{r}}|{{m}}([\s\S]*?){{\/m}}|{{a}}([\s\S]*?){{\/a}})/g;
-
-        if (chunks.length === 0) {
-            return [proposedChanges.trim()];
-        }
-
-        type LineEntry = [number, number, string];
-        const linesMap = new Map<string, number>();
-        let lines: LineEntry[] = chunks.map((content, index) => {
-            const entry: LineEntry = [index, 0, content];
-            linesMap.set(`${index}_0`, index);
-            return entry;
-        });
-
-        const lineMatches = proposedChanges.matchAll(LINE_PATTERN);
-        for (const lineMatch of Array.from(lineMatches)) {
-            const lineNumberStr = lineMatch[1];
-            const modifyContent = lineMatch[2];
-            const addContent = lineMatch[3];
-
-            // Adjust index to be zero-based
-            const [baseNum, fraction] = lineNumberStr.split('.');
-            const primaryIndex = parseInt(baseNum, 10) - 1;  // Decrement by 1
-            const secondaryIndex = fraction ? parseInt(fraction, 10) : 0;
-
-            // Skip if the primary index is out of bounds
-            if (primaryIndex < 0) {
-                continue;
-            }
-
-            const key = `${primaryIndex}_${secondaryIndex}`;
-            const existingIndex = linesMap.get(key);
-
-            if (addContent !== undefined) {
-                if (existingIndex !== undefined) {
-                    // Override the existing value
-                    lines[existingIndex][2] = addContent;
-                } else {
-                    // Add new entry
-                    const newIndex = lines.length;
-                    lines.push([primaryIndex, secondaryIndex, addContent]);
-                    linesMap.set(key, newIndex);
-                }
-            } else if (modifyContent !== undefined && existingIndex !== undefined) {
-                // Modify existing content
-                lines[existingIndex][2] = modifyContent;
-            } else if (existingIndex !== undefined) {
-                // Mark for removal
-                lines[existingIndex] = [-1, -1, ''];
-                linesMap.delete(key);
-            }
-        }
-
-        lines = lines.filter(([p]) => p !== -1)
-            .sort(([p1, s1], [p2, s2]) => (p1 === p2) ? s1 - s2 : p1 - p2);
-
-        progress.report({
-            message: `${progressMessage} 100%`,
-            increment: 2.5
-        });
-        return lines.map(([_, __, content]) => content);
-    }
-
-    private async prepareAIDiff(originalUri: vscode.Uri, proposedChanges: string, pregeneratedChanges: boolean = false): Promise<vscode.Uri | null> {
-        return vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: DIFF_MESSAGES.PROGRESS_TITLE,
-            cancellable: false
-        }, async (progress) => {
-            try {
-                // Setup stage (0-5%)
-                progress.report({
-                    message: getDiffProgressMessage('SETUP', 0),
-                    increment: 2.5
-                });
-                const aiClient = await this.setupAIClient(progress);
-                progress.report({
-                    message: getDiffProgressMessage('SETUP', 5),
-                    increment: 2.5
-                });
-
-                // File processing stage (5-10%)
-                progress.report({
-                    message: getDiffProgressMessage('FILE_PROCESSING', 5),
-                    increment: 2.5
-                });
-                const fileContent = await vscode.workspace.fs.readFile(originalUri);
-                const lines = new TextDecoder().decode(fileContent).split('\n');
-                const fileName = originalUri.path.split('/').pop() || '';
-                const chunks = [
-                    `<fn>${fileName}</fn>`,
-                    ...lines.map((content, index) =>
-                        `<i>${index + 1}</i><v>${content}</v>`
-                    )
-                ];
-                progress.report({
-                    message: getDiffProgressMessage('FILE_PROCESSING', 10),
-                    increment: 2.5
-                });
-
-                // Prepare temp files (10-15%)
-                const { tempFilePath, tempUri } = await this.prepareTemporaryFiles(lines);
-                progress.report({
-                    message: getDiffProgressMessage('AI_INIT', 15),
-                    increment: 5
-                });
-
-                // AI Processing stage (15-95%)
-                if (pregeneratedChanges) {
-                    // skip the AI processing stage
-                    const updatedChunks = await this.handleAIResponse(proposedChanges, lines as string[], progress, getDiffProgressMessage('FINALIZING', 97.5));
-                    await fs.promises.truncate(tempFilePath, 0);
-                    await fs.promises.writeFile(tempFilePath, updatedChunks.join('\n'));
-                    progress.report({
-                        message: getDiffProgressMessage('FINALIZING', 100),
-                        increment: 2.5
-                    });
-                } else {
-
-                    // Just copy the proposed changes over if the soure is empty
-                    // No need to call LLM
-                    if (lines.length === 0 || (lines.length === 1 && lines[0].trim() === '')) {
-                        // Directly write the proposed changes to the temp file
-                        await fs.promises.writeFile(tempFilePath, proposedChanges);
-                        return tempUri;
-                    }
-
-                    const messages = this.createInitialMessages(chunks.join('\n'), proposedChanges);
-                    let processedTokens = 0;
-                    const estimatedTotalTokens = proposedChanges.length / 4; // Rough estimate
-
-                    await aiClient.chat(messages, {
-                        onToken: () => {
-                            processedTokens++;
-                            if (processedTokens % 20 === 0) { // Update every 20 tokens
-                                const aiProgress = Math.min(95, 15 + (processedTokens / estimatedTotalTokens) * 80);
-                                progress.report({
-                                    message: getDiffProgressMessage('AI_PROCESSING', aiProgress),
-                                    increment: 1
-                                });
-                            }
-                        },
-                        onComplete: async (content: string) => {
-                            // Finalizing stage (95-100%)
-                            progress.report({
-                                message: getDiffProgressMessage('FINALIZING', 95),
-                                increment: 2.5
-                            });
-                            const updatedChunks = await this.handleAIResponse(content, lines as string[], progress, getDiffProgressMessage('FINALIZING', 97.5));
-                            await fs.promises.truncate(tempFilePath, 0);
-                            await fs.promises.writeFile(tempFilePath, updatedChunks.join('\n'));
-                            progress.report({
-                                message: getDiffProgressMessage('FINALIZING', 100),
-                                increment: 2.5
-                            });
-                        }
-                    });
-                }
-
-                return tempUri;
-            } catch (error) {
-                this._outputChannel.appendLine(ErrorMessages.APPLY_CHANGES_ERROR(error));
-                this._outputChannel.show();
-                return null;
-            }
-        });
-    }
-
-    async showDiff(rawCode: string, fileUri: string, codeId: string) {
+    async showDiff(fileUri: string, originalCode: string, newCode: string) {
         // Remove any existing "Apply Changes" button and open diff
         this.removeExistingDiffs();
 
@@ -250,23 +29,22 @@ export class DiffManager {
             return; // Abort if no file was resolved
         }
 
-        const proposedChanges = codeId ? this._sessionManager.getCurrentSession().codeMap[codeId] : rawCode;
-        const usePregeneratedChanges = !!(codeId && proposedChanges && proposedChanges.trim() !== '');
-        const modifiedUri = await this.prepareAIDiff(originalUri, proposedChanges || '', usePregeneratedChanges);
+        // Prepare the diff
+        const proposedChangesUri = this.prepareChanges(originalUri, originalCode, newCode);
 
         // Return early if user cancelled the merge operation
-        if (!modifiedUri) {
+        if (!proposedChangesUri) {
             return;
         }
 
         // Show the diff
         const title = `Changes for ${path.basename(originalUri.fsPath)}`;
-        this._diffEditor = await vscode.commands.executeCommand('vscode.diff', originalUri, modifiedUri, title, {
+        this._diffEditor = await vscode.commands.executeCommand('vscode.diff', originalUri, proposedChangesUri, title, {
             preview: false
         }) as vscode.TextEditor;
 
         // Set up auto-save for the modified document
-        const modifiedDocument = await vscode.workspace.openTextDocument(modifiedUri);
+        const modifiedDocument = await vscode.workspace.openTextDocument(proposedChangesUri);
         const autoSaveDisposable = vscode.workspace.onDidChangeTextDocument(event => {
             if (event.document.uri.fsPath === modifiedDocument.uri.fsPath) {
                 modifiedDocument.save();
@@ -298,7 +76,7 @@ export class DiffManager {
         const disposableCommand = vscode.commands.registerCommand('mode.applyDiffChanges', async () => {
             try {
                 // Read the content from the modified file
-                const modifiedContent = await fs.promises.readFile(modifiedUri.fsPath, 'utf8');
+                const modifiedContent = await fs.promises.readFile(proposedChangesUri.fsPath, 'utf8');
 
                 // Write the modified content to the original file using vscode.workspace.fs
                 const originalDocument = await vscode.workspace.openTextDocument(originalUri);
@@ -318,7 +96,7 @@ export class DiffManager {
                 await vscode.commands.executeCommand('workbench.action.closeEditorsInGroup', {
                     viewColumn: vscode.ViewColumn.One,
                     preserveFocus: false,
-                    uri: modifiedUri
+                    uri: proposedChangesUri
                 });
 
                 // Hide and dispose of the button
@@ -338,8 +116,8 @@ export class DiffManager {
 
         // Register a listener to clean up when the diff editor is closed
         const disposableEditor = vscode.window.onDidChangeVisibleTextEditors(editors => {
-            if (!editors.some(e => e.document.uri.fsPath === modifiedUri.fsPath)) {
-                fs.unlink(modifiedUri.fsPath, (err) => {
+            if (!editors.some(e => e.document.uri.fsPath === proposedChangesUri.fsPath)) {
+                fs.unlink(proposedChangesUri.fsPath, (err) => {
                     if (err) console.error(`Failed to delete temporary file: ${err}`);
                 });
 
@@ -368,5 +146,60 @@ export class DiffManager {
             await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
             this._diffEditor = undefined;
         }
+    }
+
+    private prepareChanges(originalUri: vscode.Uri, originalCode: string, newCode: string): vscode.Uri {
+        // Create temp file for modified content
+        const tmpDir = os.tmpdir();
+        const tmpFile = path.join(tmpDir, `${path.basename(originalUri.fsPath)}.modified`);
+
+        // Read the original file content and split into lines
+        const originalContent = fs.readFileSync(originalUri.fsPath, 'utf8');
+        const contentLines = originalContent.split('\n');
+        const originalCodeLines = originalCode.split('\n');
+
+        let matchStartIndex = -1;
+        const firstLine = originalCodeLines[0].trim();
+        
+        // Find all occurrences of the first line
+        for (let i = 0; i < contentLines.length; i++) {
+            // Skip if this position would exceed array bounds
+            if (i > contentLines.length - originalCodeLines.length) {
+                break;
+            }
+
+            // Look for first line match
+            if (contentLines[i].trim() === firstLine) {
+                let isFullMatch = true;
+                
+                // Verify subsequent lines
+                for (let j = 1; j < originalCodeLines.length; j++) {
+                    if (contentLines[i + j].trim() !== originalCodeLines[j].trim()) {
+                        isFullMatch = false;
+                        break;
+                    }
+                }
+
+                // If we found a full match, store the position and exit
+                if (isFullMatch) {
+                    matchStartIndex = i;
+                    break;
+                }
+                // If not a full match, continue searching from next position
+            }
+        }
+
+        // If we found a match, replace it with newCode
+        if (matchStartIndex !== -1) {
+            const beforeLines = contentLines.slice(0, matchStartIndex);
+            const afterLines = contentLines.slice(matchStartIndex + originalCodeLines.length);
+            const modifiedContent = [...beforeLines, newCode, ...afterLines].join('\n');
+            fs.writeFileSync(tmpFile, modifiedContent);
+        } else {
+            // No match found, use original content
+            fs.writeFileSync(tmpFile, originalContent);
+        }
+
+        return vscode.Uri.file(tmpFile);
     }
 }

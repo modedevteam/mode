@@ -280,7 +280,7 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                     const codeHeaderDiv = `
                         <div class="filename" data-file-uri="${message.fileUri || ''}">${message.filename || ''}</div>
                         <div class="file-uri hidden">${message.fileUri || ''}</div>
-                        <div class="code-id hidden">${message.codeId || ''}</div>
+                        <div class="original-code hidden">${message.originalCode}</div>
                         <div class="buttons">
                             <button id="copy-code-button" class="icon-button" title="Copy"><i class="codicon codicon-copy"></i></button>
                             ${message.showAIMerge ? `<button id="merge-button" class="icon-button" title="Apply with AI"><i class="codicon codicon-sparkle-filled"></i></button>` : ''}
@@ -734,12 +734,13 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                 if (codeContainer && codeContainer.classList.contains('chat-code-container')) {
                     const rawCode = codeContainer.textContent || '';
                     const fileUri = codeHeader?.querySelector('.file-uri')?.textContent || '';
-                    const codeId = codeHeader?.querySelector('.code-id')?.textContent || ''; // Extract code-id
+                    const originalCode = codeHeader?.querySelector('.original-code')?.textContent || ''; // Get original code
+
                     vscode.postMessage({
                         command: 'showDiff',
-                        code: rawCode,
                         fileUri,
-                        codeId // Include code-id in the message
+                        originalCode,
+                        code: rawCode
                     });
                 }
             }

@@ -10,7 +10,7 @@ import { StreamProcessor } from './streamProcessor';
 import { AIClient } from '../../common/llms/aiClient';
 import { formatFileContent } from '../../common/rendering/llmTranslationUtils';
 import { SessionManager } from './chatSessionManager';
-import { chatPrompt } from '../../common/llms/aiPrompts';
+import { chatPromptv2, CODE_SNIPPET_START, CODE_SNIPPET_END, CURRENT_FILE_PATH_START, CURRENT_FILE_PATH_END } from '../../common/llms/aiPrompts';
 import {
 	isChatPrePromptDisabled,
 	getChatPromptOverride,
@@ -56,7 +56,7 @@ export class MessageHandler {
 			if (messages.length === 0) {
 				const promptOverride = getChatPromptOverride();
 				const disableSystemPrompt = isChatPrePromptDisabled() && isPromptOverrideEmpty();
-				let systemPrompt = disableSystemPrompt ? '' : (promptOverride || chatPrompt);
+				let systemPrompt = disableSystemPrompt ? '' : (promptOverride || chatPromptv2);
 
 				if (!isChatAdditionalPromptEmpty()) {
 					systemPrompt += ` ${getChatAdditionalPrompt()}`;
@@ -86,7 +86,7 @@ export class MessageHandler {
 			codeSnippets.forEach(snippet => {
 				messages.push({
 					role: "user",
-					content: `{{Code Snippet}}${snippet.fileName} (${snippet.range})\n\n${snippet.code}{{/Code Snippet}}`
+					content: `${CODE_SNIPPET_START}${snippet.fileName} (${snippet.range})\n\n${snippet.code}${CODE_SNIPPET_END}`
 				});
 			});
 
@@ -94,7 +94,7 @@ export class MessageHandler {
 			if (currentFilePath) {
 				messages.push({
 					role: "user",
-					content: `{{Current File Path}}${currentFilePath}{{/Current File Path}}`
+					content: `${CURRENT_FILE_PATH_START}${currentFilePath}${CURRENT_FILE_PATH_END}`
 				});
 			}
 
