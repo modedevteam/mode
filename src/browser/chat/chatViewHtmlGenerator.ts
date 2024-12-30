@@ -117,7 +117,8 @@ export class ChatViewHtmlGenerator {
 		return `
 			<div id="icon-container">
 				<div class="right-aligned-buttons">
-					<button id="autocode-button" class="icon-button" title="Autocode (click to toggle)" data-active="false"><i class="codicon codicon-lightbulb-autofix"></i></button>
+					<!-- Autocode temporarily disabled while feature is being developed -->
+					<!-- <button id="autocode-button" class="icon-button" title="Autocode (click to toggle)" data-active="false"><i class="codicon codicon-lightbulb-autofix"></i></button> -->
 					<button id="send-button" class="icon-button" disabled title="Send (enter)"><i class="codicon codicon-comment-discussion"></i></button>
 				</div>
 			</div>`;

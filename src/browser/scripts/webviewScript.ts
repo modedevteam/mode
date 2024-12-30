@@ -565,7 +565,8 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
         const autocodeButton = document.getElementById('autocode-button') as HTMLButtonElement;
 
         // Initial visibility check for autocode button
-        updateAutocodeButtonVisibility(selectedOptionSpan.dataset.modelId || '');
+        // @Todo: Disabled for now (will return soon)
+        // updateAutocodeButtonVisibility(selectedOptionSpan.dataset.modelId || '');
 
         dropdownToggle.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -591,7 +592,8 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                     selectedOptionSpan.dataset.modelId = modelId;
 
                     // Update autocode button visibility
-                    updateAutocodeButtonVisibility(modelId);
+                    // @Todo: Revert this soon (once autocode backend is ready)
+                    // updateAutocodeButtonVisibility(modelId);
 
                     // Notify extension about model change
                     vscode.postMessage({
