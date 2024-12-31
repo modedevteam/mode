@@ -153,8 +153,16 @@ export class DiffManager {
         const tmpDir = os.tmpdir();
         const tmpFile = path.join(tmpDir, `${path.basename(originalUri.fsPath)}.modified`);
 
-        // Read the original file content and split into lines
+        // Read the original file content
         const originalContent = fs.readFileSync(originalUri.fsPath, 'utf8');
+
+        // If file is empty, just write the new code
+        if (!originalContent.trim()) {
+            fs.writeFileSync(tmpFile, newCode);
+            return vscode.Uri.file(tmpFile);
+        }
+
+        // Read the original file content and split into lines
         const contentLines = originalContent.split('\n');
         const originalCodeLines = originalCode.split('\n');
 

@@ -17,6 +17,8 @@ export const CODE_CHANGES_START = '{{code_changes}}';
 export const CODE_CHANGES_END = '{{/code_changes}}';
 export const FILE_PATH_START = '{{fp}}';
 export const FILE_PATH_END = '{{/fp}}';
+export const FILE_CONTENT_START = '{{fc}}';
+export const FILE_CONTENT_END = '{{/fc}}';
 export const LINE_NUMBER_START = '{{i}}';
 export const LINE_NUMBER_END = '{{/i}}';
 export const CONTEXT_START = '{{c}}';
@@ -41,11 +43,25 @@ or correct insights.
 Input Format:
 You may receive any combination of these input types:
 
-1. User Messages: "Your query or request here"
-2. Code Snippets: "${CODE_SNIPPET_START}example.ts (lines 5-10)\\n[code content]${CODE_SNIPPET_END}"
-3. Current File Path: "${CURRENT_FILE_PATH_START}/path/to/file.ts${CURRENT_FILE_PATH_END}"
-4. Referenced Files: "${REFERENCED_FILE_START}\\n{{fp}}/path/to/example.ts{{/fp}}\\n{{fc}}const x = 1;{{/fc}}\\n${REFERENCED_FILE_END}"
-5. Images: "base64-encoded-image-data"
+1. User Messages: Plain text queries or requests from the user
+2. Code Snippets: Marked with ${CODE_SNIPPET_START} and ${CODE_SNIPPET_END}, containing:
+   - File name and line numbers
+   - The actual code content
+3. Current File Path: Marked with ${CURRENT_FILE_PATH_START} and ${CURRENT_FILE_PATH_END}
+   - Indicates the file currently being edited
+4. Referenced Files: Marked with ${REFERENCED_FILE_START} and ${REFERENCED_FILE_END}, containing:
+   - File path (marked with ${FILE_PATH_START} and ${FILE_PATH_END})
+   - File content (marked with ${FILE_CONTENT_START} and ${FILE_CONTENT_END})
+   - Used for providing additional context from other files
+5. Images: Base64 encoded image data for visual context
+
+Each tag serves a specific purpose:
+- ${LINE_NUMBER_START}/${LINE_NUMBER_END}: Marks line numbers in code
+- ${CONTEXT_START}/${CONTEXT_END}: Provides additional context information
+- ${LANGUAGE_START}/${LANGUAGE_END}: Specifies the programming language
+- ${CODE_IDENTIFIER_START}/${CODE_IDENTIFIER_END}: Marks specific code identifiers
+- ${SEARCH_START}/${SEARCH_END}: Original code to be replaced
+- ${REPLACE_START}/${REPLACE_END}: New code that replaces the search content
 
 Expected Output Format:
 

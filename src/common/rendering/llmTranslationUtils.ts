@@ -5,7 +5,7 @@
 
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { REFERENCED_FILE_START, REFERENCED_FILE_END } from '../llms/aiPrompts';
+import { REFERENCED_FILE_START, REFERENCED_FILE_END, FILE_PATH_START, FILE_CONTENT_START, FILE_PATH_END, FILE_CONTENT_END } from '../llms/aiPrompts';
 
 /**
  * Formats the content of a file into a structured array of strings with LLM-compatible markers.
@@ -29,10 +29,8 @@ export async function formatFileContent(fileUrl: string): Promise<string[]> {
 		
 		return [
 			`${REFERENCED_FILE_START}`,
-			`{{fp}}${uri.path}{{/fp}}`,
-			...lines.map((content) =>
-				`{{fc}}${content}{{/fc}}`
-			),
+			`${FILE_PATH_START}${uri.path}${FILE_PATH_END}`,
+			`${FILE_CONTENT_START}${fileContent}${FILE_CONTENT_END}`,
 			`${REFERENCED_FILE_END}`
 		];
 	} catch (error) {
