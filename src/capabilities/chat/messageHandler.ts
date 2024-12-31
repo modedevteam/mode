@@ -10,7 +10,7 @@ import { StreamProcessor } from './streamProcessor';
 import { AIClient } from '../../common/llms/aiClient';
 import { formatFileContent } from '../../common/rendering/llmTranslationUtils';
 import { SessionManager } from './chatSessionManager';
-import { chatPromptv2, CODE_SNIPPET_START, CODE_SNIPPET_END, CURRENT_FILE_PATH_START, CURRENT_FILE_PATH_END } from '../../common/llms/aiPrompts';
+import { chatPromptv2, HIGHLIGHTED_CODE_START, HIGHLIGHTED_CODE_END, CURRENT_FILE_PATH_START, CURRENT_FILE_PATH_END } from '../../common/llms/aiPrompts';
 import {
 	isChatPrePromptDisabled,
 	getChatPromptOverride,
@@ -86,7 +86,7 @@ export class MessageHandler {
 			codeSnippets.forEach(snippet => {
 				messages.push({
 					role: "user",
-					content: `${CODE_SNIPPET_START}${snippet.fileName} (${snippet.range})\n\n${snippet.code}${CODE_SNIPPET_END}`
+					content: `${HIGHLIGHTED_CODE_START}${snippet.fileName} (${snippet.range})\n\n${snippet.code}${HIGHLIGHTED_CODE_END}`
 				});
 			});
 

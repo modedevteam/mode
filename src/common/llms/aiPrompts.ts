@@ -5,8 +5,8 @@
 
 //#region chat
 
-export const CODE_SNIPPET_START = '{{code_snippet}}';
-export const CODE_SNIPPET_END = '{{/code_snippet}}';
+export const HIGHLIGHTED_CODE_START = '{{highlighted_code}}';
+export const HIGHLIGHTED_CODE_END = '{{/highlighted_code}}';
 export const CURRENT_FILE_PATH_START = '{{current_file_path}}';
 export const CURRENT_FILE_PATH_END = '{{/current_file_path}}';
 export const REFERENCED_FILE_START = '{{referenced_file}}';
@@ -44,7 +44,7 @@ Input Format:
 You may receive any combination of these input types:
 
 1. User Messages: Plain text queries or requests from the user
-2. Code Snippets: Marked with ${CODE_SNIPPET_START} and ${CODE_SNIPPET_END}, containing:
+2. Code Snippets: Marked with ${HIGHLIGHTED_CODE_START} and ${HIGHLIGHTED_CODE_END}, containing:
    - File name and line numbers
    - The actual code content
 3. Current File Path: Marked with ${CURRENT_FILE_PATH_START} and ${CURRENT_FILE_PATH_END}
@@ -67,11 +67,11 @@ Expected Output Format:
 
 Guidelines:
 - NEVER return your response in HTML format
-- Respond without structured headings like "Brief Explanation" or "Change Analysis"
+- Respond without structured headings like "TLDR" or "Analysis"
 - Focus on actionable and concise responses
 - Never mix Markdown code blocks with the specialized code changes format
 
-1. Brief Explanation
+1. TLDR
    A concise explanation of your solution, focusing on key changes and rationale.
 
 2. Analysis
@@ -116,18 +116,24 @@ Guidelines:
    ${REPLACE_END}
    ${CODE_CHANGES_END}
 
-   4. Rules:
-      - The lines within ${SEARCH_START} and ${REPLACE_START} must be an exact copy of the original file content,
-      including all whitespace, indentation, and line breaks
-      - ALWAYS copy exact indentation style from original file (spaces vs tabs)
-      - ALWAYS preserve exact number of tabs/spaces from original
-      - For new lines, match indentation of surrounding context exactly
-      - For comments, align with the line they document
-      - For block comments, align asterisks vertically
-      - For nested blocks, maintain same indent depth as sibling lines
-      - When adding new blocks, indent one level deeper than parent
-      - Never mix tabs and spaces unless original file does
-      - When in doubt, count the exact spaces/tabs from similar lines nearby
+   Rules for Option 2:
+   1. Mandatory tags - You MUST use these tags in your response in the following order:
+      ${CODE_CHANGES_START}: Starts the change block
+      ${FILE_PATH_START}/path/to/file.ts${FILE_PATH_END}: Specifies which file to modify
+      ${LANGUAGE_START}typescript${LANGUAGE_END}: Declares the language
+      ${SEARCH_START}...${SEARCH_END}: Original code to be replaced (exact copy)
+      ${REPLACE_START}...${REPLACE_END}: New code that will replace it
+      ${CODE_CHANGES_END}: Ends the change block
+   2. Formatting rules (simplified):
+      - The SEARCH block must be an exact copy of the original, including all whitespace
+      - Match the file's existing indentation style (spaces vs tabs)
+      - For new code:
+        - Match surrounding context's indentation depth
+        - Indent nested blocks one level deeper
+        - Align comments with their target code
+      - When unsure, count spaces/tabs from nearby similar lines
+   3. Add a brief explanation between each ${CODE_CHANGES_START} and ${CODE_CHANGES_END} tag
+   4. NEVER return input tags such as ${HIGHLIGHTED_CODE_START} or ${HIGHLIGHTED_CODE_END} in your response
 
 Example Response:
 
