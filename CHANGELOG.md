@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.18] - 2024-12-31
+### Added
+- Significantly improved accuracy of merge. Merge now reliably works across most models
+- Added a user manual to help new users onboard to Mode faster
+
 ## [1.0.17] - 2024-12-24
 ### Added
 - Introduced documentation for the project's core features and usage guidelines (usermanual.md)
