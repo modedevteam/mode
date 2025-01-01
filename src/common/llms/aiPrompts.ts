@@ -13,14 +13,12 @@ export const REFERENCED_FILE_START = '{{referenced_file}}';
 export const REFERENCED_FILE_END = '{{/referenced_file}}';
 export const ANALYSIS_START = '{{analysis}}';
 export const ANALYSIS_END = '{{/analysis}}';
-export const CODE_CHANGES_START = '{{code_changes}}';
-export const CODE_CHANGES_END = '{{/code_changes}}';
+export const CODE_CHANGE_START = '{{code_change}}';
+export const CODE_CHANGE_END = '{{/code_change}}';
 export const FILE_PATH_START = '{{fp}}';
 export const FILE_PATH_END = '{{/fp}}';
 export const FILE_CONTENT_START = '{{fc}}';
 export const FILE_CONTENT_END = '{{/fc}}';
-export const LINE_NUMBER_START = '{{i}}';
-export const LINE_NUMBER_END = '{{/i}}';
 export const CONTEXT_START = '{{c}}';
 export const CONTEXT_END = '{{/c}}';
 export const LANGUAGE_START = '{{l}}';
@@ -56,7 +54,6 @@ You may receive any combination of these input types:
 5. Images: Base64 encoded image data for visual context
 
 Each tag serves a specific purpose:
-- ${LINE_NUMBER_START}/${LINE_NUMBER_END}: Marks line numbers in code
 - ${CONTEXT_START}/${CONTEXT_END}: Provides additional context information
 - ${LANGUAGE_START}/${LANGUAGE_END}: Specifies the programming language
 - ${CODE_IDENTIFIER_START}/${CODE_IDENTIFIER_END}: Marks specific code identifiers
@@ -93,8 +90,8 @@ Guidelines:
    }
    \`\`\`
 
-   Option 2 - File Changes (using specialized tags):
-   ${CODE_CHANGES_START}
+   Option 2 - Code Changes (using specialized tags):
+   ${CODE_CHANGE_START}
    ${FILE_PATH_START}/path/to/file.ts${FILE_PATH_END}
    ${LANGUAGE_START}typescript${LANGUAGE_END}
    ${SEARCH_START}
@@ -114,17 +111,21 @@ Guidelines:
        }
    }
    ${REPLACE_END}
-   ${CODE_CHANGES_END}
+   ${CODE_CHANGE_END}
 
    Rules for Option 2:
    1. Mandatory tags - You MUST use these tags in your response in the following order:
-      ${CODE_CHANGES_START}: Starts the change block
+      ${CODE_CHANGE_START}: Starts the change block
       ${FILE_PATH_START}/path/to/file.ts${FILE_PATH_END}: Specifies which file to modify
       ${LANGUAGE_START}typescript${LANGUAGE_END}: Declares the language
       ${SEARCH_START}...${SEARCH_END}: Original code to be replaced (exact copy)
       ${REPLACE_START}...${REPLACE_END}: New code that will replace it
-      ${CODE_CHANGES_END}: Ends the change block
-   2. Formatting rules (simplified):
+      ${CODE_CHANGE_END}: Ends the change block
+   2. Each ${CODE_CHANGE_START}...${CODE_CHANGE_END} block must contain exactly ONE contiguous change:
+      - The SEARCH block must represent a single, uninterrupted section of code
+      - Multiple changes to different parts of the file require separate CODE_CHANGE blocks
+      - Never include unrelated or non-adjacent changes in the same block
+   3. Formatting rules (simplified):
       - The SEARCH block must be an exact copy of the original, including all whitespace
       - Match the file's existing indentation style (spaces vs tabs)
       - For new code:
@@ -132,14 +133,14 @@ Guidelines:
         - Indent nested blocks one level deeper
         - Align comments with their target code
       - When unsure, count spaces/tabs from nearby similar lines
-   3. Add a brief explanation between each ${CODE_CHANGES_START} and ${CODE_CHANGES_END} tag
-   4. NEVER return input tags such as ${HIGHLIGHTED_CODE_START} or ${HIGHLIGHTED_CODE_END} in your response
+   4. Add a brief explanation between each ${CODE_CHANGE_START} and ${CODE_CHANGE_END} tag
+   5. NEVER return input tags such as ${HIGHLIGHTED_CODE_START} or ${HIGHLIGHTED_CODE_END} in your response
 
 Example Response:
 
 User: "Add error handling to this function"
 
-${CODE_CHANGES_START}
+${CODE_CHANGE_START}
 ${FILE_PATH_START}/src/utils/process.ts${FILE_PATH_END}
 ${LANGUAGE_START}typescript${LANGUAGE_END}
 ${SEARCH_START}
@@ -170,7 +171,7 @@ ${REPLACE_START}
         }
     }
 ${REPLACE_END}
-${CODE_CHANGES_END}
+${CODE_CHANGE_END}
 
 Note how the example maintains the original file's indentation:
 - 4 spaces for top-level statements
@@ -188,7 +189,7 @@ Remember:
 - Preserve existing formatting patterns
 - Think carefully about formatting context
 - Test indentation visually
-- Ensure all tags are properly closed including ${LINE_NUMBER_END}, ${CONTEXT_END}, ${REPLACE_END}, ${CONTEXT_END}, ${LANGUAGE_END}, ${CODE_CHANGES_END}, ${FILE_PATH_END}`;
+- Ensure all tags are properly closed including ${FILE_PATH_END}, ${LANGUAGE_END}, ${SEARCH_END}, ${REPLACE_END}, ${CODE_CHANGE_END}`;
 
 //#endregion
 

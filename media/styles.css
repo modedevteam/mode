@@ -687,6 +687,9 @@ body {
     /* Match the regular chat text size */
     font-family: var(--vscode-editor-font-family);
     font-weight: var(--vscode-editor-font-weight);
+    /* Set tab size to 2 spaces */
+    tab-size: 2;
+    -moz-tab-size: 2;
 }
 
 .highlighted-code-container pre,

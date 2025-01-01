@@ -24,27 +24,6 @@ export interface ProcessedCode {
 
 export class PillRenderer {
     /**
-     * Process selected text by removing common indentation while preserving structure
-     */
-    static processSelectedText(text: string): string {
-        const lines = text.replace(/\t/g, '    ').split('\n');
-        const nonEmptyLines = lines.filter(line => line.trim().length > 0);
-
-        if (nonEmptyLines.length === 0) {
-            return text;
-        }
-
-        const commonPrefixLength = this.findCommonIndentation(nonEmptyLines);
-
-        return lines.map(line => {
-            if (line.trim().length === 0) {
-                return '';
-            }
-            return line.slice(commonPrefixLength);
-        }).join('\n');
-    }
-
-    /**
      * Find common indentation across all lines
      */
     static findCommonIndentation(lines: string[]): number {
@@ -66,7 +45,7 @@ export class PillRenderer {
         selection: CodeSelection,
         outputChannel: vscode.OutputChannel
     ): ProcessedCode {
-        const processedText = this.processSelectedText(selection.text);
+        const processedText = selection.text;
         const range = `${selection.startLine}-${selection.endLine}`;
         
         let highlightedCode: string;

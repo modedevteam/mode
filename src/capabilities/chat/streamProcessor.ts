@@ -10,8 +10,8 @@ import { detectFileNameUri } from '../../common/io/fileUtils';
 import { SessionManager } from './chatSessionManager';
 import { isChatPrePromptDisabled, isPromptOverrideEmpty } from '../../common/configUtils';
 import { 
-	CODE_CHANGES_END, 
-	CODE_CHANGES_START, 
+	CODE_CHANGE_END, 
+	CODE_CHANGE_START, 
 	REPLACE_END, 
 	REPLACE_START, 
 	SEARCH_START,
@@ -73,11 +73,34 @@ export class StreamProcessor {
 		if (line.includes(SEARCH_START)) {
 			this.isInSearchBlock = true;
 			this.endMarkdownBlock();
+			
+			// Extract content between SEARCH_START and SEARCH_END if both exist in the same line
+			if (line.includes(SEARCH_END)) {
+				const startIndex = line.indexOf(SEARCH_START) + SEARCH_START.length;
+				const endIndex = line.indexOf(SEARCH_END);
+				const content = line.substring(startIndex, endIndex).trim();
+				if (content) {
+					this.collectedSearchLines.push(content);
+				}
+				this.isInSearchBlock = false;
+				return;
+			}
+
+			// Process remaining content after SEARCH_START
+			const remainingContent = line.substring(line.indexOf(SEARCH_START) + SEARCH_START.length);
+			if (remainingContent.trim()) {
+				this.collectedSearchLines.push(remainingContent);
+			}
 			return;
 		}
 
 		// Handle search block end
 		if (line.includes(SEARCH_END)) {
+			// Process content before SEARCH_END
+			const contentBeforeEnd = line.substring(0, line.indexOf(SEARCH_END));
+			if (contentBeforeEnd.trim()) {
+				this.collectedSearchLines.push(contentBeforeEnd);
+			}
 			this.isInSearchBlock = false;
 			return;
 		}
@@ -85,11 +108,38 @@ export class StreamProcessor {
 		// Handle replace block start
 		if (line.includes(REPLACE_START)) {
 			this.isInReplaceBlock = true;
+			this.endMarkdownBlock();
+			
+			// Extract content between REPLACE_START and REPLACE_END if both exist in the same line
+			if (line.includes(REPLACE_END)) {
+				const startIndex = line.indexOf(REPLACE_START) + REPLACE_START.length;
+				const endIndex = line.indexOf(REPLACE_END);
+				const content = line.substring(startIndex, endIndex).trim();
+				if (content) {
+					this.collectedReplaceLines.push(content);
+					this.processCodeLine(content);
+				}
+				this.isInReplaceBlock = false;
+				return;
+			}
+
+			// Process remaining content after REPLACE_START
+			const remainingContent = line.substring(line.indexOf(REPLACE_START) + REPLACE_START.length);
+			if (remainingContent.trim()) {
+				this.collectedReplaceLines.push(remainingContent);
+				this.processCodeLine(remainingContent);
+			}
 			return;
 		}
 
 		// Handle replace block end
 		if (line.includes(REPLACE_END)) {
+			// Process content before REPLACE_END
+			const contentBeforeEnd = line.substring(0, line.indexOf(REPLACE_END));
+			if (contentBeforeEnd.trim()) {
+				this.collectedReplaceLines.push(contentBeforeEnd);
+				this.processCodeLine(contentBeforeEnd);
+			}
 			this.isInReplaceBlock = false;
 			return;
 		}
@@ -119,8 +169,18 @@ export class StreamProcessor {
 			return;
 		}
 
-		// Start and end {{code_changes}} blocks
-		if (line.includes(CODE_CHANGES_START)) {
+		// Start {{code_changes}} blocks
+		if (line.includes(CODE_CHANGE_START)) {
+			// Close any existing code blocks first
+			if (this.isInRegularCodeBlock) {
+				this.endCodeBlock();
+				this.isInRegularCodeBlock = false;
+			}
+			if (this.isInMergeCodeBlock) {
+				this.processMergeBlock();
+				this.isInMergeCodeBlock = false;
+			}
+
 			this.isInMergeCodeBlock = true;
 			this.isExpectingFilePath = true;
 			this.endMarkdownBlock(); // Close the current markdown block
@@ -128,7 +188,7 @@ export class StreamProcessor {
 		}
 
 		// End {{code_changes}} blocks
-		if (line.includes(CODE_CHANGES_END)) {
+		if (line.includes(CODE_CHANGE_END)) {
 			this.processMergeBlock();
 			this.isInMergeCodeBlock = false;
 			this.endCodeBlock();
