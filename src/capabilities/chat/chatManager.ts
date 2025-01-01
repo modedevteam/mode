@@ -12,6 +12,7 @@ import { AIClient, AIMessage } from '../../common/llms/aiClient';
 import { AIModelUtils } from '../../common/llms/aiModelUtils';
 import { StreamProcessor } from './streamProcessor';
 import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
+import { SESSION_SUMMARY_PROMPT } from '../../common/llms/aiPrompts';
 
 export class ChatManager {
 	private aiClient: AIClient | null = null;
@@ -93,7 +94,7 @@ export class ChatManager {
 		try {
 			let overview = '';
 			await this.aiClient.chat([
-				{ role: "system", "content": "Summarize the current conversation in five or fewer meaningful words. If the conversation cannot be summarized, respond with 'New Chat'." },
+				{ role: "system", content: SESSION_SUMMARY_PROMPT },
 				{ role: "user", content: message }
 			], {
 				onToken: (token: string) => {

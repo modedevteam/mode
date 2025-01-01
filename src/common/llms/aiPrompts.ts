@@ -192,6 +192,9 @@ Remember:
 
 //#endregion
 
+export const SESSION_SUMMARY_PROMPT = `Summarize the user message in less than five` +
+   `meaningful words. If the message cannot be summarized, respond with 'New Chat' or the message itself.`;
+
 //#region autocomplete
 
 export const codeCompletionPrompt = `You are a code completion assistant for IDE-style code completions. Your task is to provide intelligent, contextual completions from the cursor position forward.
