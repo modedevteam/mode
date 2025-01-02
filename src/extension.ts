@@ -11,6 +11,7 @@ import { AIModelUtils } from './common/llms/aiModelUtils';
 import { AskModeCodeActionProvider } from './capabilities/quickfix/askModeCodeActionProvider';
 import { ErrorMessages } from './common/user-messages/errorMessages';
 import { LanguageServerClient } from './capabilities/autocomplete/client';
+import { initializeLogger } from './common/logging/logger';
 
 // Add at the top of the file, outside the activate function
 const LICENSE_CHECK_INTERVAL = 1000 * 60 * 60 * 24; // 24 hours in milliseconds
@@ -18,6 +19,8 @@ const LICENSE_CHECK_INTERVAL = 1000 * 60 * 60 * 24; // 24 hours in milliseconds
 let languageClient: LanguageServerClient;
 
 export async function activate(context: vscode.ExtensionContext) {
+	// Initialize the global logger
+	initializeLogger(context);
 
 	// Create output channel
 	const outputChannel = vscode.window.createOutputChannel('Mode');

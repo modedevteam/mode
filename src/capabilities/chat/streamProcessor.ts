@@ -20,6 +20,7 @@ import {
 	FILE_PATH_END,
 	LANGUAGE_MATCH
 } from '../../common/llms/aiPrompts';
+import { Logger } from '../../common/logging/logger';
 
 // New StreamProcessor class
 export class StreamProcessor {
@@ -40,6 +41,7 @@ export class StreamProcessor {
 	private collectedMarkdownLines: string[] = [];
 	private collectedSearchLines: string[] = [];
 	private collectedReplaceLines: string[] = [];
+	private readonly logger = Logger.getInstance();
 
 	constructor(
 		private readonly _view: vscode.WebviewView,
@@ -65,6 +67,7 @@ export class StreamProcessor {
 	 * when suggesting changes to code.
 	 */
 	public processLine(line: string): void {
+		this.logger.log(line);
 		if (this.ignoreAnalysisBlocks(line)) {
 			return;
 		}

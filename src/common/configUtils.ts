@@ -77,3 +77,19 @@ export function isChatAdditionalPromptEmpty(): boolean {
     const additionalPrompt = getChatAdditionalPrompt();
     return additionalPrompt === null || additionalPrompt === undefined || additionalPrompt.trim() === '';
 }
+
+/**
+ * Gets whether logging is enabled in settings
+ * @returns boolean indicating if logging is enabled
+ */
+export function isLoggingEnabled(): boolean {
+    return getModeConfig().get<boolean>('logging.enabled', false);
+}
+
+/**
+ * Gets the maximum log file size in MB
+ * @returns number representing max file size in MB
+ */
+export function getMaxLogFileSize(): number {
+    return getModeConfig().get<number>('logging.maxFileSize', 10);
+}
