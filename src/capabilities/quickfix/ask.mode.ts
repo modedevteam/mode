@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { ModeChatViewProvider } from '../../browser/chat/chatViewProvider';
+import { ModeChatViewProvider } from '../../browser/chat/chat.view.provider';
 
 export class AskModeCodeActionProvider implements vscode.CodeActionProvider {
     static readonly providedCodeActionKinds = [

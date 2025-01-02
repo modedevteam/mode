@@ -6,10 +6,10 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { FileResolver } from '../../common/io/fileUtils';
+import { FileResolver } from '../../common/io/file.utils';
 import * as os from 'os';
-import { ErrorMessages } from '../../common/user-messages/errorMessages';
-import { ChatSessionManager } from '../chat/chatSessionManager';
+import { ErrorMessages } from '../../common/user.messages/error.messages';
+import { ChatSessionManager } from '../chat/chat.session.handler';
 
 export class DiffManager {
     private _applyChangesButton?: vscode.StatusBarItem;

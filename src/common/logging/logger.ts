@@ -6,7 +6,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { ExtensionContext } from 'vscode';
-import { isLoggingEnabled, getMaxLogFileSize} from '../configUtils';
+import { isLoggingEnabled, getMaxLogFileSize} from '../config.utils';
 
 let globalStoragePath: string;
 

@@ -4,20 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { AIMessage } from '../../common/llms/aiClient';
+import { AIMessage } from '../../common/llms/llm.client';
 import MarkdownIt from 'markdown-it';
-import { ChatResponseHandler } from './chatResponseHandler';
-import { AIClient } from '../../common/llms/aiClient';
-import { formatFileContent } from '../../common/rendering/llmTranslationUtils';
-import { ChatSessionManager } from './chatSessionManager';
-import { chatPromptv2, HIGHLIGHTED_CODE_START, HIGHLIGHTED_CODE_END, CURRENT_FILE_PATH_START, CURRENT_FILE_PATH_END } from '../../common/llms/aiPrompts';
+import { ChatResponseHandler } from './chat.response.handler';
+import { AIClient } from '../../common/llms/llm.client';
+import { formatFileContent } from '../../common/rendering/llm.translation.utils';
+import { ChatSessionManager } from './chat.session.handler';
+import { chatPromptv2, HIGHLIGHTED_CODE_START, HIGHLIGHTED_CODE_END, CURRENT_FILE_PATH_START, CURRENT_FILE_PATH_END } from '../../common/llms/llm.prompt';
 import {
 	isChatPrePromptDisabled,
 	getChatPromptOverride,
 	isPromptOverrideEmpty,
 	getChatAdditionalPrompt,
 	isChatAdditionalPromptEmpty
-} from '../../common/configUtils';
+} from '../../common/config.utils';
 
 // New class to handle message processing
 export class ChatRequestHandler {

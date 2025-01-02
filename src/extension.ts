@@ -5,11 +5,11 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { ModeChatViewProvider } from './browser/chat/chatViewProvider';
-import { ApiKeyManager } from './common/llms/aiApiKeyManager';
-import { AIModelUtils } from './common/llms/aiModelUtils';
-import { AskModeCodeActionProvider } from './capabilities/quickfix/askModeCodeActionProvider';
-import { ErrorMessages } from './common/user-messages/errorMessages';
+import { ModeChatViewProvider } from './browser/chat/chat.view.provider';
+import { ApiKeyManager } from './common/llms/llm.api.key.manager';
+import { AIModelUtils } from './common/llms/llm.model.utils';
+import { AskModeCodeActionProvider } from './capabilities/quickfix/ask.mode';
+import { ErrorMessages } from './common/user.messages/error.messages';
 import { LanguageServerClient } from './capabilities/autocomplete/client';
 import { initializeLogger } from './common/logging/logger';
 

@@ -6,9 +6,9 @@
 import * as vscode from 'vscode';
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
-import { detectFileNameUri } from '../../common/io/fileUtils';
-import { ChatSessionManager } from './chatSessionManager';
-import { isChatPrePromptDisabled, isPromptOverrideEmpty } from '../../common/configUtils';
+import { detectFileNameUri } from '../../common/io/file.utils';
+import { ChatSessionManager } from './chat.session.handler';
+import { isChatPrePromptDisabled, isPromptOverrideEmpty } from '../../common/config.utils';
 import { 
 	FILE_CHANGE_END, 
 	FILE_CHANGE_START, 
@@ -19,7 +19,7 @@ import {
 	FILE_PATH_START,
 	FILE_PATH_END,
 	LANGUAGE_MATCH
-} from '../../common/llms/aiPrompts';
+} from '../../common/llms/llm.prompt';
 import { Logger } from '../../common/logging/logger';
 
 // New StreamProcessor class

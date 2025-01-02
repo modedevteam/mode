@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { getExcludePatterns } from '../configUtils';
+import { getExcludePatterns } from '../config.utils';
 import * as path from 'path';
 
 export interface FileQuickPickItem extends vscode.QuickPickItem {

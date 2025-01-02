@@ -5,7 +5,7 @@
 
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { REFERENCED_FILE_START, REFERENCED_FILE_END, FILE_PATH_START, FILE_CONTENT_START, FILE_PATH_END, FILE_CONTENT_END } from '../llms/aiPrompts';
+import { REFERENCED_FILE_START, REFERENCED_FILE_END, FILE_PATH_START, FILE_CONTENT_START, FILE_PATH_END, FILE_CONTENT_END } from '../llms/llm.prompt';
 
 /**
  * Formats the content of a file into a structured array of strings with LLM-compatible markers.

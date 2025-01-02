@@ -26,13 +26,13 @@ import {
   InsertTextMode
 } from 'vscode-languageclient/node';
 import { CompletionItem } from 'vscode-languageserver-protocol';
-import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
-import { isAutoCompleteEnabled } from '../../common/configUtils';
-import { getPromptOverride } from '../../common/configUtils';
-import { AIModelUtils } from '../../common/llms/aiModelUtils';
+import { ApiKeyManager } from '../../common/llms/llm.api.key.manager';
+import { isAutoCompleteEnabled } from '../../common/config.utils';
+import { getPromptOverride } from '../../common/config.utils';
+import { AIModelUtils } from '../../common/llms/llm.model.utils';
 import { State } from 'vscode-languageclient';
 import { Logger } from './logging';
-import { codeCompletionPrompt } from '../../common/llms/aiPrompts';
+import { codeCompletionPrompt } from '../../common/llms/llm.prompt';
 
 export class LanguageServerClient {
   private client: LanguageClient;

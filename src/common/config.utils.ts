@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { workspace } from 'vscode';
-import { ProviderConfig } from './llms/aiModel';
+import { ProviderConfig } from './llms/llm.model';
 
 /**
  * Gets the Mode extension configuration

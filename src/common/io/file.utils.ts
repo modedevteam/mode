@@ -5,7 +5,7 @@
 
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { SearchUtils } from './searchUtils';
+import { SearchUtils } from './search.utils';
 
 // Detects a filename from a line of text. Returns the filename if detected, or null if no filename is detected.
 export function detectFileNameUri(line: string): { filename: string | null, fileUri: string | null } {

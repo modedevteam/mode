@@ -5,14 +5,14 @@
 
 import * as vscode from 'vscode';
 import MarkdownIt from 'markdown-it';
-import { ChatSessionManager } from './chatSessionManager';
-import { ChatRequestHandler } from './chatRequestHandler';
-import { AIClientFactory } from '../../common/llms/aiClientFactory';
-import { AIClient, AIMessage } from '../../common/llms/aiClient';
-import { AIModelUtils } from '../../common/llms/aiModelUtils';
-import { ChatResponseHandler } from './chatResponseHandler';
-import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
-import { SESSION_SUMMARY_PROMPT } from '../../common/llms/aiPrompts';
+import { ChatSessionManager } from './chat.session.handler';
+import { ChatRequestHandler } from './chat.request.handler';
+import { AIClientFactory } from '../../common/llms/llm.client.factory';
+import { AIClient, AIMessage } from '../../common/llms/llm.client';
+import { AIModelUtils } from '../../common/llms/llm.model.utils';
+import { ChatResponseHandler } from './chat.response.handler';
+import { ApiKeyManager } from '../../common/llms/llm.api.key.manager';
+import { SESSION_SUMMARY_PROMPT } from '../../common/llms/llm.prompt';
 
 export class ChatManager {
 	private aiClient: AIClient | null = null;

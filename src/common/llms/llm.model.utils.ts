@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { AIClientConfig } from './aiClient';
+import type { AIClientConfig } from './llm.client';
 import * as vscode from 'vscode';
-import { getProviders } from '../configUtils';
-import { ModelConfigMap, ModelInfo, ProviderConfig, PROVIDERS_CONFIG_KEY } from './aiModel';
+import { getProviders } from '../config.utils';
+import { ModelConfigMap, ModelInfo, ProviderConfig, PROVIDERS_CONFIG_KEY } from './llm.model';
 
 export class AIModelUtils {
     static getProvider(provider: string): ProviderConfig | undefined {

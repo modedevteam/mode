@@ -5,8 +5,8 @@
 
 import * as vscode from 'vscode';
 import hljs from 'highlight.js';
-import { safeLanguageIdentifier } from '../../capabilities/context/safeLanguageIdentifier';
-import { ErrorMessages } from '../user-messages/errorMessages';
+import { safeLanguageIdentifier } from '../../capabilities/context/safe.language.identifier';
+import { ErrorMessages } from '../user.messages/error.messages';
 
 export interface CodeSelection {
     text: string;

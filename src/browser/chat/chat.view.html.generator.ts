@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { AIModelUtils } from '../../common/llms/aiModelUtils';
+import { AIModelUtils } from '../../common/llms/llm.model.utils';
 
 export class ChatViewHtmlGenerator {
 	constructor(private readonly _extensionUri: vscode.Uri) { }
@@ -13,7 +13,7 @@ export class ChatViewHtmlGenerator {
 		// Get URIs for resources
 		const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'styles.css'));
 		const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'node_modules', '@vscode/codicons', 'dist', 'codicon.css'));
-		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'out', 'browser', 'scripts', 'webviewScript.js'));
+		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'out', 'browser', 'scripts', 'webview.script.js'));
 		const highlightJsTheme = vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.Dark
 			? 'atom-one-dark.css'
 			: 'atom-one-light.css';

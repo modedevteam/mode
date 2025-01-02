@@ -9,7 +9,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CohereClientV2 as Cohere } from 'cohere-ai';
 import { Mistral } from '@mistralai/mistralai';
 import { GoogleAIFileManager } from "@google/generative-ai/server";
-import { LLMChatParams } from './llmChatParams';
+import { LLMChatParams } from './llm.chat.params';
 
 export interface AIMessage {
     role: 'user' | 'assistant' | 'system';
