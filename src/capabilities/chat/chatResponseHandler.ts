@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import { detectFileNameUri } from '../../common/io/fileUtils';
-import { SessionManager } from './chatSessionManager';
+import { ChatSessionManager } from './chatSessionManager';
 import { isChatPrePromptDisabled, isPromptOverrideEmpty } from '../../common/configUtils';
 import { 
 	FILE_CHANGE_END, 
@@ -23,7 +23,7 @@ import {
 import { Logger } from '../../common/logging/logger';
 
 // New StreamProcessor class
-export class StreamProcessor {
+export class ChatResponseHandler {
 	private isInRegularCodeBlock = false;
 	private isInMergeCodeBlock = false;
 	private isInSearchBlock = false;
@@ -46,7 +46,7 @@ export class StreamProcessor {
 	constructor(
 		private readonly _view: vscode.WebviewView,
 		private readonly md: MarkdownIt,
-		private readonly _sessionManager: SessionManager
+		private readonly _sessionManager: ChatSessionManager
 	) { }
 
 	public async processToken(token: string): Promise<void> {

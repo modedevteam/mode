@@ -6,10 +6,10 @@
 import * as vscode from 'vscode';
 import { AIMessage } from '../../common/llms/aiClient';
 import MarkdownIt from 'markdown-it';
-import { StreamProcessor } from './streamProcessor';
+import { ChatResponseHandler } from './chatResponseHandler';
 import { AIClient } from '../../common/llms/aiClient';
 import { formatFileContent } from '../../common/rendering/llmTranslationUtils';
-import { SessionManager } from './chatSessionManager';
+import { ChatSessionManager } from './chatSessionManager';
 import { chatPromptv2, HIGHLIGHTED_CODE_START, HIGHLIGHTED_CODE_END, CURRENT_FILE_PATH_START, CURRENT_FILE_PATH_END } from '../../common/llms/aiPrompts';
 import {
 	isChatPrePromptDisabled,
@@ -20,17 +20,17 @@ import {
 } from '../../common/configUtils';
 
 // New class to handle message processing
-export class MessageHandler {
-	private streamProcessor: StreamProcessor;
+export class ChatRequestHandler {
+	private streamProcessor: ChatResponseHandler;
 	private isCancelled = false;
 
 	constructor(
 		private readonly _view: vscode.WebviewView,
 		private readonly aiClient: AIClient | null,
 		private readonly md: MarkdownIt,
-		private readonly sessionManager: SessionManager
+		private readonly sessionManager: ChatSessionManager
 	) {
-		this.streamProcessor = new StreamProcessor(_view, md, this.sessionManager);
+		this.streamProcessor = new ChatResponseHandler(_view, md, this.sessionManager);
 	}
 
 	public stopGeneration() {

@@ -12,7 +12,7 @@ import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
 import { AIModelUtils } from '../../common/llms/aiModelUtils';
 import { ErrorMessages } from '../../common/user-messages/errorMessages';
 import { SearchUtils } from '../../common/io/searchUtils';
-import { SessionManager } from '../../capabilities/chat/chatSessionManager';
+import { ChatSessionManager } from '../../capabilities/chat/chatSessionManager';
 import { CodeSelection, PillRenderer } from '../../common/rendering/pills';
 
 export class ModeChatViewProvider implements vscode.WebviewViewProvider {
@@ -23,7 +23,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 	private _modifiedContentMap: Map<string, string> = new Map();
 	private _diffManager: DiffManager;
 	private _apiKeyManager: ApiKeyManager;
-	private _sessionManager: SessionManager;
+	private _sessionManager: ChatSessionManager;
 
 	constructor(
 		private readonly _extensionUri: vscode.Uri,
@@ -33,7 +33,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 		this._htmlGenerator = new ChatViewHtmlGenerator(_extensionUri);
 		this._setupContentProvider();
 		this._apiKeyManager = new ApiKeyManager(_extensionContext);
-		this._sessionManager = new SessionManager(_extensionContext);
+		this._sessionManager = new ChatSessionManager(_extensionContext);
 		this._diffManager = new DiffManager(this._outputChannel, this._sessionManager);
 	}
 

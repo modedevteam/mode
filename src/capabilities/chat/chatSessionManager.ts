@@ -18,7 +18,7 @@ export interface ChatSession {
 	codeMap: { [guid: string]: string };
 }
 
-export class SessionManager {
+export class ChatSessionManager {
 	private chatSessions: ChatSession[] = [];
 	private currentSessionId: string | null = null;
 	private readonly STORAGE_FILE_NAME = 'mode_chat_sessions.json';

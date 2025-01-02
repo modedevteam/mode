@@ -5,12 +5,12 @@
 
 import * as vscode from 'vscode';
 import MarkdownIt from 'markdown-it';
-import { SessionManager } from './chatSessionManager';
-import { MessageHandler } from './messageHandler';
+import { ChatSessionManager } from './chatSessionManager';
+import { ChatRequestHandler } from './chatRequestHandler';
 import { AIClientFactory } from '../../common/llms/aiClientFactory';
 import { AIClient, AIMessage } from '../../common/llms/aiClient';
 import { AIModelUtils } from '../../common/llms/aiModelUtils';
-import { StreamProcessor } from './streamProcessor';
+import { ChatResponseHandler } from './chatResponseHandler';
 import { ApiKeyManager } from '../../common/llms/aiApiKeyManager';
 import { SESSION_SUMMARY_PROMPT } from '../../common/llms/aiPrompts';
 
@@ -18,12 +18,12 @@ export class ChatManager {
 	private aiClient: AIClient | null = null;
 	private md: MarkdownIt;
 	private currentModel: string;
-	private currentHandler: MessageHandler | null = null;
+	private currentHandler: ChatRequestHandler | null = null;
 	private readonly context: vscode.ExtensionContext;
 
 	constructor(
 		private readonly _view: vscode.WebviewView,
-		private readonly sessionManager: SessionManager,
+		private readonly sessionManager: ChatSessionManager,
 		context: vscode.ExtensionContext
 	) {
 		this.md = new MarkdownIt();
@@ -71,7 +71,7 @@ export class ChatManager {
 		if (!this.sessionManager.getCurrentSessionId()) {
 			this.sessionManager.createNewSession();
 		}
-		this.currentHandler = new MessageHandler(
+		this.currentHandler = new ChatRequestHandler(
 			this._view,
 			this.aiClient!,
 			this.md,
@@ -130,7 +130,7 @@ export class ChatManager {
 						});
 					} else if (message.role === 'assistant') {
 						// Process the message content line by line using the stream processor
-						const streamProcessor = new StreamProcessor(this._view, this.md, this.sessionManager);
+						const streamProcessor = new ChatResponseHandler(this._view, this.md, this.sessionManager);
 						this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
 						for (const line of (message.content as string).split('\n')) {
 							streamProcessor.processLine(line);

@@ -9,14 +9,14 @@ import * as fs from 'fs';
 import { FileResolver } from '../../common/io/fileUtils';
 import * as os from 'os';
 import { ErrorMessages } from '../../common/user-messages/errorMessages';
-import { SessionManager } from '../chat/chatSessionManager';
+import { ChatSessionManager } from '../chat/chatSessionManager';
 
 export class DiffManager {
     private _applyChangesButton?: vscode.StatusBarItem;
     private _diffEditor?: vscode.TextEditor;
     constructor(
         private readonly _outputChannel: vscode.OutputChannel,
-        private readonly _sessionManager: SessionManager
+        private readonly _sessionManager: ChatSessionManager
     ) {
     }
 
