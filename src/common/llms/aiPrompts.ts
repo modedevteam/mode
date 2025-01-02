@@ -63,8 +63,8 @@ Each tag serves a specific purpose:
 Expected Output Format:
 
 Guidelines:
-- NEVER return your response in HTML format
-- Respond without structured headings like "TLDR" or "Analysis"
+- NEVER return your response in HTML format, always markdown
+- NEVER use headings like "TLDR", "Analysis", "File Changes", or anything else
 - Focus on actionable and concise responses
 - Never mix Markdown code blocks with the specialized code changes format
 
