@@ -372,12 +372,11 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile && npm run obfuscate",
+		"vscode:prepublish": "npm run compile",
 		"compile": "npm run lint && tsc -p ./",
 		"lint": "eslint \"src/**/*.ts\"",
 		"watch": "npm run lint && tsc -w -p ./",
-		"test": "vscode-test",
-		"obfuscate": "javascript-obfuscator out --output out --config obfuscator-config.json"
+		"test": "vscode-test"
 	},
 	"devDependencies": {
 		"@types/lodash": "^4.17.13",
@@ -392,7 +391,6 @@
 		"esbuild": "^0.24.0",
 		"eslint": "^8.57.1",
 		"eslint-plugin-header": "^3.1.1",
-		"javascript-obfuscator": "^4.1.1",
 		"typescript": "^5.6.3"
 	},
 	"dependencies": {

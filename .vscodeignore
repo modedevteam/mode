@@ -12,7 +12,6 @@ src/
 tsconfig.json
 webpack.config.js
 esbuild.js
-obfuscator-config.json
 
 # Ignore the following files, they are unnecessary for the extension to run
 **/*.js.map
