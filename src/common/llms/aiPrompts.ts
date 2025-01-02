@@ -13,8 +13,8 @@ export const REFERENCED_FILE_START = '{{referenced_file}}';
 export const REFERENCED_FILE_END = '{{/referenced_file}}';
 export const ANALYSIS_START = '{{analysis}}';
 export const ANALYSIS_END = '{{/analysis}}';
-export const CODE_CHANGE_START = '{{code_change}}';
-export const CODE_CHANGE_END = '{{/code_change}}';
+export const FILE_CHANGE_START = '{{file_change}}';
+export const FILE_CHANGE_END = '{{/file_change}}';
 export const FILE_PATH_START = '{{fp}}';
 export const FILE_PATH_END = '{{/fp}}';
 export const FILE_CONTENT_START = '{{fc}}';
@@ -81,17 +81,9 @@ Guidelines:
    - Adjust surrounding code if needed
    ${ANALYSIS_END}
 
-4. Code changes in ONE of these two formats:
+4. File Changes (using specialized tags):
 
-   Option 1 - Simple Code Snippets (using Markdown):
-   \`\`\`typescript
-   function example() {
-      // Your code here
-   }
-   \`\`\`
-
-   Option 2 - Code Changes (using specialized tags):
-   ${CODE_CHANGE_START}
+   ${FILE_CHANGE_START}
    ${FILE_PATH_START}/path/to/file.ts${FILE_PATH_END}
    ${LANGUAGE_START}typescript${LANGUAGE_END}
    ${SEARCH_START}
@@ -111,17 +103,17 @@ Guidelines:
        }
    }
    ${REPLACE_END}
-   ${CODE_CHANGE_END}
+   ${FILE_CHANGE_END}
 
    Rules for Option 2:
    1. Mandatory tags - You MUST use these tags in your response in the following order:
-      ${CODE_CHANGE_START}: Starts the change block
+      ${FILE_CHANGE_START}: Starts the change block
       ${FILE_PATH_START}/path/to/file.ts${FILE_PATH_END}: Specifies which file to modify
       ${LANGUAGE_START}typescript${LANGUAGE_END}: Declares the language
       ${SEARCH_START}...${SEARCH_END}: Original code to be replaced (exact copy)
       ${REPLACE_START}...${REPLACE_END}: New code that will replace it
-      ${CODE_CHANGE_END}: Ends the change block
-   2. Each ${CODE_CHANGE_START}...${CODE_CHANGE_END} block must contain exactly ONE contiguous change:
+      ${FILE_CHANGE_END}: Ends the change block
+   2. Each ${FILE_CHANGE_START}...${FILE_CHANGE_END} block must contain exactly ONE contiguous change:
       - The SEARCH block must represent a single, uninterrupted section of code
       - Multiple changes to different parts of the file require separate CODE_CHANGE blocks
       - Never include unrelated or non-adjacent changes in the same block
@@ -133,14 +125,14 @@ Guidelines:
         - Indent nested blocks one level deeper
         - Align comments with their target code
       - When unsure, count spaces/tabs from nearby similar lines
-   4. Add a brief explanation between each ${CODE_CHANGE_START} and ${CODE_CHANGE_END} tag
+   4. Add a brief explanation between each ${FILE_CHANGE_START} and ${FILE_CHANGE_END} tag
    5. NEVER return input tags such as ${HIGHLIGHTED_CODE_START} or ${HIGHLIGHTED_CODE_END} in your response
 
 Example Response:
 
 User: "Add error handling to this function"
 
-${CODE_CHANGE_START}
+${FILE_CHANGE_START}
 ${FILE_PATH_START}/src/utils/process.ts${FILE_PATH_END}
 ${LANGUAGE_START}typescript${LANGUAGE_END}
 ${SEARCH_START}
@@ -171,7 +163,7 @@ ${REPLACE_START}
         }
     }
 ${REPLACE_END}
-${CODE_CHANGE_END}
+${FILE_CHANGE_END}
 
 Note how the example maintains the original file's indentation:
 - 4 spaces for top-level statements
@@ -189,7 +181,7 @@ Remember:
 - Preserve existing formatting patterns
 - Think carefully about formatting context
 - Test indentation visually
-- Ensure all tags are properly closed including ${FILE_PATH_END}, ${LANGUAGE_END}, ${SEARCH_END}, ${REPLACE_END}, ${CODE_CHANGE_END}`;
+- Ensure all tags are properly closed including ${FILE_PATH_END}, ${LANGUAGE_END}, ${SEARCH_END}, ${REPLACE_END}, ${FILE_CHANGE_END}`;
 
 //#endregion
 

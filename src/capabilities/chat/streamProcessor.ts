@@ -10,8 +10,8 @@ import { detectFileNameUri } from '../../common/io/fileUtils';
 import { SessionManager } from './chatSessionManager';
 import { isChatPrePromptDisabled, isPromptOverrideEmpty } from '../../common/configUtils';
 import { 
-	CODE_CHANGE_END, 
-	CODE_CHANGE_START, 
+	FILE_CHANGE_END, 
+	FILE_CHANGE_START, 
 	REPLACE_END, 
 	REPLACE_START, 
 	SEARCH_START,
@@ -173,7 +173,7 @@ export class StreamProcessor {
 		}
 
 		// Start {{code_changes}} blocks
-		if (line.includes(CODE_CHANGE_START)) {
+		if (line.includes(FILE_CHANGE_START)) {
 			// Close any existing code blocks first
 			if (this.isInRegularCodeBlock) {
 				this.endCodeBlock();
@@ -191,7 +191,7 @@ export class StreamProcessor {
 		}
 
 		// End {{code_changes}} blocks
-		if (line.includes(CODE_CHANGE_END)) {
+		if (line.includes(FILE_CHANGE_END)) {
 			this.processMergeBlock();
 			this.isInMergeCodeBlock = false;
 			this.endCodeBlock();
