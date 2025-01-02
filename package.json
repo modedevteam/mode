@@ -59,7 +59,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/modedevteam/mode-community"
+		"url": "https://github.com/modedevteam/mode"
 	},
 	"contributes": {
 		"viewsContainers": {
