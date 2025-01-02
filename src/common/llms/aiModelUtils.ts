@@ -136,4 +136,9 @@ export class AIModelUtils {
         // If no autocomplete model found, return original model
         return modelKey;
     }
+
+    public static isToolUsageSupported(modelKey: string): boolean {
+        // Support tool usage for OpenAI GPT models
+        return modelKey.toLowerCase().includes('gpt');
+    }
 } 

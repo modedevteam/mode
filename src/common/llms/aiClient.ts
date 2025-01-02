@@ -197,7 +197,78 @@ export class AIClient {
             })),
             [this.model.startsWith('o1') ? 'max_completion_tokens' : 'max_tokens']: this.model.startsWith('o1') ? 32768 : 16384,
             stream: true,
-            temperature: LLMChatParams.temperature
+            temperature: LLMChatParams.temperature,
+            tools: [{
+                type: "function",
+                function: {
+                    name: "apply_file_changes",
+                    description: "Apply changes to files in the codebase",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            changes: {
+                                type: "array",
+                                items: {
+                                    type: "object",
+                                    properties: {
+                                        filePath: {
+                                            type: "string",
+                                            description: "Path to the file being modified"
+                                        },
+                                        fileAction: {
+                                            type: "string",
+                                            enum: ["modify", "create", "delete", "rename"],
+                                            description: "Type of action to perform on the file"
+                                        },
+                                        updateAction: {
+                                            type: "string",
+                                            enum: ["replace", "delete"],
+                                            description: "Type of update to perform within the file"
+                                        },
+                                        language: {
+                                            type: "string",
+                                            description: "Programming language of the file"
+                                        },
+                                        searchContent: {
+                                            type: "string",
+                                            description: "Original code to be replaced (exact copy)"
+                                        },
+                                        replaceContent: {
+                                            type: "string",
+                                            description: "New code that will replace the search content (not required for delete actions)"
+                                        }
+                                    },
+                                    required: ["filePath", "fileAction", "updateAction", "language", "searchContent"],
+                                    allOf: [{
+                                        if: {
+                                            properties: { fileAction: { const: "create" } }
+                                        },
+                                        then: {
+                                            properties: {
+                                                updateAction: {
+                                                    enum: ["insert"]
+                                                }
+                                            }
+                                        }
+                                    }, {
+                                        if: {
+                                            properties: { updateAction: { const: "delete" } }
+                                        },
+                                        then: {
+                                            // No additional required fields for delete action
+                                        },
+                                        else: {
+                                            required: ["replaceContent"]
+                                        }
+                                    }]
+                                },
+                                description: "List of file changes to apply"
+                            }
+                        },
+                        required: ["changes"]
+                    }
+                }
+            }]
         }) as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
 
         try {
