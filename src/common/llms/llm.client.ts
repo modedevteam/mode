@@ -28,6 +28,7 @@ export interface AIClientConfig {
 export interface StreamCallbacks {
     onToken: (token: string) => void;
     onComplete: (fullText: string) => void;
+    onToolCall?: (toolCall: any) => void;
 }
 
 export class AIClient {
@@ -187,6 +188,9 @@ export class AIClient {
         if (!this.openaiClient) throw new Error('OpenAI client not initialized');
 
         let fullText = '';
+        let currentToolCall: any = null;
+        let accumulatedArguments = '';
+
         const response = await this.openaiClient.chat.completions.create({
             model: this.model,
             messages: messages.map(msg => ({
@@ -198,6 +202,7 @@ export class AIClient {
             [this.model.startsWith('o1') ? 'max_completion_tokens' : 'max_tokens']: this.model.startsWith('o1') ? 32768 : 16384,
             stream: true,
             temperature: LLMChatParams.temperature,
+            tool_choice: { type: "function", function: { name: "apply_file_changes" } },
             tools: [{
                 type: "function",
                 function: {
@@ -206,6 +211,10 @@ export class AIClient {
                     parameters: {
                         type: "object",
                         properties: {
+                            explanation: {
+                                type: "string",
+                                description: "Overall explanation of the changes being made"
+                            },
                             changes: {
                                 type: "array",
                                 items: {
@@ -236,6 +245,10 @@ export class AIClient {
                                         replaceContent: {
                                             type: "string",
                                             description: "New code that will replace the search content (not required for delete actions)"
+                                        },
+                                        explanation: {
+                                            type: "string",
+                                            description: "Explanation of why this specific change is being made"
                                         }
                                     },
                                     required: ["filePath", "fileAction", "updateAction", "language", "searchContent"],
@@ -260,12 +273,28 @@ export class AIClient {
                                         else: {
                                             required: ["replaceContent"]
                                         }
+                                    }, {
+                                        if: {
+                                            not: {
+                                                properties: {
+                                                    explanation: { type: "string" }
+                                                }
+                                            }
+                                        },
+                                        then: {
+                                            // If no explanation is provided, require parent changes array to have length 1
+                                            properties: {
+                                                "/changes": {
+                                                    maxItems: 1
+                                                }
+                                            }
+                                        }
                                     }]
                                 },
                                 description: "List of file changes to apply"
                             }
                         },
-                        required: ["changes"]
+                        required: ["changes", "explanation"]
                     }
                 }
             }]
@@ -276,6 +305,38 @@ export class AIClient {
                 if (this.isCancelled) {
                     return fullText;
                 }
+                
+                const toolCall = chunk.choices[0]?.delta?.tool_calls?.[0];
+                if (toolCall) {
+                    // Initialize new tool call if we get an id/name
+                    if (toolCall.id || toolCall.function?.name) {
+                        currentToolCall = {
+                            index: toolCall.index,
+                            id: toolCall.id,
+                            type: 'function',
+                            function: {
+                                name: toolCall.function?.name,
+                                arguments: ''
+                            }
+                        };
+                    }
+                    
+                    // Accumulate arguments
+                    if (toolCall.function?.arguments) {
+                        accumulatedArguments += toolCall.function.arguments;
+                    }
+                    
+                    // If this is the last chunk of the tool call
+                    if (chunk.choices[0]?.finish_reason === 'tool_calls') {
+                        if (currentToolCall) {
+                            currentToolCall.function.arguments = accumulatedArguments;
+                            callbacks.onToolCall?.(currentToolCall);
+                            currentToolCall = null;
+                            accumulatedArguments = '';
+                        }
+                    }
+                }
+
                 const text = chunk.choices[0]?.delta?.content || '';
                 if (text) {
                     fullText += text;
@@ -288,6 +349,13 @@ export class AIClient {
             }
             throw error;
         }
+        
+        // Handle any remaining tool call
+        if (currentToolCall && accumulatedArguments) {
+            currentToolCall.function.arguments = accumulatedArguments;
+            callbacks.onToolCall?.(currentToolCall);
+        }
+
         callbacks.onComplete(fullText);
         return fullText;
     }

@@ -67,7 +67,7 @@ declare function acquireVsCodeApi(): any;
                 images: currentImages,
                 codeSnippets: highlightedCodeSnippets,
                 fileUrls: Array.from(addedFileUris),
-                currentFile: currentFilePill?.textContent,
+                currentFile: currentFilePill?.getAttribute('data-file-uri'),
                 selectedModel: selectedModel,
                 auto: auto // Include the autocode state
             });

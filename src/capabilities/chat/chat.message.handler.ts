@@ -10,19 +10,14 @@ import { ChatResponseHandler } from './chat.response.handler';
 import { AIClient } from '../../common/llms/llm.client';
 import { formatFileContent } from '../../common/rendering/llm.translation.utils';
 import { ChatSessionManager } from './chat.session.handler';
-import { chatPromptv2, HIGHLIGHTED_CODE_START, HIGHLIGHTED_CODE_END, CURRENT_FILE_PATH_START, CURRENT_FILE_PATH_END } from '../../common/llms/llm.prompt';
-import {
-	isChatPrePromptDisabled,
-	getChatPromptOverride,
-	isPromptOverrideEmpty,
-	getChatAdditionalPrompt,
-	isChatAdditionalPromptEmpty
-} from '../../common/config.utils';
+import { HIGHLIGHTED_CODE_START, HIGHLIGHTED_CODE_END, CURRENT_FILE_PATH_START, CURRENT_FILE_PATH_END } from '../../common/llms/llm.prompt';
+import { applyFileChanges } from '../tools/apply.file.changes';
 
 // New class to handle message processing
-export class ChatRequestHandler {
+export class ChatMessageHandler {
 	private streamProcessor: ChatResponseHandler;
 	private isCancelled = false;
+	private toolCalls: any[] = [];
 
 	constructor(
 		private readonly _view: vscode.WebviewView,
@@ -48,27 +43,10 @@ export class ChatRequestHandler {
 	): Promise<void> {
 		try {
 			this.isCancelled = false;
+			this.toolCalls = [];
 
 			// Access messages from sessionManager
 			const messages = this.sessionManager.getCurrentSession().messages;
-
-			// If this is the first message in the conversation, add the system prompt
-			if (messages.length === 0) {
-				const promptOverride = getChatPromptOverride();
-				const disableSystemPrompt = isChatPrePromptDisabled() && isPromptOverrideEmpty();
-				let systemPrompt = disableSystemPrompt ? '' : (promptOverride || chatPromptv2);
-
-				if (!isChatAdditionalPromptEmpty()) {
-					systemPrompt += ` ${getChatAdditionalPrompt()}`;
-				}
-
-				if (!disableSystemPrompt) {
-					messages.push({
-						role: "system" as const,
-						content: systemPrompt
-					});
-				}
-			}
 
 			// Add the user message
 			messages.push({ role: "user", content: message, name: "Mode" });
@@ -109,6 +87,7 @@ export class ChatRequestHandler {
 
 			// call LLM provider and stream the response
 			let isFirstToken = true;
+			let streamStarted = false;
 
 			await this.aiClient!.chat(messages as AIMessage[], {
 				onToken: (token) => {
@@ -120,6 +99,7 @@ export class ChatRequestHandler {
 						// notify webview to start streaming on first token
 						this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
 						isFirstToken = false;
+						streamStarted = true;
 					}
 
 					this.streamProcessor.processToken(token);
@@ -138,11 +118,45 @@ export class ChatRequestHandler {
 						content: fullText,
 						name: "Mode"
 					});
+				},
+				onToolCall: (toolCall) => {
+					if (this.isCancelled) {
+						return;
+					}
+
+					// Start stream if it hasn't been started by onToken
+					if (!streamStarted) {
+						this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
+						streamStarted = true;
+					}
+
+					// Only add complete tool calls with arguments
+					if (toolCall.function?.arguments) {
+						try {
+							// Parse the arguments string into a JSON object
+							const parsedArguments = JSON.parse(toolCall.function.arguments);
+							toolCall.function.arguments = parsedArguments;
+							this.toolCalls.push(toolCall);
+
+							// Call apply changes if the function name matches
+							if (toolCall.function.name === 'apply_file_changes') {
+								applyFileChanges(parsedArguments, this.streamProcessor);
+							}
+						} catch (error) {
+							console.error('Failed to parse tool call arguments:', error);
+						}
+					}
 				}
 			});
 
-			// tool calls
-
+			// Add collected tool calls after streaming is complete
+			if (this.toolCalls.length > 0) {
+				this.sessionManager.getCurrentSession().messages.push({
+					role: "assistant",
+					content: this.toolCalls,
+					name: "Mode"
+				});
+			}
 
 			// Mark the end of the stream
 			if (!this.isCancelled) {

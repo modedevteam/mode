@@ -6,19 +6,27 @@
 import * as vscode from 'vscode';
 import MarkdownIt from 'markdown-it';
 import { ChatSessionManager } from './chat.session.handler';
-import { ChatRequestHandler } from './chat.request.handler';
+import { ChatMessageHandler } from './chat.message.handler';
 import { AIClientFactory } from '../../common/llms/llm.client.factory';
 import { AIClient, AIMessage } from '../../common/llms/llm.client';
 import { AIModelUtils } from '../../common/llms/llm.model.utils';
 import { ChatResponseHandler } from './chat.response.handler';
 import { ApiKeyManager } from '../../common/llms/llm.api.key.manager';
 import { SESSION_SUMMARY_PROMPT } from '../../common/llms/llm.prompt';
+import { chatPromptv2, chatPromptv3 } from '../../common/llms/llm.prompt';
+import {
+	isChatPrePromptDisabled,
+	getChatPromptOverride,
+	isPromptOverrideEmpty,
+	getChatAdditionalPrompt,
+	isChatAdditionalPromptEmpty
+} from '../../common/config.utils';
 
 export class ChatManager {
 	private aiClient: AIClient | null = null;
 	private md: MarkdownIt;
 	private currentModel: string;
-	private currentHandler: ChatRequestHandler | null = null;
+	private currentHandler: ChatMessageHandler | null = null;
 	private readonly context: vscode.ExtensionContext;
 
 	constructor(
@@ -46,17 +54,42 @@ export class ChatManager {
 		return { success: true };
 	}
 
+	private hasSystemPrompt(): boolean {
+		const messages = this.sessionManager.getCurrentSession()?.messages || [];
+		return messages.some(msg => msg.role === 'system');
+	}
+
+	private initializeSystemPrompt(selectedModel: string): void {
+		const messages = this.sessionManager.getCurrentSession().messages;
+		const promptOverride = getChatPromptOverride();
+		const disableSystemPrompt = isChatPrePromptDisabled() && isPromptOverrideEmpty();
+		let systemPrompt = disableSystemPrompt ? '' : (promptOverride || 
+			(AIModelUtils.isToolUsageSupported(selectedModel) ? chatPromptv3 : chatPromptv2));
+
+		if (!isChatAdditionalPromptEmpty()) {
+			systemPrompt += ` ${getChatAdditionalPrompt()}`;
+		}
+
+		if (!disableSystemPrompt) {
+			messages.push({
+				role: "system" as const,
+				content: systemPrompt
+			});
+		}
+	}
+
 	public async sendMessage(
 		outputChannel: vscode.OutputChannel,
 		message: string,
 		images: { id: string; data: string; fileName?: string }[],
 		codeSnippets: { fileName: string; range: string; code: string }[] = [],
 		fileUrls: string[] = [],
-		currentFile: string | null = null,
+		currentFilePath: string | null = null,
 		selectedModel: string,
 		auto: boolean
 	): Promise<void> {
 
+		// initialize client
 		const initResult = await this.initializeClient(selectedModel);
 
 		if (!initResult.success) {
@@ -68,16 +101,18 @@ export class ChatManager {
 			return;
 		}
 
-		if (!this.sessionManager.getCurrentSessionId()) {
-			this.sessionManager.createNewSession();
+		// Initialize system prompt for new sessions or if missing
+		if (!this.hasSystemPrompt()) {
+			this.initializeSystemPrompt(selectedModel);
 		}
-		this.currentHandler = new ChatRequestHandler(
+
+		this.currentHandler = new ChatMessageHandler(
 			this._view,
 			this.aiClient!,
 			this.md,
 			this.sessionManager
 		);
-		await this.currentHandler.handleMessage(message, images, codeSnippets, fileUrls, currentFile, auto);
+		await this.currentHandler.handleMessage(message, images, codeSnippets, fileUrls, currentFilePath, auto);
 		this.sessionManager.saveSessions();
 
 		// Generate overview

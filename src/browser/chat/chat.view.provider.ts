@@ -72,7 +72,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 							message.images,
 							message.codeSnippets,
 							message.fileUrls,
-							message.currentFile,
+							message.currentFilePath,
 							message.selectedModel,
 							message.auto
 						);
@@ -121,7 +121,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 		images: { id: string; data: string; fileName?: string }[] = [],
 		codeSnippets: { fileName: string; range: string; code: string }[] = [],
 		fileUrls: string[] = [],
-		currentFile: string | null = null,
+		currentFilePath: string | null = null,
 		selectedModel: string,
 		auto: boolean
 	) {
@@ -145,7 +145,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 				imagesToSend,
 				codeSnippets,
 				fileUrls,
-				currentFile,
+				currentFilePath,
 				selectedModel,
 				auto
 			);
