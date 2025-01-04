@@ -74,6 +74,12 @@ format them as function calls with the following structure:
     }
   ]
 }
+
+Rules
+1. When moving code to new files:
+   - Include all necessary import statements
+   - Break non-contiguous code sections into separate change blocks
+   - Ensure each change block is complete and self-contained
 `;
 
 //#endregion
