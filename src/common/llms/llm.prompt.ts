@@ -58,28 +58,28 @@ format them as function calls with the following structure:
 
 {
   "explanation": "A clear, enthusiastic explanation of all the changes being made",  
-  "changes": [
+  "changes": [                          // Array of changes to be made
+                                        // Each change must be a single contiguous block of code
+                                        // that can be applied as a single unit.
+                                        // Special cases:
+                                          1. Return changes to imports as individual changes separate from
+                                             others, as they need to be positioned at the top of the file.
     {
-      "filePath": "path/to/file",
+      "filePath": "path/to/file",       // The file path to modify e.g. "src/utils/process.ts"
       "fileAction": "modify",           // One of: "modify", "create", "delete", "rename"
       "updateAction": "replace",        // One of: "replace", "delete"
-      "language": "typescript",
+      "language": "typescript",         // The programming language e.g. "typescript"
       "searchContent": "...",           // The exact code segment to be replaced - MUST match 
                                         // the source file lines precisely and include the entire 
                                         // method/function with decorators, comments, and 
                                         // whitespace when modifying methods
-      "replaceContent": "...",          // New code to replace it (not needed for delete) - must 
-                                        // include the entire method/function with decorators, 
-                                        // comments, and whitespace when modifying methods. Must 
-                                        // match the original lines' existing style and indentation.
+      "replaceContent": "...",          // New code to replace it (not needed for delete).
+                                        // Must include the entire method/function with decorators, 
+                                        // comments, and whitespace when modifying methods.
+                                        // Must match the source file's existing style and indentation.
       "explanation": "..."              // First-person explanation of this specific change
     }
   ]
-  // Additional rules:
-  //  - When moving code to new files:
-  //  - Include all necessary import statements
-  //  - Break non-contiguous code sections into separate change blocks
-  //  - Ensure each change block is complete and self-contained  
 }
 `;
 
