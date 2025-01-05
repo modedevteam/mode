@@ -166,37 +166,72 @@ function replaceStrategyV2(
 function searchStrategy(document: vscode.TextDocument, searchContent: string): vscode.Position | null {
     const documentLines = document.getText().split('\n');
     const searchLines = searchContent.split('\n');
-    const firstLine = searchLines[0].trim();
+    const firstLine = normalizeWhitespace(searchLines[0].trim());
+
+    // Add logging for the search pattern
+    console.log('Search pattern (normalized):');
+    searchLines.forEach((line, i) => {
+        console.log(`${i}: "${normalizeWhitespace(line.trim())}"`);
+    });
 
     for (let i = 0; i < documentLines.length; i++) {
-        // Skip if this position would exceed array bounds
         if (i > documentLines.length - searchLines.length) {
             break;
         }
 
-        // Look for first line match
-        if (documentLines[i].trim() === firstLine) {
+        const normalizedDocLine = normalizeWhitespace(documentLines[i].trim());
+        // Log when we find a potential first line match
+        if (normalizedDocLine === firstLine) {
+            console.log(`\nPotential match at line ${i}:`);
+            console.log(`Document: "${normalizedDocLine}"`);
+            console.log(`Search : "${firstLine}"`);
+
             let isFullMatch = true;
 
-            // Verify subsequent lines
+            // Verify subsequent lines with normalized whitespace
             for (let j = 1; j < searchLines.length; j++) {
-                if (documentLines[i + j].trim() !== searchLines[j].trim()) {
+                const normalizedDocNextLine = normalizeWhitespace(documentLines[i + j].trim());
+                const normalizedSearchLine = normalizeWhitespace(searchLines[j].trim());
+                
+                console.log(`\nComparing line ${i + j}:`);
+                console.log(`Document: "${normalizedDocNextLine}"`);
+                console.log(`Search : "${normalizedSearchLine}"`);
+
+                if (normalizedDocNextLine !== normalizedSearchLine) {
+                    console.log('❌ No match');
                     isFullMatch = false;
                     break;
                 }
+                console.log('✓ Match');
             }
 
-            // If we found a full match, return the starting position
             if (isFullMatch) {
+                console.log('\n✅ Found complete match!');
                 return document.positionAt(
                     documentLines.slice(0, i).join('\n').length + 
-                    (i > 0 ? 1 : 0) // Add newline if not at start of file
+                    (i > 0 ? 1 : 0)
                 );
             }
         }
     }
 
+    console.log('\n❌ No matches found in document');
     return null;
+}
+
+/*
+ * Normalizes whitespace by first replacing all types of whitespace with spaces,
+ * then collapsing all whitespace to a single space, and finally removing all remaining whitespace.
+ */
+function normalizeWhitespace(text: string): string {
+    return text
+        // First unescape any escaped characters
+        .replace(/\\t/g, '\t')
+        .replace(/\\n/g, '\n')
+        .replace(/\\"/g, '"')
+        .replace(/\\\\/g, '\\')
+        // Then remove all whitespace characters completely
+        .replace(/\s+/g, '');
 }
 
 /*

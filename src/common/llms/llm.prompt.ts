@@ -60,26 +60,27 @@ format them as function calls with the following structure:
   "explanation": "A clear, enthusiastic explanation of all the changes being made",  
   "changes": [
     {
-      "filePath": "path/to/file",      // The file path to modify
-      "fileAction": "modify",          // One of: "modify", "create", "delete", "rename"
-      "updateAction": "replace",       // One of: "replace", "delete"
-      "language": "typescript",        // The programming language
-      "searchContent": "...",          // The exact code segment to be replaced - MUST match the source file 
-                                       // precisely and include the entire method/function with decorators, 
-                                       // comments, and whitespace when modifying methods
-      "replaceContent": "...",         // New code to replace it (not needed for delete) - must include 
-                                       // the entire method/function with decorators, comments, and 
-                                       // whitespace when modifying methods
-      "explanation": "..."             // First-person explanation of this specific change
+      "filePath": "path/to/file",
+      "fileAction": "modify",           // One of: "modify", "create", "delete", "rename"
+      "updateAction": "replace",        // One of: "replace", "delete"
+      "language": "typescript",
+      "searchContent": "...",           // The exact code segment to be replaced - MUST match 
+                                        // the source file lines precisely and include the entire 
+                                        // method/function with decorators, comments, and 
+                                        // whitespace when modifying methods
+      "replaceContent": "...",          // New code to replace it (not needed for delete) - must 
+                                        // include the entire method/function with decorators, 
+                                        // comments, and whitespace when modifying methods. Must 
+                                        // match the original lines' existing style and indentation.
+      "explanation": "..."              // First-person explanation of this specific change
     }
   ]
+  // Additional rules:
+  //  - When moving code to new files:
+  //  - Include all necessary import statements
+  //  - Break non-contiguous code sections into separate change blocks
+  //  - Ensure each change block is complete and self-contained  
 }
-
-Rules
-1. When moving code to new files:
-   - Include all necessary import statements
-   - Break non-contiguous code sections into separate change blocks
-   - Ensure each change block is complete and self-contained
 `;
 
 //#endregion
