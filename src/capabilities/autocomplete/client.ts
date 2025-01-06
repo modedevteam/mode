@@ -23,7 +23,6 @@ import {
   LanguageClientOptions,
   ServerOptions,
   TransportKind,
-  InsertTextMode
 } from 'vscode-languageclient/node';
 import { CompletionItem } from 'vscode-languageserver-protocol';
 import { ApiKeyManager } from '../../common/llms/llm.api.key.manager';
