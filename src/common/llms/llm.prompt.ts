@@ -58,9 +58,10 @@ format them as function calls with the following structure:
 
 {
   "explanation": "A clear, enthusiastic explanation of all the changes being made",  
-  "changes": [                          // Array of changes to be made
-                                        // Each change must be a single contiguous block of code
-                                        // that can be applied as a single unit.
+  "changes": [                          // Array of changes to be made.
+                                        // Each change must be a single contiguous block of code that can be applied
+                                        // as a single unit. For example, if you are modifying lines 5-10 and lines 15-20
+                                        // in a file, you must return two separate changes, one for each block.
                                         // Special cases:
                                           1. Return changes to imports as individual changes separate from
                                              others, as they need to be positioned at the top of the file.
