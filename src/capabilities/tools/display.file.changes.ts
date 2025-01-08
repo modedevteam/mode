@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ChatResponseHandler } from '../chat/chat.response.handler';
+import { TextResponseProcessor } from '../chat/text.response.processor';
 import { ChangeSet } from './apply.file.changes';
 import { FILE_CHANGE_END, FILE_CHANGE_START, REPLACE_END, REPLACE_START, SEARCH_END, SEARCH_START, FILE_PATH_END, FILE_PATH_START, LANGUAGE_END, LANGUAGE_START } from '../../common/llms/llm.prompt';
 
 /*
  * Displays the changes to the user. Renders the changes in the webview.
  */
-export async function displayFileChanges(changes: ChangeSet, handler: ChatResponseHandler): Promise<void> {
+export async function displayFileChanges(changes: ChangeSet, handler: TextResponseProcessor): Promise<void> {
     // Display explanation
     await handler.processLine(changes.explanation);
 

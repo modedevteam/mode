@@ -8,9 +8,9 @@ import MarkdownIt from 'markdown-it';
 import { ChatSessionManager } from './chat.session.handler';
 import { ChatMessageHandler } from './chat.message.handler';
 import { AIClientFactory } from '../../common/llms/llm.client.factory';
-import { AIClient, AIMessage } from '../../common/llms/llm.client';
+import { AIClient, AIMessage, StreamToken } from '../../common/llms/llm.client';
 import { AIModelUtils } from '../../common/llms/llm.model.utils';
-import { ChatResponseHandler } from './chat.response.handler';
+import { TextResponseProcessor } from './text.response.processor';
 import { ApiKeyManager } from '../../common/llms/llm.api.key.manager';
 import { SESSION_SUMMARY_PROMPT } from '../../common/llms/llm.prompt';
 import { chatPromptv2, chatPromptv3 } from '../../common/llms/llm.prompt';
@@ -132,10 +132,8 @@ export class ChatManager {
 				{ role: "system", content: SESSION_SUMMARY_PROMPT },
 				{ role: "user", content: message }
 			], {
-				onToken: (token: string) => {
-					overview += token;
-				},
-				onComplete: (fullText: string) => {
+				onToken: () => {},
+				onComplete: (fullText: string) => { // we only need the final response when generating the overview
 					overview = fullText;
 				}
 			});
@@ -165,7 +163,7 @@ export class ChatManager {
 						});
 					} else if (message.role === 'assistant') {
 						// Process the message content line by line using the stream processor
-						const streamProcessor = new ChatResponseHandler(this._view, this.md, this.sessionManager);
+						const streamProcessor = new TextResponseProcessor(this._view, this.md, this.sessionManager);
 						this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
 						for (const line of (message.content as string).split('\n')) {
 							streamProcessor.processLine(line);

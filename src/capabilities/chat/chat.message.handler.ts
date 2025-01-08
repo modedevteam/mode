@@ -4,20 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { AIMessage } from '../../common/llms/llm.client';
+import { AIMessage, StreamToken } from '../../common/llms/llm.client';
 import MarkdownIt from 'markdown-it';
-import { ChatResponseHandler } from './chat.response.handler';
+import { TextResponseProcessor } from './text.response.processor';
 import { AIClient } from '../../common/llms/llm.client';
 import { formatFileContent } from '../../common/rendering/llm.translation.utils';
 import { ChatSessionManager } from './chat.session.handler';
 import { HIGHLIGHTED_CODE_START, HIGHLIGHTED_CODE_END, CURRENT_FILE_PATH_START, CURRENT_FILE_PATH_END } from '../../common/llms/llm.prompt';
 import { applyFileChanges } from '../tools/apply.file.changes';
+import { ToolResponseProcessor } from './tool.response.processor';
 
 // New class to handle message processing
 export class ChatMessageHandler {
-	private streamProcessor: ChatResponseHandler;
+	private streamProcessor: TextResponseProcessor;
+	private toolProcessor: ToolResponseProcessor;
 	private isCancelled = false;
 	private toolCalls: any[] = [];
+	private currentToolText = '';
 
 	constructor(
 		private readonly _view: vscode.WebviewView,
@@ -25,7 +28,8 @@ export class ChatMessageHandler {
 		private readonly md: MarkdownIt,
 		private readonly sessionManager: ChatSessionManager
 	) {
-		this.streamProcessor = new ChatResponseHandler(_view, md, this.sessionManager);
+		this.streamProcessor = new TextResponseProcessor(_view, md, this.sessionManager);
+		this.toolProcessor = new ToolResponseProcessor(_view, md);
 	}
 
 	public stopGeneration() {
@@ -86,33 +90,34 @@ export class ChatMessageHandler {
 			}
 
 			// call LLM provider and stream the response
-			let isFirstToken = true;
 			let streamStarted = false;
 
 			await this.aiClient!.chat(messages as AIMessage[], {
 				onToken: (token) => {
-					if (this.isCancelled) {
-						return;
-					}
+					if (this.isCancelled) return;
 
-					if (isFirstToken) {
-						// notify webview to start streaming on first token
+					if (!streamStarted) {
 						this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
-						isFirstToken = false;
 						streamStarted = true;
 					}
 
-					this.streamProcessor.processToken(token);
+					// Handle tool-complete chunks to properly end tool streaming
+					if (token.type === 'tool-complete') {
+						this.toolProcessor.endToolStream();
+					} else if (token.type === 'tool') {
+						this.toolProcessor.processToolChunk(token.content);
+					} else if (token.type === 'text') {
+						// Only process text chunks if we're not currently processing a tool
+						if (!this.toolProcessor.isProcessingTool()) {
+							this.streamProcessor.processToken(token.content);
+						}
+					}
 				},
 				onComplete: (fullText) => {
-					if (this.isCancelled) {
-						return;
-					}
-
-					// Send buffered markdown lines as a complete formatted block
+					if (this.isCancelled) return;
 					this.streamProcessor.finalize();
+					this.toolProcessor.endToolStream();
 
-					// save the raw full text for diagnostic purposes
 					this.sessionManager.getCurrentSession().messages.push({
 						role: "assistant",
 						content: fullText,
@@ -120,31 +125,18 @@ export class ChatMessageHandler {
 					});
 				},
 				onToolCall: (toolCall) => {
-					if (this.isCancelled) {
-						return;
-					}
+					if (this.isCancelled) return;
 
-					// Start stream if it hasn't been started by onToken
-					if (!streamStarted) {
-						this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
-						streamStarted = true;
-					}
+					try {
+						const parsedArguments = JSON.parse(toolCall.function.arguments);
+						toolCall.function.arguments = parsedArguments;
+						this.toolCalls.push(toolCall);
 
-					// Only add complete tool calls with arguments
-					if (toolCall.function?.arguments) {
-						try {
-							// Parse the arguments string into a JSON object
-							const parsedArguments = JSON.parse(toolCall.function.arguments);
-							toolCall.function.arguments = parsedArguments;
-							this.toolCalls.push(toolCall);
-
-							// Call apply changes if the function name matches
-							if (toolCall.function.name === 'apply_file_changes') {
-								applyFileChanges(parsedArguments, this.streamProcessor);
-							}
-						} catch (error) {
-							console.error('Failed to parse tool call arguments:', error);
+						if (toolCall.function.name === 'apply_file_changes') {
+							applyFileChanges(parsedArguments, this.streamProcessor);
 						}
+					} catch (error) {
+						console.error('Failed to parse tool call arguments:', error);
 					}
 				}
 			});

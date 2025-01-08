@@ -243,6 +243,12 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                 }
                 chatOutput.scrollTop = chatOutput.scrollHeight;
                 break;
+            case 'addMarkdownToken':
+                hideProcessingAnimation();
+                if (currentMarkdownContainer) {
+                    currentMarkdownContainer.innerHTML += message.token;
+                }
+                break;
             case 'addCodeLine':
                 hideProcessingAnimation();
                 if (currentCodeContainer) {

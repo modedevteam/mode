@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { ChatResponseHandler } from '../chat/chat.response.handler';
+import { TextResponseProcessor } from '../chat/text.response.processor';
 import { displayFileChanges } from './display.file.changes';
 
 /*
@@ -31,7 +31,7 @@ export interface ChangeSet {
 /*
  * The main function that applies the changes. Entry point for the tool call.
  */
-export async function applyFileChanges(toolCallArguments: string | any, handler: ChatResponseHandler): Promise<void> {
+export async function applyFileChanges(toolCallArguments: string | any, handler: TextResponseProcessor): Promise<void> {
     try {
         // Handle both string and object inputs
         const changes: ChangeSet = typeof toolCallArguments === 'string'
@@ -43,7 +43,7 @@ export async function applyFileChanges(toolCallArguments: string | any, handler:
 
 
         // Pass the handler to displayChanges
-        await displayFileChanges(changes, handler);
+        // await displayFileChanges(changes, handler);
 
         // Then apply each change
         for (const change of changes.changes) {
@@ -87,24 +87,13 @@ function searchStrategy(document: vscode.TextDocument, searchContent: string): v
     const searchLines = searchContent.split('\n');
     const firstLine = normalizeWhitespace(searchLines[0].trim());
 
-    // Add logging for the search pattern
-    console.log('Search pattern (normalized):');
-    searchLines.forEach((line, i) => {
-        console.log(`${i}: "${normalizeWhitespace(line.trim())}"`);
-    });
-
     for (let i = 0; i < documentLines.length; i++) {
         if (i > documentLines.length - searchLines.length) {
             break;
         }
 
         const normalizedDocLine = normalizeWhitespace(documentLines[i].trim());
-        // Log when we find a potential first line match
         if (normalizedDocLine === firstLine) {
-            console.log(`\nPotential match at line ${i}:`);
-            console.log(`Document: "${normalizedDocLine}"`);
-            console.log(`Search : "${firstLine}"`);
-
             let isFullMatch = true;
 
             // Verify subsequent lines with normalized whitespace
@@ -112,20 +101,13 @@ function searchStrategy(document: vscode.TextDocument, searchContent: string): v
                 const normalizedDocNextLine = normalizeWhitespace(documentLines[i + j].trim());
                 const normalizedSearchLine = normalizeWhitespace(searchLines[j].trim());
 
-                console.log(`\nComparing line ${i + j}:`);
-                console.log(`Document: "${normalizedDocNextLine}"`);
-                console.log(`Search : "${normalizedSearchLine}"`);
-
                 if (normalizedDocNextLine !== normalizedSearchLine) {
-                    console.log('❌ No match');
                     isFullMatch = false;
                     break;
                 }
-                console.log('✓ Match');
             }
 
             if (isFullMatch) {
-                console.log('\n✅ Found complete match!');
                 return document.positionAt(
                     documentLines.slice(0, i).join('\n').length +
                     (i > 0 ? 1 : 0)
@@ -134,7 +116,6 @@ function searchStrategy(document: vscode.TextDocument, searchContent: string): v
         }
     }
 
-    console.log('\n❌ No matches found in document');
     return null;
 }
 
@@ -178,8 +159,7 @@ export async function applyFileChange(change: FileChange): Promise<void> {
             const startPosition = searchStrategy(document, change.searchContent);
 
             if (!startPosition) {
-                console.error(`Could not find content to replace in ${change.filePath}`);
-                return;
+                throw new Error(`Could not find content to replace in ${change.filePath}`);
             }
 
             const endPosition = document.positionAt(

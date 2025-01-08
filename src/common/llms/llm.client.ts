@@ -25,8 +25,14 @@ export interface AIClientConfig {
     endpoint?: string;
 }
 
+export interface StreamToken {
+    type: 'text' | 'tool' | 'tool-complete';
+    content: string;
+    toolCall?: any;
+}
+
 export interface StreamCallbacks {
-    onToken: (token: string) => void;
+    onToken: (token: StreamToken) => void;
     onComplete: (fullText: string) => void;
     onToolCall?: (toolCall: any) => void;
 }
@@ -169,7 +175,10 @@ export class AIClient {
                     const text = chunk.delta?.type === 'text_delta' ? chunk.delta.text : '';
                     if (text) {
                         fullText += text;
-                        callbacks.onToken(text);
+                        callbacks.onToken({
+                            type: 'text',
+                            content: text
+                        });
                     }
                 }
             }
@@ -307,9 +316,22 @@ export class AIClient {
                 }
                 
                 const toolCall = chunk.choices[0]?.delta?.tool_calls?.[0];
+                const textContent = chunk.choices[0]?.delta?.content;
+
                 if (toolCall) {
-                    // Initialize new tool call if we get an id/name
+                    // Handle tool calls
                     if (toolCall.id || toolCall.function?.name) {
+                        // End any previous tool call
+                        if (currentToolCall && accumulatedArguments) {
+                            callbacks.onToken({
+                                type: 'tool-complete',
+                                content: accumulatedArguments,
+                                toolCall: currentToolCall
+                            });
+                            callbacks.onToolCall?.(currentToolCall);
+                        }
+                        
+                        // Start new tool call
                         currentToolCall = {
                             index: toolCall.index,
                             id: toolCall.id,
@@ -319,28 +341,41 @@ export class AIClient {
                                 arguments: ''
                             }
                         };
+                        accumulatedArguments = '';
                     }
                     
-                    // Accumulate arguments
                     if (toolCall.function?.arguments) {
                         accumulatedArguments += toolCall.function.arguments;
-                    }
-                    
-                    // If this is the last chunk of the tool call
-                    if (chunk.choices[0]?.finish_reason === 'tool_calls') {
-                        if (currentToolCall) {
-                            currentToolCall.function.arguments = accumulatedArguments;
-                            callbacks.onToolCall?.(currentToolCall);
-                            currentToolCall = null;
-                            accumulatedArguments = '';
-                        }
+                        callbacks.onToken({
+                            type: 'tool',
+                            content: toolCall.function.arguments,
+                            toolCall: currentToolCall
+                        });
                     }
                 }
 
-                const text = chunk.choices[0]?.delta?.content || '';
-                if (text) {
-                    fullText += text;
-                    callbacks.onToken(text);
+                // Handle text content
+                if (textContent) {
+                    fullText += textContent;
+                    callbacks.onToken({
+                        type: 'text',
+                        content: textContent
+                    });
+                }
+
+                // Handle completion of tool calls
+                if (chunk.choices[0]?.finish_reason === 'tool_calls') {
+                    if (currentToolCall && accumulatedArguments) {
+                        currentToolCall.function.arguments = accumulatedArguments;
+                        callbacks.onToken({
+                            type: 'tool-complete',
+                            content: accumulatedArguments,
+                            toolCall: currentToolCall
+                        });
+                        callbacks.onToolCall?.(currentToolCall);
+                        currentToolCall = null;
+                        accumulatedArguments = '';
+                    }
                 }
             }
         } catch (error) {
@@ -401,7 +436,10 @@ export class AIClient {
                 const text = chunk.text();
                 if (text) {
                     fullText += text;
-                    callbacks.onToken(text);
+                    callbacks.onToken({
+                        type: 'text',
+                        content: text
+                    });
                 }
             }
         } catch (error) {
@@ -440,7 +478,10 @@ export class AIClient {
                     const text = chunk.delta?.message?.content?.text || '';
                     if (text) {
                         fullText += text;
-                        callbacks.onToken(text);
+                        callbacks.onToken({
+                            type: 'text',
+                            content: text
+                        });
                     }
                 }
             }
@@ -479,7 +520,10 @@ export class AIClient {
                 const text = chunk.data.choices[0].delta.content || '';
                 if (text && typeof text === 'string') {
                     fullText += text;
-                    callbacks.onToken(text);
+                    callbacks.onToken({
+                        type: 'text',
+                        content: text
+                    });
                 }
             }
         } catch (error) {

@@ -18,7 +18,7 @@ import {
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { AIClientFactory } from '../../common/llms/llm.client.factory';
-import { AIClient } from '../../common/llms/llm.client';
+import { AIClient, StreamToken } from '../../common/llms/llm.client';
 import { Logger, DEBUG_MODE } from './logging';
 
 // Create a connection for the server
@@ -141,8 +141,11 @@ connection.onCompletion(
       // Use the AI client to get completions
       const completions: CompletionItem[] = [];
       await aiClient.chat(messages, {
-        onToken: (token: string) => {
-          // Accumulate tokens into a single string if needed
+        onToken: (token: StreamToken) => {
+          // Only process text tokens
+          if (token.type === 'text') {
+            // Accumulate tokens into a single string if needed
+          }
         },
         onComplete: (fullText: string) => {
           // Trim any surrounding quotes and convert \n to actual newlines

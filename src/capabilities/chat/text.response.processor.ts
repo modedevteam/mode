@@ -23,7 +23,7 @@ import {
 import { Logger } from '../../common/logging/logger';
 
 // New StreamProcessor class
-export class ChatResponseHandler {
+export class TextResponseProcessor {
 	private isInRegularCodeBlock = false;
 	private isInMergeCodeBlock = false;
 	private isInSearchBlock = false;

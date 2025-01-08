@@ -45,6 +45,7 @@ You may receive any combination of these input types:
 2. Code Snippets: Marked with ${HIGHLIGHTED_CODE_START} and ${HIGHLIGHTED_CODE_END}, containing:
    - File name and line numbers
    - The actual code content
+   - If this is present, you must prioritize this over any other input because the user is asking about a specific code change.
 3. Current File Path: Marked with ${CURRENT_FILE_PATH_START} and ${CURRENT_FILE_PATH_END}
    - Indicates the file currently being edited
 4. Referenced Files: Marked with ${REFERENCED_FILE_START} and ${REFERENCED_FILE_END}, containing:
