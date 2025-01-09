@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { ChatManager } from '../../capabilities/chat/chat.manager';
+import { ChatManager } from '../../capabilities/chat/request/chat.manager';
 import * as path from 'path';
 import { ChatViewHtmlGenerator } from './chat.view.html.generator';
 import { DiffManager } from '../../capabilities/diff/diff.manager';
@@ -12,7 +12,7 @@ import { ApiKeyManager } from '../../common/llms/llm.api.key.manager';
 import { AIModelUtils } from '../../common/llms/llm.model.utils';
 import { ErrorMessages } from '../../common/user.messages/error.messages';
 import { SearchUtils } from '../../common/io/search.utils';
-import { ChatSessionManager } from '../../capabilities/chat/chat.session.handler';
+import { ChatSessionManager } from '../../capabilities/chat/request/chat.session.handler';
 import { CodeSelection, PillRenderer } from '../../common/rendering/pills';
 
 export class ModeChatViewProvider implements vscode.WebviewViewProvider {

@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid'; // Add this import for generating unique IDs
-import { AIMessage } from '../../common/llms/llm.client';
+import { AIMessage } from '../../../common/llms/llm.client';
 
 export interface ChatSession {
 	id: string;

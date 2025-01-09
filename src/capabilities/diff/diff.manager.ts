@@ -9,7 +9,7 @@ import * as fs from 'fs';
 import { FileResolver } from '../../common/io/file.utils';
 import * as os from 'os';
 import { ErrorMessages } from '../../common/user.messages/error.messages';
-import { ChatSessionManager } from '../chat/chat.session.handler';
+import { ChatSessionManager } from '../chat/request/chat.session.handler';
 
 export class DiffManager {
     private _applyChangesButton?: vscode.StatusBarItem;

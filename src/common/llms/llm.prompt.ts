@@ -68,9 +68,9 @@ format them as function calls with the following structure:
                                              others, as they need to be positioned at the top of the file.
     {
       "filePath": "path/to/file",       // The file path to modify e.g. "src/utils/process.ts"
+      "language": "typescript",         // The programming language e.g. "typescript"
       "fileAction": "modify",           // One of: "modify", "create", "delete", "rename"
       "updateAction": "replace",        // One of: "replace", "delete"
-      "language": "typescript",         // The programming language e.g. "typescript"
       "searchContent": "...",           // The exact code segment to be replaced - MUST match 
                                         // the source file lines precisely and include the entire 
                                         // method/function with decorators, comments, and 

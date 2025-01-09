@@ -4,15 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { AIMessage, StreamToken } from '../../common/llms/llm.client';
+import { AIMessage, StreamToken } from '../../../common/llms/llm.client';
 import MarkdownIt from 'markdown-it';
-import { TextResponseProcessor } from './text.response.processor';
-import { AIClient } from '../../common/llms/llm.client';
-import { formatFileContent } from '../../common/rendering/llm.translation.utils';
+import { TextResponseProcessor } from '../response/text.response.processor';
+import { AIClient } from '../../../common/llms/llm.client';
+import { formatFileContent } from '../../../common/rendering/llm.translation.utils';
 import { ChatSessionManager } from './chat.session.handler';
-import { HIGHLIGHTED_CODE_START, HIGHLIGHTED_CODE_END, CURRENT_FILE_PATH_START, CURRENT_FILE_PATH_END } from '../../common/llms/llm.prompt';
-import { applyFileChanges } from '../tools/apply.file.changes';
-import { ToolResponseProcessor } from './tool.response.processor';
+import { HIGHLIGHTED_CODE_START, HIGHLIGHTED_CODE_END, CURRENT_FILE_PATH_START, CURRENT_FILE_PATH_END } from '../../../common/llms/llm.prompt';
+import { applyFileChanges } from '../../tools/apply.file.changes';
+import { ToolResponseProcessor } from '../response/tool.response.processor';
 
 // New class to handle message processing
 export class ChatMessageHandler {
@@ -115,7 +115,14 @@ export class ChatMessageHandler {
 				},
 				onComplete: (fullText) => {
 					if (this.isCancelled) return;
-					this.streamProcessor.finalize();
+					
+					// Only finalize the text stream if no tools were called.
+					// The finalize() method ends any existing markdown blocks with the buffer withing streamProcessor.
+					// But tool calls are handled separately and we don't want there to be cross-talk between the two.
+					if (this.toolCalls.length === 0) {
+						this.streamProcessor.finalize();
+					}
+
 					this.toolProcessor.endToolStream();
 
 					this.sessionManager.getCurrentSession().messages.push({

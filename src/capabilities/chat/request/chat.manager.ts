@@ -7,20 +7,20 @@ import * as vscode from 'vscode';
 import MarkdownIt from 'markdown-it';
 import { ChatSessionManager } from './chat.session.handler';
 import { ChatMessageHandler } from './chat.message.handler';
-import { AIClientFactory } from '../../common/llms/llm.client.factory';
-import { AIClient, AIMessage, StreamToken } from '../../common/llms/llm.client';
-import { AIModelUtils } from '../../common/llms/llm.model.utils';
-import { TextResponseProcessor } from './text.response.processor';
-import { ApiKeyManager } from '../../common/llms/llm.api.key.manager';
-import { SESSION_SUMMARY_PROMPT } from '../../common/llms/llm.prompt';
-import { chatPromptv2, chatPromptv3 } from '../../common/llms/llm.prompt';
+import { AIClientFactory } from '../../../common/llms/llm.client.factory';
+import { AIClient, AIMessage, StreamToken } from '../../../common/llms/llm.client';
+import { AIModelUtils } from '../../../common/llms/llm.model.utils';
+import { TextResponseProcessor } from '../response/text.response.processor';
+import { ApiKeyManager } from '../../../common/llms/llm.api.key.manager';
+import { SESSION_SUMMARY_PROMPT } from '../../../common/llms/llm.prompt';
+import { chatPromptv2, chatPromptv3 } from '../../../common/llms/llm.prompt';
 import {
 	isChatPrePromptDisabled,
 	getChatPromptOverride,
 	isPromptOverrideEmpty,
 	getChatAdditionalPrompt,
 	isChatAdditionalPromptEmpty
-} from '../../common/config.utils';
+} from '../../../common/config.utils';
 
 export class ChatManager {
 	private aiClient: AIClient | null = null;

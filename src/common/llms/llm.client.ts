@@ -233,6 +233,10 @@ export class AIClient {
                                             type: "string",
                                             description: "Path to the file being modified"
                                         },
+                                        language: {
+                                            type: "string",
+                                            description: "Programming language of the file"
+                                        },
                                         fileAction: {
                                             type: "string",
                                             enum: ["modify", "create", "delete", "rename"],
@@ -242,10 +246,6 @@ export class AIClient {
                                             type: "string",
                                             enum: ["replace", "delete"],
                                             description: "Type of update to perform within the file"
-                                        },
-                                        language: {
-                                            type: "string",
-                                            description: "Programming language of the file"
                                         },
                                         searchContent: {
                                             type: "string",

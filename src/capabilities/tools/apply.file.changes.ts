@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { TextResponseProcessor } from '../chat/text.response.processor';
+import { TextResponseProcessor } from '../chat/response/text.response.processor';
 import { displayFileChanges } from './display.file.changes';
 
 /*
