@@ -45,8 +45,7 @@ export class TextResponseProcessor {
 
 	constructor(
 		private readonly _view: vscode.WebviewView,
-		private readonly md: MarkdownIt,
-		private readonly _sessionManager: ChatSessionManager
+		private readonly md: MarkdownIt
 	) { }
 
 	public async processToken(token: string): Promise<void> {

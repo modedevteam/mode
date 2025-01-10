@@ -258,49 +258,14 @@ export class AIClient {
                                         explanation: {
                                             type: "string",
                                             description: "Explanation of why this specific change is being made"
+                                        },
+                                        end_change: {
+                                            type: "string",
+                                            description: "End of the change block"
                                         }
                                     },
-                                    required: ["filePath", "fileAction", "updateAction", "language", "searchContent"],
-                                    allOf: [{
-                                        if: {
-                                            properties: { fileAction: { const: "create" } }
-                                        },
-                                        then: {
-                                            properties: {
-                                                updateAction: {
-                                                    enum: ["insert"]
-                                                }
-                                            }
-                                        }
-                                    }, {
-                                        if: {
-                                            properties: { updateAction: { const: "delete" } }
-                                        },
-                                        then: {
-                                            // No additional required fields for delete action
-                                        },
-                                        else: {
-                                            required: ["replaceContent"]
-                                        }
-                                    }, {
-                                        if: {
-                                            not: {
-                                                properties: {
-                                                    explanation: { type: "string" }
-                                                }
-                                            }
-                                        },
-                                        then: {
-                                            // If no explanation is provided, require parent changes array to have length 1
-                                            properties: {
-                                                "/changes": {
-                                                    maxItems: 1
-                                                }
-                                            }
-                                        }
-                                    }]
-                                },
-                                description: "List of file changes to apply"
+                                    required: ["explanation", "searchContent", "replaceContent", "filePath", "language", "fileAction", "updateAction", "end_change"]
+                                }
                             }
                         },
                         required: ["changes", "explanation"]

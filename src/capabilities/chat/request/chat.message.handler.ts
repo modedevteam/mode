@@ -28,7 +28,7 @@ export class ChatMessageHandler {
 		private readonly md: MarkdownIt,
 		private readonly sessionManager: ChatSessionManager
 	) {
-		this.streamProcessor = new TextResponseProcessor(_view, md, this.sessionManager);
+		this.streamProcessor = new TextResponseProcessor(_view, md);
 		this.toolProcessor = new ToolResponseProcessor(_view, md);
 	}
 

@@ -163,10 +163,10 @@ export class ChatManager {
 						});
 					} else if (message.role === 'assistant') {
 						// Process the message content line by line using the stream processor
-						const streamProcessor = new TextResponseProcessor(this._view, this.md, this.sessionManager);
+						const streamProcessor = new TextResponseProcessor(this._view, this.md);
 						this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
 						for (const line of (message.content as string).split('\n')) {
-							streamProcessor.processLine(line);
+							streamProcessor.processToken(line);
 						}
 						this._view.webview.postMessage({ command: 'chatStream', action: 'endStream' });
 					}

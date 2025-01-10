@@ -59,7 +59,7 @@ format them as function calls with the following structure:
 
 {
   "explanation": "A clear, enthusiastic explanation of all the changes being made",  
-  "changes": [                          // Array of changes to be made.
+  "changes": [                          // Array of changes to be made. All fields are required.
                                         // Each change must be a single contiguous block of code that can be applied
                                         // as a single unit. For example, if you are modifying lines 5-10 and lines 15-20
                                         // in a file, you must return two separate changes, one for each block.
@@ -70,16 +70,19 @@ format them as function calls with the following structure:
       "filePath": "path/to/file",       // The file path to modify e.g. "src/utils/process.ts"
       "language": "typescript",         // The programming language e.g. "typescript"
       "fileAction": "modify",           // One of: "modify", "create", "delete", "rename"
-      "updateAction": "replace",        // One of: "replace", "delete"
-      "searchContent": "...",           // The exact code segment to be replaced - MUST match 
+      "updateAction": "update",         // One of: "update", "replace", "delete"
+      "searchContent": "...",           // The exact code segment (or file name) to be replaced - MUST match 
                                         // the source file lines precisely and include the entire 
                                         // method/function with decorators, comments, and 
-                                        // whitespace when modifying methods
-      "replaceContent": "...",          // New code to replace it (not needed for delete).
+                                        // whitespace when modifying methods.
+                                        // Set to "null" when fileAction is "create".
+      "replaceContent": "...",          // New code (or file name) to replace it.
                                         // Must include the entire method/function with decorators, 
                                         // comments, and whitespace when modifying methods.
                                         // Must match the source file's existing style and indentation.
+                                        // Set to "null" when fileAction or updateAction is "delete".
       "explanation": "..."              // First-person explanation of this specific change
+      "end_change": "END_OF_CHANGE"     // End of the change block
     }
   ]
 }

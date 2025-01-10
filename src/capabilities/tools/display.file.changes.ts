@@ -12,7 +12,7 @@ import { FILE_CHANGE_END, FILE_CHANGE_START, REPLACE_END, REPLACE_START, SEARCH_
  */
 export async function displayFileChanges(changes: ChangeSet, handler: TextResponseProcessor): Promise<void> {
     // Display explanation
-    await handler.processLine(changes.explanation);
+    await handler.processToken(changes.explanation);
 
     for (const change of changes.changes) {
         // Start file change block
@@ -21,9 +21,11 @@ export async function displayFileChanges(changes: ChangeSet, handler: TextRespon
         handler.processLine(`${LANGUAGE_START}${change.language}${LANGUAGE_END}`);
 
         // Show search content
-        handler.processLine(SEARCH_START);
-        handler.processLine(change.searchContent);
-        handler.processLine(SEARCH_END);
+        if (change.searchContent) {
+            handler.processLine(SEARCH_START);
+            handler.processLine(change.searchContent);
+            handler.processLine(SEARCH_END);
+        }
 
         // Show replace content if applicable
         if (change.replaceContent) {
