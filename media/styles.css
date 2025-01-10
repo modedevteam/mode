@@ -1021,5 +1021,5 @@ code {
 }
 
 .icon-button[data-active="true"] i {
-    color: var(--vscode-foreground);
+    color: var(--vscode-textLink-foreground);
 }
