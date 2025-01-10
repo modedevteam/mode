@@ -1016,10 +1016,10 @@ code {
 }
 
 .icon-button[data-active="true"] {
-    background-color: var(--vscode-list-activeSelectionBackground);
+    background-color: var(--vscode-toolbar-hoverBackground);
     opacity: 1;
 }
 
 .icon-button[data-active="true"] i {
-    color: var(--vscode-button-foreground);
+    color: var(--vscode-foreground);
 }
