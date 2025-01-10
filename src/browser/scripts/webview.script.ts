@@ -617,6 +617,11 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
         if (autocodeButton) {
             const shouldShow = modelId.toLowerCase().includes('claude');
             autocodeButton.style.display = shouldShow ? 'flex' : 'none';
+            
+            // Set it as active by default when shown
+            if (shouldShow) {
+                autocodeButton.setAttribute('data-active', 'true');
+            }
         }
     }
     //#endregion

@@ -1016,7 +1016,7 @@ code {
 }
 
 .icon-button[data-active="true"] {
-    background-color: var(--vscode-button-background);
+    background-color: var(--vscode-list-activeSelectionBackground);
     opacity: 1;
 }
 
