@@ -124,6 +124,12 @@ declare function acquireVsCodeApi(): any;
     }
 
     function showProcessingAnimation() {
+        // Remove any existing processing animations first
+        const existingProcessing = chatOutput.querySelector('.processing');
+        if (existingProcessing) {
+            existingProcessing.remove();
+        }
+
         const processingElement = document.createElement('div');
         processingElement.className = 'message assistant processing';
         processingElement.innerHTML = `
@@ -221,36 +227,32 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
             case 'startStream':
                 isStreaming = true;
                 updateSendButtonState();
+                showProcessingAnimation();
                 startNewResponse();
                 break;
             case 'endStream':
-                hideProcessingAnimation();
                 isStreaming = false;
                 isProcessing = false;
                 updateSendButtonState();
                 currentResponseElement = null;
+                hideProcessingAnimation();
                 break;
             case 'addMarkdownLine':
-                hideProcessingAnimation();
                 if (currentMarkdownContainer) {
                     if (message.lines) {
-                        // Replace the entire HTML if 'lines' is present
                         currentMarkdownContainer.innerHTML = message.lines;
                     } else {
-                        // Append the line if 'lines' is not present
                         currentMarkdownContainer.innerHTML += message.line;
                     }
                 }
                 chatOutput.scrollTop = chatOutput.scrollHeight;
                 break;
             case 'addMarkdownToken':
-                hideProcessingAnimation();
                 if (currentMarkdownContainer) {
                     currentMarkdownContainer.innerHTML += message.token;
                 }
                 break;
             case 'addCodeLine':
-                hideProcessingAnimation();
                 if (currentCodeContainer) {
                     if (message.code) {
                         currentCodeContainer.innerHTML = `<pre><code class="language-${message.language}">${message.code}</code></pre>`;
@@ -262,7 +264,6 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                 }
                 break;
             case 'startCodeBlock': {
-                hideProcessingAnimation();
                 const codeHeader = document.createElement('div');
                 codeHeader.className = 'chat-code-header';
                 codeHeader.innerHTML = `
@@ -281,7 +282,6 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                 break;
             }
             case 'endCodeBlock': {
-                hideProcessingAnimation();
                 if (currentCodeContainer) {
                     const codeHeaderDiv = `
                         <div class="filename" data-file-uri="${message.fileUri || ''}">${message.filename || ''}</div>
@@ -305,14 +305,12 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                 break;
             }
             case 'startMarkdownBlock': {
-                hideProcessingAnimation();
                 currentMarkdownContainer = document.createElement('div');
                 currentMarkdownContainer.className = 'chat-markdown-container';
                 currentResponseElement!.appendChild(currentMarkdownContainer);
                 break;
             }
             case 'endMarkdownBlock': {
-                hideProcessingAnimation();
                 if (currentMarkdownContainer) {
                     currentMarkdownContainer.innerHTML = message.lines;
                 }
@@ -325,7 +323,16 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
     function startNewResponse() {
         currentResponseElement = document.createElement('div');
         currentResponseElement.className = 'message assistant';
-        chatOutput.appendChild(currentResponseElement);
+        
+        // Find the processing element
+        const processingElement = chatOutput.querySelector('.processing');
+        
+        // Insert the new response before the processing element
+        if (processingElement) {
+            chatOutput.insertBefore(currentResponseElement, processingElement);
+        } else {
+            chatOutput.appendChild(currentResponseElement);
+        }
     }
     //#endregion
 
