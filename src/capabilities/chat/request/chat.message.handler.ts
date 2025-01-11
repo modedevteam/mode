@@ -16,7 +16,7 @@ import { ToolResponseProcessor } from '../response/tool.response.processor';
 
 // New class to handle message processing
 export class ChatMessageHandler {
-	private streamProcessor: TextResponseProcessor;
+	private textProcessor: TextResponseProcessor;
 	private toolProcessor: ToolResponseProcessor;
 	private isCancelled = false;
 	private toolCalls: any[] = [];
@@ -27,7 +27,7 @@ export class ChatMessageHandler {
 		private readonly md: MarkdownIt,
 		private readonly sessionManager: ChatSessionManager
 	) {
-		this.streamProcessor = new TextResponseProcessor(_view, md);
+		this.textProcessor = new TextResponseProcessor(_view, md);
 		this.toolProcessor = new ToolResponseProcessor(_view, md);
 	}
 
@@ -108,30 +108,29 @@ export class ChatMessageHandler {
 					} else if (token.type === 'text') {
 						// Only process text chunks if we're not currently processing a tool
 						if (!this.toolProcessor.isProcessingTool()) {
-							this.streamProcessor.processToken(token.content);
+							this.textProcessor.processToken(token.content);
 						}
 					}
 				},
 				onComplete: (fullText) => {
 					if (this.isCancelled) return;
 					
-					// Only finalize the text stream if no tools were called.
-					// The finalize() method ends any existing markdown blocks with the buffer withing streamProcessor.
-					// But tool calls are handled separately and we don't want there to be cross-talk between the two.
-					if (this.toolCalls.length === 0) {
-						this.streamProcessor.finalize();
+					// Only finalize the text stream if there's any text to process.
+					if (fullText && fullText.trim().length > 0) {
+						this.textProcessor.finalize();
 					}
-
-					this.toolProcessor.endToolStream();
 
 					this.sessionManager.getCurrentSession().messages.push({
 						role: "assistant",
-						content: fullText,
-						name: "Mode"
+							content: fullText,
+							name: "Mode"
 					});
 				},
 				onToolCall: (toolCall) => {
 					if (this.isCancelled) return;
+
+					// End the tool display stream before calling the tool
+					this.toolProcessor.endToolStream();
 
 					// if autocoding is enabled, apply the file changes
 					if (auto) {
@@ -141,7 +140,7 @@ export class ChatMessageHandler {
 						this.toolCalls.push(toolCall);
 
 						if (toolCall.function.name === 'apply_file_changes') {
-								applyFileChanges(parsedArguments, this.streamProcessor);
+								applyFileChanges(parsedArguments, this.textProcessor);
 							}
 						} catch (error) {
 							console.error('Failed to parse tool call arguments:', error);

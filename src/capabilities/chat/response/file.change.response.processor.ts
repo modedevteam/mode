@@ -30,6 +30,7 @@ export class FileChangeResponseProcessor {
 		onStart?: (value: string) => void;
 		onToken?: (value: string) => void;
 		onEnd?: (value: string) => void;
+		streaming?: boolean;
 	}> = {
 			filePath: {
 				prefix: '"filePath":"',
@@ -83,25 +84,46 @@ export class FileChangeResponseProcessor {
 			replaceContent: {
 				prefix: '"replaceContent":"',
 				endPrefix: '","explanation":',
-				onStart: () => {
+				streaming: true,
+				onStart: (value) => {
 					this.textProcessor.processLine(REPLACE_START);
+					this.textProcessor.processToken(value);
 				},
 				onToken: (value: string) => {
-					value.split('\n').forEach((line) => {
-						this.textProcessor.processLine(line);
-					});
+					this.textProcessor.processToken(value
+						.replace(/\\t/g, '\t')
+						.replace(/\\n/g, '\n')
+						.replace(/\\r/g, '\r')
+						.replace(/\\"/g, '"')
+						.replace(/\\\\/g, '\\'),
+						true // codeStreaming
+					);
 				},
-				onEnd: () => {
-					this.textProcessor.processLine(REPLACE_END);
-					this.textProcessor.processLine(FILE_CHANGE_END);
+				onEnd: (value) => {
+					this.textProcessor.processLine(REPLACE_END,
+						/* codeStreaming = */ true,
+						/* finalCodeBlock = */ value
+							.replace(/\\t/g, '\t')
+							.replace(/\\n/g, '\n')
+							.replace(/\\r/g, '\r')
+							.replace(/\\"/g, '"')
+							.replace(/\\\\/g, '\\'));
+					this.textProcessor.processLine(FILE_CHANGE_END,
+						/* codeStreaming = */ true,
+						/* finalCodeBlock = */ value
+							.replace(/\\t/g, '\t')
+							.replace(/\\n/g, '\n')
+							.replace(/\\r/g, '\r')
+							.replace(/\\"/g, '"')
+							.replace(/\\\\/g, '\\'));
 				}
 			},
 			explanation: {
 				prefix: '"explanation":"',
 				endPrefix: '","end_change":',
-				onStart: () => { },
-				onToken: (value: string) => this.textProcessor.processToken(value),
-				onEnd: () => { }
+				onStart: () => {},
+				onToken: (value: string) => this.textProcessor.processLine(value),
+				onEnd: (value) => {}
 			},
 			end_change: {
 				// This token is just a delimiter to mark the end of a change block - no processing needed
@@ -144,18 +166,27 @@ export class FileChangeResponseProcessor {
 			}
 		} else {
 			this.currentToken.value += token;
-
 			const config = this.tokenTypes[this.currentToken.type];
+
+			// Stream tokens if the config specifies streaming
+			// Clean up the token to remove any escape characters
+			if (config.streaming) {
+				config.onToken?.(this.currentToken.value);
+			}
 
 			if (this.currentToken.value.includes(config.endPrefix)) {
 				const endIndex = this.currentToken.value.indexOf(config.endPrefix);
-				const value = JSON.parse(`"${this.currentToken.value.substring(0, endIndex)
-					.replace(/\\/g, '\\\\')}"`)
-					.replace(/\\n/g, '\n')
-					.replace(/\\t/g, '\t');
 
-				config.onToken?.(value);
-				config.onEnd?.(value);
+				// Only parse and call onToken for non-streaming types
+				if (!config.streaming) {
+					const value = JSON.parse(`"${this.currentToken.value.substring(0, endIndex)
+						.replace(/\\/g, '\\\\')}"`)
+						.replace(/\\n/g, '\n')
+						.replace(/\\t/g, '\t');
+					config.onToken?.(value);
+				}
+
+				config.onEnd?.(this.currentToken.value.substring(0, endIndex));
 
 				const tokenValue = this.currentToken.value;
 				this.currentToken = null;
@@ -169,7 +200,6 @@ export class FileChangeResponseProcessor {
 	}
 
 	endChange() {
-		this.textProcessor.finalize();
 		this.buffer = '';
 	}
 }

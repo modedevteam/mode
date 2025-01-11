@@ -48,7 +48,20 @@ export class TextResponseProcessor {
 		private readonly md: MarkdownIt
 	) { }
 
-	public async processToken(token: string): Promise<void> {
+	public async processToken(token: string, codeStreaming: boolean = false): Promise<void> {
+		// We're streaming code, and this token is special: it's an ongoing block of code with words being added.
+		// All we need to do is highlight the existing block (represented by the token) and send it to the webview.
+		if (codeStreaming) {
+			const highlightedToken = hljs.highlight(token.replace(/\t/g, '    '), { language: this.currentLanguage }).value;
+			this._view.webview.postMessage({
+				command: 'chatStream',
+				action: 'addCodeLine',
+				language: this.currentLanguage || undefined,
+				code: highlightedToken
+			});
+			return;
+		}
+
 		this.buffer += token;
 
 		// Process complete lines if we have any
@@ -65,7 +78,7 @@ export class TextResponseProcessor {
 	 * The LLM may return a code block in the markdown output (when explaining code) or in the code_changes block
 	 * when suggesting changes to code.
 	 */
-	public processLine(line: string): void {
+	public processLine(line: string, codeStreaming: boolean = false, finalCodeBlock: string = ''): void {
 		this.logger.log(line);
 		if (this.ignoreAnalysisBlocks(line)) {
 			return;
@@ -119,7 +132,10 @@ export class TextResponseProcessor {
 				const content = line.substring(startIndex, endIndex).trim();
 				if (content) {
 					this.collectedReplaceLines.push(content);
-					this.processCodeLine(content);
+					if (!codeStreaming) {
+						// @todo: this is a hack
+						this.processCodeLine(content);
+					}
 				}
 				this.isInReplaceBlock = false;
 				return;
@@ -140,7 +156,11 @@ export class TextResponseProcessor {
 			const contentBeforeEnd = line.substring(0, line.indexOf(REPLACE_END));
 			if (contentBeforeEnd.trim()) {
 				this.collectedReplaceLines.push(contentBeforeEnd);
-				this.processCodeLine(contentBeforeEnd);
+				if (!codeStreaming) {
+					// @todo: this is hacky, but basically if codestreaming is true
+					// don't send a final code block it's already been done
+					this.processCodeLine(contentBeforeEnd);
+				}
 			}
 			this.isInReplaceBlock = false;
 			return;
@@ -191,7 +211,7 @@ export class TextResponseProcessor {
 
 		// End {{code_changes}} blocks
 		if (line.includes(FILE_CHANGE_END)) {
-			this.processMergeBlock();
+			this.processMergeBlock(codeStreaming, finalCodeBlock);
 			this.isInMergeCodeBlock = false;
 			this.endCodeBlock();
 
@@ -356,12 +376,22 @@ export class TextResponseProcessor {
 		return this.renderedContent;
 	}
 
-	private startMarkdownBlock(): void {
+	public startMarkdownBlock(): void {
 		// Add any additional logic needed before starting a markdown block
 		this._view.webview.postMessage({ command: 'chatStream', action: 'startMarkdownBlock' });
 	}
 
-	private endMarkdownBlock(): void {
+	public endMarkdownBlock(finalContent: string = ''): void {
+
+		if (finalContent) {
+			this._view.webview.postMessage({
+				command: 'chatStream',
+				action: 'endMarkdownBlock',
+				lines: this.md.render(finalContent)
+			});
+			return;
+		}
+
 		// Send the buffered markdown lines while signalling the end of a markdown block
 		this.sendBufferedMarkdownLines('endMarkdownBlock');
 
@@ -380,14 +410,15 @@ export class TextResponseProcessor {
 		this.endMarkdownBlock();
 	}
 
-	private processMergeBlock(): void {
-		if (this.collectedSearchLines.length === 0 || this.collectedReplaceLines.length === 0) {
+	private processMergeBlock(codeStreaming: boolean = false, finalCodeBlock: string = ''): void {
+		// Only check for empty collections if we're not streaming code
+		if (!codeStreaming && (this.collectedSearchLines.length === 0 || this.collectedReplaceLines.length === 0)) {
 			return;
 		}
 
 		// Generate a diff between search and replace blocks
 		const searchContent = this.collectedSearchLines.join('\n');
-		const replaceContent = this.collectedReplaceLines.join('\n');
+		const replaceContent = codeStreaming ? finalCodeBlock : this.collectedReplaceLines.join('\n');
 
 		// Send the diff to the webview
 		this._view.webview.postMessage({
