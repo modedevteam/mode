@@ -58,7 +58,7 @@ You have access to a function called 'apply_file_changes' that can modify files 
 format them as function calls with the following structure:
 
 {
-  "explanation": "A clear, enthusiastic explanation of all the changes being made",  
+  "explanation": "A clear, enthusiastic explanation of all the changes being made. Use 'I'll' and 'I'll make' to indicate that you'll make the changes.",  
   "changes": [                          // Array of changes to be made. All fields are required.
                                         // Each change must be a single contiguous block of code that can be applied
                                         // as a single unit. For example, if you are modifying lines 5-10 and lines 15-20
