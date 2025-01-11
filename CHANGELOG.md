@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.23] - 2025-01-12
+
+### Fixed
+- Code changes are now streamed (more pleasing UX)
+- Removed unnecessary console logs
+- Fix out of bound issues with some edits close to EOF
+
 ## [1.0.20] - 2025-01-11
 ### Added
 - Autonomous coding mode for OpenAI GPT models! This allows the model to write code without users have to manually approved or merge every single change.
