@@ -41,9 +41,19 @@ export async function applyFileChanges(toolCallArguments: string | any, handler:
                 changes: toolCallArguments.changes
             };
 
+        // Track modified documents
+        const modifiedDocuments = new Set<vscode.TextDocument>();
 
         for (const change of changes.changes) {
-            await applyFileChange(change);
+            const document = await applyFileChange(change);
+            if (document) {
+                modifiedDocuments.add(document);
+            }
+        }
+
+        // Save all modified documents
+        for (const document of modifiedDocuments) {
+            await document.save();
         }
     } catch (error) {
         console.error('Error applying changes:', error);
@@ -133,7 +143,7 @@ function normalizeWhitespace(text: string): string {
 /*
  * Applies individual changes to the file.
  */
-export async function applyFileChange(change: FileChange): Promise<void> {
+export async function applyFileChange(change: FileChange): Promise<vscode.TextDocument | undefined> {
     // Get the document
     const uri = vscode.Uri.file(change.filePath);
     let document: vscode.TextDocument;
@@ -143,7 +153,7 @@ export async function applyFileChange(change: FileChange): Promise<void> {
     } catch (error) {
         if (change.fileAction === 'create') {
             await vscode.workspace.fs.writeFile(uri, Buffer.from(change.replaceContent || ''));
-            return;
+            return undefined;
         }
         throw error;
     }
@@ -194,22 +204,23 @@ export async function applyFileChange(change: FileChange): Promise<void> {
                 decorationType.dispose();
             }, 5000);
 
-            break;
+            // Return the document after modifications
+            return document;
         }
         case 'create':
             await vscode.workspace.fs.writeFile(uri, Buffer.from(change.replaceContent || ''));
-            break;
+            return undefined;
         case 'delete':
             await vscode.workspace.fs.delete(uri);
-            break;
+            return undefined;
         case 'rename': {
             if (!change.replaceContent) {
                 console.error('No target path provided for rename operation');
-                return;
+                return undefined;
             }
             const targetUri = vscode.Uri.file(change.replaceContent);
             await vscode.workspace.fs.rename(uri, targetUri);
-            break;
+            return undefined;
         }
     }
 }

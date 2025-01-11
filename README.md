@@ -8,15 +8,13 @@
 
 # Mode
 
-Mode is the first personal AI code copilot that connects directly to your favorite language models. Harness the full power of AI assistants without the risks of third-party servers and the hassles of token limits and upgrade fees.
+Mode is the first personal and autonomous code copilot that connects directly to your favorite language models. Experience autonomous coding without the risks of third-party servers and the hassles of token limits and upgrade fees.
 
 ### 🌟🌟 Weekly Highlight 🌟🌟
 
-* Google Gemini 2 is here!
-* Mode now supports OpenRouter and LM Studio!
-* Autocomplete is here! This experimental version is constantly improving—updates are rolling out daily!
+* Mode now supports autonomous coding for OpenAI GPT models! This allows the model to write code without users having to manually approve or merge every single change. Over the course of the next few releases, we will be adding autonomous coding support to more models and features, starting with Anthropic.
 
-![Autocomplete](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/Autocomplete.gif)
+![AutonomousCoding](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/AutoCode.gif)
 
 ## Why Mode?
 
@@ -50,6 +48,12 @@ Quickly resolve issues with intelligent debugging support.
 Stay ahead with the latest: customize Mode by upgrading models as they’re released, without waiting on us.
 
 ![AdjustModels](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/AdjustModels.gif)
+
+### Autocomplete (Experimental)
+
+Autocomplete is here! This experimental version is constantly improving—updates are rolling out daily!
+
+![Autocomplete](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/Autocomplete.gif)
 
 ## Be part of the journey!
 

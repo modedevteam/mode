@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.20] - 2025-01-11
+### Added
+- Autonomous coding mode for OpenAI GPT models! This allows the model to write code without users have to manually approved or merge every single change.
+- Over the course of the next few releases, we will be adding autonomous coding support to more models and features.
+
 ## [1.0.19] - 2025-01-02
 ### Fixed
 - Improve merge accuracy for more complex merges (e.g. making multiple changes to the same file)
