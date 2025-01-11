@@ -71,18 +71,14 @@ function replaceStrategyV2(
     start: vscode.Position,
     end: vscode.Position,
     change: FileChange
-): vscode.Range {
+): number {
     const replaceLines = (change.replaceContent || '').split('\n');
     const startLine = document.lineAt(start.line);
     const endLine = document.lineAt(start.line + change.searchContent.split('\n').length - 1);
     const range = new vscode.Range(startLine.range.start, endLine.range.end);
 
     edit.replace(uri, range, replaceLines.join('\n'));
-    // Return the range that was actually modified
-    return new vscode.Range(
-        startLine.range.start,
-        document.lineAt(start.line + replaceLines.length - 1).range.end
-    );
+    return replaceLines.length;
 }
 
 /*
@@ -174,15 +170,32 @@ export async function applyFileChange(change: FileChange): Promise<vscode.TextDo
 
             // Store the actual range that was modified
             let modifiedRange: vscode.Range;
+            let replaceLinesLength: number;
 
             if (change.updateAction === 'delete') {
                 modifiedRange = new vscode.Range(startPosition, endPosition);
                 edit.delete(uri, modifiedRange);
+                replaceLinesLength = 0;
             } else {
-                modifiedRange = replaceStrategyV2(document, uri, edit, startPosition, endPosition, change);
+                replaceLinesLength = replaceStrategyV2(document, uri, edit, startPosition, endPosition, change);
             }
 
             await vscode.workspace.applyEdit(edit);
+
+            // now calculate the modified range after the edit is applied
+            // Get the updated document
+            const updatedDoc = vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === uri.fsPath)!;
+
+            // Calculate the end line number once
+            const endLineNumber = Math.min(
+                startPosition.line + replaceLinesLength - 1,
+                updatedDoc.lineCount - 1
+            );
+
+            modifiedRange = new vscode.Range(
+                startPosition,
+                updatedDoc.lineAt(endLineNumber).range.end
+            );
 
             // Get the editor and format the modified range
             const editor = await vscode.window.showTextDocument(uri);
