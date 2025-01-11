@@ -1,7 +1,7 @@
 {
 	"name": "mode",
-	"displayName": "Mode: Your Autonomous and Personal Copilot",
-	"description": "Autonomous, secure, and fast AI copilot. No third-party servers, token limits, or fees.",
+	"displayName": "Mode: Superhuman coding without compromise",
+	"description": "Code, refactor, fix issues, build apps—all with a single prompt. Instantly connect to the latest models. No third-party servers, token limits, or upgrade fees.",
 	"version": "1.0.21",
 	"publisher": "aruna-labs",
 	"license": "MIT",

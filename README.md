@@ -8,7 +8,7 @@
 
 # Mode
 
-Mode writes code automatically with no manual approval or merge steps. It lets you connect directly to your favorite language models, and instantly upgrade to the latest models without delays or extra costs. Mode has no third-party servers, token limits, or upgrade fees. Try it out today!
+Mode writes code automatically with no manual approval or merge steps. It lets you connect directly to your favorite language models, and instantly upgrade to the latest models. Mode is open-source, has no third-party servers, token limits, or upgrade fees. Try it out today!
 
 ### 🌟🌟 Weekly Highlight 🌟🌟
 
