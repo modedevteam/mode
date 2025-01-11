@@ -8,7 +8,7 @@
 
 # Mode
 
-Mode is the first personal and autonomous code copilot that connects directly to your favorite language models. Experience autonomous coding without the risks of third-party servers and the hassles of token limits and upgrade fees.
+Mode writes code automatically with no manual approval or merge steps. It lets you connect directly to your favorite language models, and instantly upgrade to the latest models without delays or extra costs. Mode has no third-party servers, token limits, or upgrade fees. Try it out today!
 
 ### 🌟🌟 Weekly Highlight 🌟🌟
 
