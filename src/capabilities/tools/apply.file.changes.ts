@@ -42,10 +42,6 @@ export async function applyFileChanges(toolCallArguments: string | any, handler:
             };
 
 
-        // Pass the handler to displayChanges
-        // await displayFileChanges(changes, handler);
-
-        // Then apply each change
         for (const change of changes.changes) {
             await applyFileChange(change);
         }
@@ -180,7 +176,7 @@ export async function applyFileChange(change: FileChange): Promise<void> {
 
             // Get the editor and format the modified range
             const editor = await vscode.window.showTextDocument(uri);
-            
+
             // Set the selection to the modified range and then format
             editor.selection = new vscode.Selection(modifiedRange.start, modifiedRange.end);
             await vscode.commands.executeCommand('editor.action.formatSelection');

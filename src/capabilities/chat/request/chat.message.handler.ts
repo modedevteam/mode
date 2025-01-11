@@ -20,7 +20,6 @@ export class ChatMessageHandler {
 	private toolProcessor: ToolResponseProcessor;
 	private isCancelled = false;
 	private toolCalls: any[] = [];
-	private currentToolText = '';
 
 	constructor(
 		private readonly _view: vscode.WebviewView,
@@ -134,16 +133,19 @@ export class ChatMessageHandler {
 				onToolCall: (toolCall) => {
 					if (this.isCancelled) return;
 
-					try {
-						const parsedArguments = JSON.parse(toolCall.function.arguments);
-						toolCall.function.arguments = parsedArguments;
+					// if autocoding is enabled, apply the file changes
+					if (auto) {
+						try {
+							const parsedArguments = JSON.parse(toolCall.function.arguments);
+							toolCall.function.arguments = parsedArguments;
 						this.toolCalls.push(toolCall);
 
 						if (toolCall.function.name === 'apply_file_changes') {
-							applyFileChanges(parsedArguments, this.streamProcessor);
+								applyFileChanges(parsedArguments, this.streamProcessor);
+							}
+						} catch (error) {
+							console.error('Failed to parse tool call arguments:', error);
 						}
-					} catch (error) {
-						console.error('Failed to parse tool call arguments:', error);
 					}
 				}
 			});

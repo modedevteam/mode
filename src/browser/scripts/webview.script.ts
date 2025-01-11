@@ -615,7 +615,7 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
     function updateAutocodeButtonVisibility(modelId: string) {
         const autocodeButton = document.getElementById('autocode-button');
         if (autocodeButton) {
-            const shouldShow = modelId.toLowerCase().includes('claude');
+            const shouldShow = modelId.toLowerCase().includes('gpt');
             autocodeButton.style.display = shouldShow ? 'flex' : 'none';
             
             // Set it as active by default when shown

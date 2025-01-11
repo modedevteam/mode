@@ -59,12 +59,12 @@ export class ChatManager {
 		return messages.some(msg => msg.role === 'system');
 	}
 
-	private initializeSystemPrompt(selectedModel: string): void {
+	private initializeSystemPrompt(selectedModel: string, auto: boolean): void {
 		const messages = this.sessionManager.getCurrentSession().messages;
 		const promptOverride = getChatPromptOverride();
 		const disableSystemPrompt = isChatPrePromptDisabled() && isPromptOverrideEmpty();
 		let systemPrompt = disableSystemPrompt ? '' : (promptOverride || 
-			(AIModelUtils.isToolUsageSupported(selectedModel) ? chatPromptv3 : chatPromptv2));
+			auto ? chatPromptv3 : chatPromptv2);
 
 		if (!isChatAdditionalPromptEmpty()) {
 			systemPrompt += ` ${getChatAdditionalPrompt()}`;
@@ -103,7 +103,7 @@ export class ChatManager {
 
 		// Initialize system prompt for new sessions or if missing
 		if (!this.hasSystemPrompt()) {
-			this.initializeSystemPrompt(selectedModel);
+			this.initializeSystemPrompt(selectedModel, auto);
 		}
 
 		this.currentHandler = new ChatMessageHandler(
