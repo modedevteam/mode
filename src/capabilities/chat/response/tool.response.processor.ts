@@ -26,8 +26,6 @@ export class ToolResponseProcessor {
 
     public processToolChunk(chunkText: string) {
 
-        console.log('processToolChunk', chunkText);
-
         if (!this._isProcessingTool) {
             this._isProcessingTool = true;
         }
