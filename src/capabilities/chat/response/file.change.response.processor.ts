@@ -145,11 +145,14 @@ export class FileChangeResponseProcessor {
 		} else {
 			this.currentToken.value += token;
 
-			const config = this.tokenTypes[this.currentToken.type as keyof typeof this.tokenTypes];
+			const config = this.tokenTypes[this.currentToken.type];
 
 			if (this.currentToken.value.includes(config.endPrefix)) {
 				const endIndex = this.currentToken.value.indexOf(config.endPrefix);
-				const value = JSON.parse(`"${this.currentToken.value.substring(0, endIndex)}"`);
+				const value = JSON.parse(`"${this.currentToken.value.substring(0, endIndex)
+					.replace(/\\/g, '\\\\')}"`)
+					.replace(/\\n/g, '\n')
+					.replace(/\\t/g, '\t');
 
 				config.onToken?.(value);
 				config.onEnd?.(value);

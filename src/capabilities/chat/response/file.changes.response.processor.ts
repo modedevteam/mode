@@ -26,12 +26,17 @@ export class FileChangesResponseProcessor {
             // End previous change if exists
             if (this.currentChangeProcessor) {
                 this.currentChangeProcessor.endChange();
+                this.currentChangeProcessor = null;
             }
 
             // Start new change processor
             this.currentChangeProcessor = new FileChangeResponseProcessor(this._view, this.md);
-			this.currentChangeProcessor.startChange();
-            this.currentChangeProcessor.processToken(this.tokenBuffer);
+            this.currentChangeProcessor.startChange();
+            
+            // Get the substring starting from {"filePath":
+            const filePathIndex = this.tokenBuffer.indexOf('{"filePath":');
+            const relevantBuffer = this.tokenBuffer.substring(filePathIndex);
+            this.currentChangeProcessor.processToken(relevantBuffer);
 
 			// reset the buffer so we don't include the file path in the next check
 			this.tokenBuffer = '';
