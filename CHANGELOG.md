@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.24] - 2025-01-12
+
+### Fixed
+- An issue where follow-up questions were erroring out during autonomous coding
+
 ## [1.0.23] - 2025-01-12
 
 ### Fixed
