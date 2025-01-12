@@ -204,9 +204,11 @@ export class AIClient {
             model: this.model,
             messages: messages.map(msg => ({
                 role: this.model.startsWith('o1') && msg.role === 'system' ? 'user' : msg.role,
-                content: typeof msg.content === 'string' && msg.content.startsWith('data:image')
-                    ? AIClient.formatImageContent('openai', msg.content)
-                    : msg.content
+                content: Array.isArray(msg.content) && msg.content[0]?.type === 'function'
+                    ? JSON.stringify(msg.content[0].function.arguments)
+                    : typeof msg.content === 'string' && msg.content.startsWith('data:image')
+                        ? AIClient.formatImageContent('openai', msg.content)
+                        : msg.content
             })),
             [this.model.startsWith('o1') ? 'max_completion_tokens' : 'max_tokens']: this.model.startsWith('o1') ? 32768 : 16384,
             stream: true,
