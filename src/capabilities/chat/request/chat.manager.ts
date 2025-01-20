@@ -172,9 +172,8 @@ export class ChatManager {
 							const streamProcessor = new TextResponseProcessor(this._view, this.md);
 							this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
 							for (const line of content.split('\n')) {
-								streamProcessor.processToken(line);
+								streamProcessor.processLine(line);
 							}
-							this._view.webview.postMessage({ command: 'chatStream', action: 'endMarkdownBlock', lines: "Hello World!" });
 							this._view.webview.postMessage({ command: 'chatStream', action: 'endStream' });
 						}
 					} else if (message.name === 'Mode.FunctionCall') {
