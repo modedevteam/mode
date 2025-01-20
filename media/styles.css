@@ -800,9 +800,8 @@ li {
 }
 
 .chat-code-header .buttons .icon-button .codicon {
-    font-size: 16px;
+    font-size: 14px;
     margin-left: 0;
-    /* Remove any left margin */
 }
 
 .chat-code-header .filename {
