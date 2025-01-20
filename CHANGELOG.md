@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.25] - 2025-01-20
+### Fixed
+- Fixed JSON parsing issues when rendering response with tool use
+- Fixed chat history not being saved
+
 ## [1.0.24] - 2025-01-12
 
 ### Fixed
