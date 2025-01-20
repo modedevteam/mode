@@ -6,13 +6,16 @@
 import { TextResponseProcessor } from '../chat/response/text.response.processor';
 import { ChangeSet } from './apply.file.changes';
 import { FILE_CHANGE_END, FILE_CHANGE_START, REPLACE_END, REPLACE_START, SEARCH_END, SEARCH_START, FILE_PATH_END, FILE_PATH_START, LANGUAGE_END, LANGUAGE_START } from '../../common/llms/llm.prompt';
+import { MarkdownRenderer } from '../../common/rendering/markdown.renderer';
 
 /*
  * Displays the changes to the user. Renders the changes in the webview.
  */
-export async function displayFileChanges(changes: ChangeSet, handler: TextResponseProcessor): Promise<void> {
+export async function displayFileChanges(changes: ChangeSet, handler: TextResponseProcessor, markdownRenderer: MarkdownRenderer): Promise<void> {
     // Display explanation
-    await handler.processToken(changes.explanation);
+    markdownRenderer.startMarkdownBlock();
+    markdownRenderer.processMarkdownToken(changes.explanation);
+    markdownRenderer.endMarkdownBlock();
 
     for (const change of changes.changes) {
         // Start file change block

@@ -7,7 +7,6 @@ import * as vscode from 'vscode';
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import { detectFileNameUri } from '../../../common/io/file.utils';
-import { ChatSessionManager } from '../request/chat.session.handler';
 import { isChatPrePromptDisabled, isPromptOverrideEmpty } from '../../../common/config.utils';
 import { 
 	FILE_CHANGE_END, 

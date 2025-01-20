@@ -123,7 +123,7 @@ export class ChatMessageHandler {
 					this.sessionManager.getCurrentSession().messages.push({
 						role: "assistant",
 							content: fullText,
-							name: "Mode"
+							name: "Mode.ChatResponse"
 					});
 				},
 				onToolCall: (toolCall) => {
@@ -154,7 +154,7 @@ export class ChatMessageHandler {
 				this.sessionManager.getCurrentSession().messages.push({
 					role: "assistant",
 					content: this.toolCalls,
-					name: "Mode"
+					name: "Mode.FunctionCall"
 				});
 			}
 

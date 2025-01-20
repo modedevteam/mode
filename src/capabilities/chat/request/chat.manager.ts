@@ -21,6 +21,9 @@ import {
 	getChatAdditionalPrompt,
 	isChatAdditionalPromptEmpty
 } from '../../../common/config.utils';
+import { ToolResponseProcessor } from '../response/tool.response.processor';
+import { displayFileChanges } from '../../tools/display.file.changes';
+import { MarkdownRenderer } from '../../../common/rendering/markdown.renderer';
 
 export class ChatManager {
 	private aiClient: AIClient | null = null;
@@ -154,19 +157,35 @@ export class ChatManager {
 			this._view.webview.postMessage({ command: 'clearChat' });
 			// Render the messages in the session
 			session.messages.forEach((message: AIMessage) => {
-				if (message.name === 'Mode') {
-					if (message.role === 'user') {
-						this._view.webview.postMessage({
-							command: 'addMessage',
-							role: message.role,
-							content: message.content
-						});
-					} else if (message.role === 'assistant') {
-						// Process the message content line by line using the stream processor
-						const streamProcessor = new TextResponseProcessor(this._view, this.md);
+				if (!message.name) return;
+				
+				if (message.role === 'user') {
+					this._view.webview.postMessage({
+						command: 'addMessage',
+						role: message.role,
+						content: message.content
+					});
+				} else if (message.role === 'assistant') {
+					if (message.name === 'Mode.ChatResponse') {
+						const content = message.content as string;
+						if (content && content.trim().length > 0) {
+							const streamProcessor = new TextResponseProcessor(this._view, this.md);
+							this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
+							for (const line of content.split('\n')) {
+								streamProcessor.processToken(line);
+							}
+							this._view.webview.postMessage({ command: 'chatStream', action: 'endMarkdownBlock', lines: "Hello World!" });
+							this._view.webview.postMessage({ command: 'chatStream', action: 'endStream' });
+						}
+					} else if (message.name === 'Mode.FunctionCall') {
+						// Process tool calls
 						this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
-						for (const line of (message.content as string).split('\n')) {
-							streamProcessor.processToken(line);
+						for (const toolCall of message.content as any[]) {
+							if (toolCall.function.name === 'apply_file_changes') {
+								const textProcessor = new TextResponseProcessor(this._view, this.md);
+								const markdownRenderer = new MarkdownRenderer(this._view, this.md);
+								displayFileChanges(toolCall.function.arguments, textProcessor, markdownRenderer);
+							}
 						}
 						this._view.webview.postMessage({ command: 'chatStream', action: 'endStream' });
 					}
