@@ -169,7 +169,6 @@ export class FileChangeResponseProcessor {
 			const config = this.tokenTypes[this.currentToken.type];
 
 			// Stream tokens if the config specifies streaming
-			// Clean up the token to remove any escape characters
 			if (config.streaming) {
 				config.onToken?.(this.currentToken.value);
 			}
@@ -179,11 +178,22 @@ export class FileChangeResponseProcessor {
 
 				// Only parse and call onToken for non-streaming types
 				if (!config.streaming) {
-					const value = JSON.parse(`"${this.currentToken.value.substring(0, endIndex)
-						.replace(/\\/g, '\\\\')}"`)
-						.replace(/\\n/g, '\n')
-						.replace(/\\t/g, '\t');
-					config.onToken?.(value);
+					try {
+						// First unescape any escaped quotes that are part of the content
+						const cleanedValue = this.currentToken.value
+							.substring(0, endIndex)
+							.replace(/\\\\/g, '\\')
+							.replace(/\\"/g, '"');
+						
+						// Then handle newlines and tabs
+						const value = cleanedValue
+							.replace(/\\n/g, '\n')
+							.replace(/\\t/g, '\t');
+							
+						config.onToken?.(value);
+					} catch (error) {
+						console.error('Error parsing token:', error);
+					}
 				}
 
 				config.onEnd?.(this.currentToken.value.substring(0, endIndex));
