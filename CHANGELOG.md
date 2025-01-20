@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.26] - 2025-01-21
+
+### Added
+- Added autofixing of errors
+- Now streaming all explanations and code changes
+
+### Fixed
+- UI: Made the coding block animations smoother
+
 ## [1.0.25] - 2025-01-20
 ### Fixed
 - Fixed JSON parsing issues when rendering response with tool use
