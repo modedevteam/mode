@@ -23,6 +23,7 @@ import { TextResponseProcessor } from './text.response.processor';
 export class FileChangeResponseProcessor {
 	private buffer: string = '';
 	private textProcessor: TextResponseProcessor;
+	private markdownRenderer: MarkdownRenderer;
 
 	private tokenTypes: Record<string, {
 		prefix: string;
@@ -121,9 +122,13 @@ export class FileChangeResponseProcessor {
 			explanation: {
 				prefix: '"explanation":"',
 				endPrefix: '","end_change":',
-				onStart: () => {},
-				onToken: (value: string) => this.textProcessor.processLine(value),
-				onEnd: (value) => {}
+				onStart: () => {
+					this.markdownRenderer.startMarkdownBlock();
+				},
+				onToken: (value: string) => this.markdownRenderer.processMarkdownToken(value),
+				onEnd: (value) => {
+					this.markdownRenderer.endMarkdownBlock();
+				}
 			},
 			end_change: {
 				// This token is just a delimiter to mark the end of a change block - no processing needed
@@ -142,6 +147,7 @@ export class FileChangeResponseProcessor {
 		private readonly md: MarkdownIt
 	) {
 		this.textProcessor = new TextResponseProcessor(_view, md);
+		this.markdownRenderer = new MarkdownRenderer(_view, md);
 	}
 
 	private processTokenStart(token: string): boolean {
