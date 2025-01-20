@@ -355,10 +355,25 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 		this._modifiedContentMap.delete(uri.toString());
 	}
 
-	public async handleAskMode(diagnosticMessage: string, lineNumber: number) {
-		const editor = vscode.window.activeTextEditor;
-		if (editor && lineNumber > 0) {
-			try {
+	public async handleAskMode(question: string, lineNumber: number, filePath: string) {
+		try {
+
+			// If filePath is provided, try to open that file
+			if (filePath) {
+				const fileUri = vscode.Uri.file(filePath);
+				try {
+					// Check if file exists
+					await vscode.workspace.fs.stat(fileUri);
+					const document = await vscode.workspace.openTextDocument(fileUri);
+					await vscode.window.showTextDocument(document);
+				} catch (error) {
+					this._outputChannel.appendLine(`Error opening file ${filePath}: ${error}`);
+				}
+			}
+
+			const editor = vscode.window.activeTextEditor;
+
+			if (editor && lineNumber > 0) {
 				// Create a selection for the specific line
 				const line = editor.document.lineAt(lineNumber - 1);
 				const selection = new vscode.Selection(
@@ -390,23 +405,21 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 					command: 'addCodePill',
 					...processedCode
 				});
-			} catch (error) {
-				this._outputChannel.appendLine(`Error processing code selection in Ask mode: ${error}`);
+			} else {
+				// Handle case when no editor is active
+				this._view?.webview.postMessage({
+					command: 'askMode',
+					question: question
+				});
 			}
 
 			// Construct and send the question
-			const question = `Can you help me with this error on line ${lineNumber}: "${diagnosticMessage}"\n`;
 			this._view?.webview.postMessage({
 				command: 'askMode',
 				question: question
 			});
-		} else if (!editor) {
-			// Handle case when no editor is active
-			const question = `Can you help me with this error: "${diagnosticMessage}"`;
-			this._view?.webview.postMessage({
-				command: 'askMode',
-				question: question
-			});
+		} catch (error) {
+			this._outputChannel.appendLine(`Error in handleAskMode: ${error}`);
 		}
 	}
 

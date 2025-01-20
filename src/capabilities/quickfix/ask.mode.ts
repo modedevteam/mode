@@ -20,20 +20,21 @@ export class AskModeCodeActionProvider implements vscode.CodeActionProvider {
         token: vscode.CancellationToken
     ): vscode.CodeAction[] {
         const diagnostics = context.diagnostics;
-        const actions: vscode.CodeAction[] = [];
+        if (diagnostics.length === 0) {
+            return [];
+        }
 
-        // Create the "Ask Mode" action first
         const askModeAction = new vscode.CodeAction('Ask Mode', vscode.CodeActionKind.QuickFix);
         askModeAction.command = {
             command: 'mode.openChat',
             title: 'Ask Mode',
             arguments: [
-                diagnostics.length > 0 ? diagnostics[0].message : undefined,
-                range.start.line + 1 // Adding 1 because VSCode uses 0-based line numbers
+                `I'm getting this error: "${diagnostics[0].message}". Can you help me fix it?`,
+                range.start.line + 1, // Adding 1 because VSCode uses 0-based line numbers
+                document.uri.fsPath
             ]
         };
         askModeAction.isPreferred = true;
-        actions.unshift(askModeAction);
-        return actions;
+        return [askModeAction];
     }
 } 

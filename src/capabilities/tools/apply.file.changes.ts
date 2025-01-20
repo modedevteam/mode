@@ -55,6 +55,26 @@ export async function applyFileChanges(toolCallArguments: string | any, handler:
         for (const document of modifiedDocuments) {
             await document.save();
         }
+
+        // Check for diagnostics after changes are applied
+        setTimeout(async () => {
+            for (const document of modifiedDocuments) {
+                const diagnostics = vscode.languages.getDiagnostics(document.uri);
+                // Filter for error-level diagnostics only
+                const errors = diagnostics.filter(d => d.severity === vscode.DiagnosticSeverity.Error);
+                if (errors.length > 0) {
+                    // Get the first error
+                    const diagnostic = errors[0];
+                    const lineNumber = diagnostic.range.start.line + 1;
+                    const filePath = document.uri.fsPath;
+                    
+                    const question = `Let's address this error on line ${lineNumber}: "${diagnostic.message}"\n`;
+                    await vscode.commands.executeCommand('mode.askMode', question, lineNumber, filePath);
+                    break; // Only handle the first error for now
+                }
+            }
+        }, 1000); // Give the linter a second to process the changes
+
     } catch (error) {
         console.error('Error applying changes:', error);
         throw error;

@@ -42,7 +42,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	);
 
 	// Register the command to open Mode
-	const disposable = vscode.commands.registerCommand('mode.openChat', async (diagnosticMessage?: string, lineNumber?: number) => {
+	const disposable = vscode.commands.registerCommand('mode.openChat', async () => {
 		try {
 			// Reload the view
 			provider.reloadView();
@@ -58,11 +58,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 			// Handle the current file selection
 			provider.handleCurrentFileSelection();
-
-			// Handle the diagnostic message and line number if they're provided
-			if (diagnosticMessage) {
-				provider.handleAskMode(diagnosticMessage, lineNumber ?? 0);
-			}
 		} catch (error) {
 			outputChannel.appendLine(ErrorMessages.OPEN_CHAT_EXTENSION_ERROR(error));
 			outputChannel.show();
@@ -102,6 +97,19 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.languages.registerCodeActionsProvider('*', new AskModeCodeActionProvider(provider), {
 			providedCodeActionKinds: AskModeCodeActionProvider.providedCodeActionKinds
+		})
+	);
+
+	// Register AskMode command
+	context.subscriptions.push(
+		vscode.commands.registerCommand('mode.askMode', async (message: string, lineNumber: number = 0, filePath: string = '') => {
+			try {				
+				// Call handleAskMode directly on the provider
+				provider.handleAskMode(message, lineNumber, filePath);
+			} catch (error) {
+				outputChannel.appendLine(ErrorMessages.OPEN_CHAT_EXTENSION_ERROR(error));
+				outputChannel.show();
+			}
 		})
 	);
 

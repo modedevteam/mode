@@ -896,6 +896,7 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                     messageInput.value = message.question; // Set the message to the chat input
                     resizeTextarea(); // Adjust the textarea size
                     focusTextarea(); // Focus on the textarea
+                    sendMessage(); // Send the message automatically
                     break;
                 case 'contextMentioned': {
                     const cursorPosition = parseInt(messageInput.dataset.lastCursorPosition || '0');

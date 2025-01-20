@@ -93,6 +93,10 @@
 			{
 				"command": "mode.manageApiKeys",
 				"title": "Mode: Manage API Keys"
+			},
+			{
+				"command": "mode.askMode",
+				"title": "Mode: Ask About This"
 			}
 		],
 		"keybindings": [
