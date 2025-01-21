@@ -40,9 +40,18 @@ export class MarkdownRenderer {
         this._view.webview.postMessage({ command: 'chatStream', action: 'startMarkdownBlock' });
     }
 
-    public endMarkdownBlock(): void {
-        // Send the buffered markdown tokens while signalling the end of a markdown block
-        this.sendBufferedMarkdownTokens('endMarkdownBlock');
+    public endMarkdownBlock(value?: string): void {
+        
+        // If there's a value, use that over what's in the buffer
+        if (value) {
+            this._view.webview.postMessage({
+                command: 'chatStream',
+                action: 'endMarkdownBlock',
+                lines: this.md.render(value)
+            });
+        } else {
+            this.sendBufferedMarkdownTokens('endMarkdownBlock');
+        }
 
         // Clear the collected markdown tokens
         this.collectedMarkdownTokens = [];

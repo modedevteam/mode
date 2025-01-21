@@ -16,7 +16,7 @@ import { ToolResponseProcessor } from '../response/tool.response.processor';
 
 // New class to handle message processing
 export class ChatMessageHandler {
-	private textProcessor: TextResponseProcessor;
+	private textResponseProcessor: TextResponseProcessor;
 	private toolProcessor: ToolResponseProcessor;
 	private isCancelled = false;
 	private toolCalls: any[] = [];
@@ -27,7 +27,7 @@ export class ChatMessageHandler {
 		private readonly md: MarkdownIt,
 		private readonly sessionManager: ChatSessionManager
 	) {
-		this.textProcessor = new TextResponseProcessor(_view, md);
+		this.textResponseProcessor = new TextResponseProcessor(_view, md);
 		this.toolProcessor = new ToolResponseProcessor(_view, md);
 	}
 
@@ -108,7 +108,7 @@ export class ChatMessageHandler {
 					} else if (token.type === 'text') {
 						// Only process text chunks if we're not currently processing a tool
 						if (!this.toolProcessor.isProcessingTool()) {
-							this.textProcessor.processToken(token.content);
+							this.textResponseProcessor.processToken(token.content);
 						}
 					}
 				},
@@ -117,7 +117,7 @@ export class ChatMessageHandler {
 					
 					// Only finalize the text stream if there's any text to process.
 					if (fullText && fullText.trim().length > 0) {
-						this.textProcessor.finalize();
+						this.textResponseProcessor.finalize();
 					}
 
 					this.sessionManager.getCurrentSession().messages.push({
@@ -140,7 +140,7 @@ export class ChatMessageHandler {
 						this.toolCalls.push(toolCall);
 
 						if (toolCall.function.name === 'apply_file_changes') {
-								applyFileChanges(parsedArguments, this.textProcessor);
+							applyFileChanges(parsedArguments, this.textResponseProcessor);
 							}
 						} catch (error) {
 							console.error('Failed to parse tool call arguments:', error);

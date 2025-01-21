@@ -130,7 +130,10 @@ export class FileChangeResponseProcessor {
 					this.markdownRenderer.processMarkdownToken(currentToken);
 				},
 				onEnd: (value: string) => {
-					this.markdownRenderer.endMarkdownBlock();
+					// Sometimes some of the characters of the next block are sent as tokens
+					// e.g "I'm updating the method call to use 'textResponseProcessor' instead of 'textProcessor'.","end_change":""
+					// So we need to send the entire properly formatted value here to clean it up
+					this.markdownRenderer.endMarkdownBlock(value);
 				}
 			},
 			end_change: {
