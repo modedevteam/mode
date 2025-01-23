@@ -147,7 +147,8 @@ export class ChatMessageHandler {
 						}
 					}
 				}
-			});
+			},
+			auto);
 
 			// Add collected tool calls after streaming is complete
 			if (this.toolCalls.length > 0) {

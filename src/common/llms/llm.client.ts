@@ -108,7 +108,7 @@ export class AIClient {
         });
     }
 
-    async chat(messages: AIMessage[], callbacks: StreamCallbacks): Promise<string> {
+    async chat(messages: AIMessage[], callbacks: StreamCallbacks, auto: boolean = false): Promise<string> {
         try {
             const filteredMessages = this.filterDiagnosticMessages(messages);
 
@@ -116,7 +116,12 @@ export class AIClient {
                 case 'anthropic':
                     return this.anthropicChat(filteredMessages, callbacks);
                 case 'openai':
-                    return this.openaiChat(filteredMessages, callbacks);
+                    // if auto is true, use the new chat mode that supports tool calls
+                    if (auto) {
+                        return this.openaiChatv2(filteredMessages, callbacks);
+                    } else {
+                        return this.openaiChat(filteredMessages, callbacks);
+                    }
                 case 'google':
                     return this.googleChat(filteredMessages, callbacks);
                 case 'cohere':
@@ -192,7 +197,7 @@ export class AIClient {
         return fullText;
     }
 
-    private async openaiChat(messages: AIMessage[], callbacks: StreamCallbacks): Promise<string> {
+    private async openaiChatv2(messages: AIMessage[], callbacks: StreamCallbacks): Promise<string> {
         this.isCancelled = false;
         if (!this.openaiClient) throw new Error('OpenAI client not initialized');
 
@@ -358,6 +363,48 @@ export class AIClient {
             callbacks.onToolCall?.(currentToolCall);
         }
 
+        callbacks.onComplete(fullText);
+        return fullText;
+    }
+
+    private async openaiChat(messages: AIMessage[], callbacks: StreamCallbacks): Promise<string> {
+        this.isCancelled = false;
+        if (!this.openaiClient) throw new Error('OpenAI client not initialized');
+
+        let fullText = '';
+        const response = await this.openaiClient.chat.completions.create({
+            model: this.model,
+            messages: messages.map(msg => ({
+                role: this.model.startsWith('o1') && msg.role === 'system' ? 'user' : msg.role,
+                content: typeof msg.content === 'string' && msg.content.startsWith('data:image')
+                    ? AIClient.formatImageContent('openai', msg.content)
+                    : msg.content
+            })),
+            [this.model.startsWith('o1') ? 'max_completion_tokens' : 'max_tokens']: 4096,
+            stream: true,
+            temperature: LLMChatParams.temperature
+        }) as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
+
+        try {
+            for await (const chunk of response) {
+                if (this.isCancelled) {
+                    return fullText;
+                }
+                const text = chunk.choices[0]?.delta?.content || '';
+                if (text) {
+                    fullText += text;
+                    callbacks.onToken({
+                        type: 'text',
+                        content: text
+                    });
+                }
+            }
+        } catch (error) {
+            if (this.isCancelled) {
+                return fullText;
+            }
+            throw error;
+        }
         callbacks.onComplete(fullText);
         return fullText;
     }
