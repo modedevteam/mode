@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.27] - 2025-01-23
+
+### Fixed
+- Fixed OpenRouter failing silently (regression introduced in 1.0.26)
+
 ## [1.0.26] - 2025-01-21
 
 ### Added

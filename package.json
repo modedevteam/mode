@@ -2,7 +2,7 @@
 	"name": "mode",
 	"displayName": "Mode: Superhuman coding without compromise",
 	"description": "Personal and autonomous coding agent that lets you code, refactor, fix issues, and build apps—all with a single prompt. No third-party servers, token limits, or hidden upgrade fees.",
-	"version": "1.0.26",
+	"version": "1.0.27",
 	"publisher": "aruna-labs",
 	"license": "MIT",
 	"homepage": "https://www.getmode.dev",
