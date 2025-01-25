@@ -208,16 +208,16 @@ export class AIClient {
         const response = await this.openaiClient.chat.completions.create({
             model: this.model,
             messages: messages.map(msg => ({
-                role: this.model.startsWith('o1') && msg.role === 'system' ? 'user' : msg.role,
+                role: this.model.startsWith('o') && msg.role === 'system' ? 'user' : msg.role,
                 content: Array.isArray(msg.content) && msg.content[0]?.type === 'function'
                     ? JSON.stringify(msg.content[0].function.arguments)
                     : typeof msg.content === 'string' && msg.content.startsWith('data:image')
                         ? AIClient.formatImageContent('openai', msg.content)
                         : msg.content
             })),
-            [this.model.startsWith('o1') ? 'max_completion_tokens' : 'max_tokens']: this.model.startsWith('o1') ? 32768 : 16384,
+            [this.model.startsWith('o') ? 'max_completion_tokens' : 'max_tokens']: this.model.startsWith('o') ? 32768 : 16384,
             stream: true,
-            temperature: LLMChatParams.temperature,
+            temperature: this.model.startsWith('o') ? 1 : LLMChatParams.temperature,
             tool_choice: { type: "function", function: { name: "apply_file_changes" } },
             tools: [{
                 type: "function",
@@ -375,14 +375,14 @@ export class AIClient {
         const response = await this.openaiClient.chat.completions.create({
             model: this.model,
             messages: messages.map(msg => ({
-                role: this.model.startsWith('o1') && msg.role === 'system' ? 'user' : msg.role,
+                role: this.model.startsWith('o') && msg.role === 'system' ? 'user' : msg.role,
                 content: typeof msg.content === 'string' && msg.content.startsWith('data:image')
                     ? AIClient.formatImageContent('openai', msg.content)
                     : msg.content
             })),
-            [this.model.startsWith('o1') ? 'max_completion_tokens' : 'max_tokens']: 4096,
+            [this.model.startsWith('o') ? 'max_completion_tokens' : 'max_tokens']: 4096,
             stream: true,
-            temperature: LLMChatParams.temperature
+            temperature: this.model.startsWith('o') ? 1 : LLMChatParams.temperature
         }) as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
 
         try {
