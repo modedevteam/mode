@@ -12,12 +12,13 @@ import { formatFileContent } from '../../../common/rendering/llm.translation.uti
 import { ChatSessionManager } from './chat.session.handler';
 import { HIGHLIGHTED_CODE_START, HIGHLIGHTED_CODE_END, CURRENT_FILE_PATH_START, CURRENT_FILE_PATH_END } from '../../../common/llms/llm.prompt';
 import { applyFileChanges } from '../../tools/apply.file.changes';
-import { ToolResponseProcessor } from '../response/tool.response.processor';
+import { StreamResponseProcessor } from '../response/stream.response.processor';
+import { sanitizeJsonString } from '../../../common/rendering/json.utils';
 
 // New class to handle message processing
 export class ChatMessageHandler {
-	private textResponseProcessor: TextResponseProcessor;
-	private toolProcessor: ToolResponseProcessor;
+	private chatV2ResponseProcessor: TextResponseProcessor;
+	private autoCodingStreamProcessor: StreamResponseProcessor;
 	private isCancelled = false;
 	private toolCalls: any[] = [];
 
@@ -27,8 +28,8 @@ export class ChatMessageHandler {
 		private readonly md: MarkdownIt,
 		private readonly sessionManager: ChatSessionManager
 	) {
-		this.textResponseProcessor = new TextResponseProcessor(_view, md);
-		this.toolProcessor = new ToolResponseProcessor(_view, md);
+		this.chatV2ResponseProcessor = new TextResponseProcessor(_view, md);
+		this.autoCodingStreamProcessor = new StreamResponseProcessor(_view, md);
 	}
 
 	public stopGeneration() {
@@ -91,64 +92,75 @@ export class ChatMessageHandler {
 			// call LLM provider and stream the response
 			let streamStarted = false;
 
+			let lastToolCall: any = null;
+			let lastFullText: string = '';
+
 			await this.aiClient!.chat(messages as AIMessage[], {
 				onToken: (token) => {
 					if (this.isCancelled) return;
 
 					if (!streamStarted) {
-						this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
+						if (auto) {
+							this.autoCodingStreamProcessor.startStream();
+						} else {
+							// Chatv2 stream processordoesn't have this method, so we need to do this manually
+							this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
+						}
 						streamStarted = true;
 					}
 
-					// Handle tool-complete chunks to properly end tool streaming
-					if (token.type === 'tool-complete') {
-						this.toolProcessor.endToolStream();
-					} else if (token.type === 'tool') {
-						this.toolProcessor.processToolChunk(token.content);
-					} else if (token.type === 'text') {
-						// Only process text chunks if we're not currently processing a tool
-						if (!this.toolProcessor.isProcessingTool()) {
-							this.textResponseProcessor.processToken(token.content);
-						}
+					if (auto) {
+						// Use the auto coding stream processor because these are models that support strict outputs
+						this.autoCodingStreamProcessor.processToken(token.content);
+					} else {
+						// Use the chat v2 response processor for models that are more unpredictable
+						this.chatV2ResponseProcessor.processToken(token.content);
 					}
 				},
 				onComplete: (fullText) => {
 					if (this.isCancelled) return;
-					
-					// Only finalize the text stream if there's any text to process.
-					if (fullText && fullText.trim().length > 0) {
-						this.textResponseProcessor.finalize();
+
+					// Store the full text
+					lastFullText = fullText;
+
+					// Finalize the stream
+					if (auto) {
+						this.autoCodingStreamProcessor.endStream();
+					} else {
+						this.chatV2ResponseProcessor.finalize();
 					}
 
 					this.sessionManager.getCurrentSession().messages.push({
 						role: "assistant",
-							content: fullText,
-							name: "Mode.ChatResponse"
+						content: fullText,
+						name: auto ? "Mode.AutoCoding" : "Mode.ChatResponse"
 					});
 				},
 				onToolCall: (toolCall) => {
 					if (this.isCancelled) return;
 
+					// Store the tool call
+					lastToolCall = toolCall;
+					this.toolCalls.push(lastToolCall);
+
 					// End the tool display stream before calling the tool
-					this.toolProcessor.endToolStream();
-
-					// if autocoding is enabled, apply the file changes
-					if (auto) {
-						try {
-							const parsedArguments = JSON.parse(toolCall.function.arguments);
-							toolCall.function.arguments = parsedArguments;
-						this.toolCalls.push(toolCall);
-
-						if (toolCall.function.name === 'apply_file_changes') {
-							applyFileChanges(parsedArguments, this.textResponseProcessor);
-							}
-						} catch (error) {
-							console.error('Failed to parse tool call arguments:', error);
-						}
-					}
+					this.autoCodingStreamProcessor.endStream();
 				}
 			},
-			auto);
+				auto);
+
+			// if autocoding is enabled, apply the file changes
+			if (auto) {
+				try {
+					const jsonString = lastToolCall 
+						? lastToolCall.function.arguments 
+						: sanitizeJsonString(lastFullText);
+					const parsedArguments = JSON.parse(jsonString);
+					applyFileChanges(parsedArguments);
+				} catch (error) {
+					console.error('Failed to parse tool call arguments:', error);
+				}
+			}
 
 			// Add collected tool calls after streaming is complete
 			if (this.toolCalls.length > 0) {

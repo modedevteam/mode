@@ -30,7 +30,7 @@ export class DiffManager {
         }
 
         // Prepare the diff
-        const proposedChangesUri = this.prepareChanges(originalUri, originalCode, newCode);
+        const proposedChangesUri = await this.prepareChanges(originalUri, originalCode, newCode);
 
         // Return early if user cancelled the merge operation
         if (!proposedChangesUri) {
@@ -148,10 +148,11 @@ export class DiffManager {
         }
     }
 
-    private prepareChanges(originalUri: vscode.Uri, originalCode: string, newCode: string): vscode.Uri {
+    private async prepareChanges(originalUri: vscode.Uri, originalCode: string, newCode: string): Promise<vscode.Uri> {
         // Create temp file for modified content
         const tmpDir = os.tmpdir();
         const tmpFile = path.join(tmpDir, `${path.basename(originalUri.fsPath)}.modified`);
+        const tmpUri = vscode.Uri.file(tmpFile);
 
         // Read the original file content
         const originalContent = fs.readFileSync(originalUri.fsPath, 'utf8');
@@ -159,7 +160,7 @@ export class DiffManager {
         // If file is empty, just write the new code
         if (!originalContent.trim()) {
             fs.writeFileSync(tmpFile, newCode);
-            return vscode.Uri.file(tmpFile);
+            return tmpUri;
         }
 
         // Read the original file content and split into lines
@@ -203,11 +204,24 @@ export class DiffManager {
             const afterLines = contentLines.slice(matchStartIndex + originalCodeLines.length);
             const modifiedContent = [...beforeLines, newCode, ...afterLines].join('\n');
             fs.writeFileSync(tmpFile, modifiedContent);
+            await this.formatDocument(tmpUri, originalUri);
+            return tmpUri;
         } else {
             // No match found, use original content
             fs.writeFileSync(tmpFile, originalContent);
+            return tmpUri;
         }
+    }
 
-        return vscode.Uri.file(tmpFile);
+    private async formatDocument(uri: vscode.Uri, originalUri: vscode.Uri): Promise<void> {
+        // Get the original document's language ID
+        const originalDocument = await vscode.workspace.openTextDocument(originalUri);
+        const languageId = originalDocument.languageId;
+        
+        const document = await vscode.workspace.openTextDocument(uri);
+        // Use the original document's language ID instead of file extension
+        await vscode.languages.setTextDocumentLanguage(document, languageId);
+        await vscode.commands.executeCommand('editor.action.formatDocument');
+        await document.save();
     }
 }

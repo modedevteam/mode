@@ -123,8 +123,6 @@
 									"anthropic",
 									"openrouter",
 									"google",
-									"mistral",
-									"cohere",
 									"local"
 								]
 							},
@@ -147,10 +145,9 @@
 											"type": "boolean",
 											"default": false
 										},
-										"largeContext": {
+										"autocoding": {
 											"type": "boolean",
-											"default": true,
-											"markdownDescription": "Whether the model supports large context inputs needed for some Mode features (like Merge). Turned off for small local models."
+											"default": false
 										},
 										"autocomplete": {
 											"type": "boolean",
@@ -180,19 +177,11 @@
 								{
 									"name": "gpt-4o",
 									"displayName": "GPT-4o",
-									"vision": true
-								},
-								{
-									"name": "gpt-4o-mini",
-									"displayName": "GPT-4o-mini",
 									"vision": true,
-									"autocomplete": true
+									"autocoding": true
 								},
 								{
 									"name": "o1"
-								},
-								{
-									"name": "o1-mini"
 								}
 							],
 							"visible": true
@@ -203,13 +192,8 @@
 								{
 									"name": "claude-3-5-sonnet-latest",
 									"displayName": "Claude 3.5 Sonnet",
-									"vision": true
-								},
-								{
-									"name": "claude-3-5-haiku-latest",
-									"displayName": "Claude 3.5 Haiku",
 									"vision": true,
-									"autocomplete": true
+									"autocoding": true
 								}
 							],
 							"visible": true
@@ -220,14 +204,15 @@
 								{
 									"name": "anthropic/claude-3.5-haiku-20241022",
 									"displayName": "Claude 3.5 Haiku (OpenRouter)",
-									"autocomplete": true
+									"autocomplete": true,
+									"autocoding": true
 								},
 								{
 									"name": "openai/o1"
 								},
 								{
 									"name": "x-ai/grok-2-1212",
-									"displayName": "Grok 2"
+									"displayName": "Grok 2 (OpenRouter)"
 								}
 							],
 							"visible": true
@@ -246,43 +231,8 @@
 									"autocomplete": true
 								},
 								{
-									"name": "gemini-1.5-flash",
-									"displayName": "Gemini 1.5 Flash",
-									"autocomplete": true
-								},
-								{
 									"name": "gemini-1.5-pro",
 									"displayName": "Gemini 1.5 Pro"
-								}
-							],
-							"visible": true
-						},
-						{
-							"name": "mistral",
-							"models": [
-								{
-									"name": "mistral-large-latest",
-									"displayName": "Mistral Large"
-								},
-								{
-									"name": "codestral-latest",
-									"displayName": "Codestral",
-									"autocomplete": true
-								}
-							],
-							"visible": true
-						},
-						{
-							"name": "cohere",
-							"models": [
-								{
-									"name": "command-r-plus-08-2024",
-									"displayName": "Command R Plus"
-								},
-								{
-									"name": "command-light",
-									"displayName": "Command Light",
-									"autocomplete": true
 								}
 							],
 							"visible": true

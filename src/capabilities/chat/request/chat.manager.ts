@@ -12,8 +12,8 @@ import { AIClient, AIMessage, StreamToken } from '../../../common/llms/llm.clien
 import { AIModelUtils } from '../../../common/llms/llm.model.utils';
 import { TextResponseProcessor } from '../response/text.response.processor';
 import { ApiKeyManager } from '../../../common/llms/llm.api.key.manager';
-import { SESSION_SUMMARY_PROMPT } from '../../../common/llms/llm.prompt';
-import { chatPromptv2, chatPromptv3 } from '../../../common/llms/llm.prompt';
+import { chatPromptv2, SESSION_SUMMARY_PROMPT } from '../../../common/llms/llm.prompt';
+import { autoCodingPrompt, autoCodingWithToolsPrompt } from '../../../common/llms/llm.prompt';
 import {
 	isChatPrePromptDisabled,
 	getChatPromptOverride,
@@ -21,9 +21,9 @@ import {
 	getChatAdditionalPrompt,
 	isChatAdditionalPromptEmpty
 } from '../../../common/config.utils';
-import { ToolResponseProcessor } from '../response/tool.response.processor';
 import { displayFileChanges } from '../../tools/display.file.changes';
 import { MarkdownRenderer } from '../../../common/rendering/markdown.renderer';
+import { sanitizeJsonString } from '../../../common/rendering/json.utils';
 
 export class ChatManager {
 	private aiClient: AIClient | null = null;
@@ -62,12 +62,18 @@ export class ChatManager {
 		return messages.some(msg => msg.role === 'system');
 	}
 
-	private initializeSystemPrompt(selectedModel: string, auto: boolean): void {
+	private getBaseSystemPrompt(selectedModel: string): string {
+		if (AIModelUtils.supportsToolUsage(selectedModel)) {
+			return autoCodingWithToolsPrompt;
+		}
+		return AIModelUtils.supportsAutocoding(selectedModel) ? autoCodingPrompt : chatPromptv2;
+	}
+
+	private initializeSystemPrompt(selectedModel: string): void {
 		const messages = this.sessionManager.getCurrentSession().messages;
 		const promptOverride = getChatPromptOverride();
 		const disableSystemPrompt = isChatPrePromptDisabled() && isPromptOverrideEmpty();
-		let systemPrompt = disableSystemPrompt ? '' : (promptOverride || 
-			auto ? chatPromptv3 : chatPromptv2);
+		let systemPrompt = disableSystemPrompt ? '' : (promptOverride || this.getBaseSystemPrompt(selectedModel));
 
 		if (!isChatAdditionalPromptEmpty()) {
 			systemPrompt += ` ${getChatAdditionalPrompt()}`;
@@ -106,7 +112,7 @@ export class ChatManager {
 
 		// Initialize system prompt for new sessions or if missing
 		if (!this.hasSystemPrompt()) {
-			this.initializeSystemPrompt(selectedModel, auto);
+			this.initializeSystemPrompt(selectedModel);
 		}
 
 		this.currentHandler = new ChatMessageHandler(
@@ -176,16 +182,26 @@ export class ChatManager {
 							}
 							this._view.webview.postMessage({ command: 'chatStream', action: 'endStream' });
 						}
-					} else if (message.name === 'Mode.FunctionCall') {
-						// Process tool calls
-						this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
-						for (const toolCall of message.content as any[]) {
-							if (toolCall.function.name === 'apply_file_changes') {
-								const textProcessor = new TextResponseProcessor(this._view, this.md);
-								const markdownRenderer = new MarkdownRenderer(this._view, this.md);
-								displayFileChanges(toolCall.function.arguments, textProcessor, markdownRenderer);
+					} else if (message.name === 'Mode.AutoCoding' || message.name === 'Mode.FunctionCall') {
+
+						// we parse both auto coding and function calls the same way
+						let parsedArgs: any;
+						if (message.name === 'Mode.AutoCoding') {
+							parsedArgs = JSON.parse(sanitizeJsonString(message.content as string));
+						} else {
+							for (const toolCall of message.content as any[]) {
+								if (toolCall.function.name === 'apply_file_changes') {
+									parsedArgs = toolCall.function.arguments;
+								}
 							}
 						}
+
+						const textProcessor = new TextResponseProcessor(this._view, this.md);
+						const markdownRenderer = new MarkdownRenderer(this._view, this.md);
+
+						// display the file changes
+						this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
+						displayFileChanges(parsedArgs, textProcessor, markdownRenderer);
 						this._view.webview.postMessage({ command: 'chatStream', action: 'endStream' });
 					}
 				}

@@ -57,7 +57,10 @@ export class AIModelUtils {
                     name: model.name,
                     displayName: model.displayName,
                     provider: provider.name,
-                    endpoint: model.endpoint
+                    endpoint: model.endpoint,
+                    vision: model.vision,
+                    autocomplete: model.autocomplete,
+                    autocoding: model.autocoding
                 };
             }
         }
@@ -75,7 +78,10 @@ export class AIModelUtils {
                     modelMap[model.name] = {
                         name: model.name,
                         displayName: model.displayName,
-                        provider: provider.name
+                        provider: provider.name,
+                        vision: model.vision,
+                        autocomplete: model.autocomplete,
+                        autocoding: model.autocoding
                     };
                 }
             }
@@ -137,8 +143,13 @@ export class AIModelUtils {
         return modelKey;
     }
 
-    public static isToolUsageSupported(modelKey: string): boolean {
-        // Support tool usage for OpenAI GPT models
+    public static supportsAutocoding(modelKey: string): boolean {
+        const modelInfo = this.getModelInfoFromConfig(modelKey);
+        if (!modelInfo) return false;
+        return modelInfo.autocoding ?? false;
+    }
+
+    public static supportsToolUsage(modelKey: string): boolean {
         return modelKey.toLowerCase().includes('gpt');
     }
 } 

@@ -575,10 +575,9 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
         const dropdownToggle = document.querySelector('.dropdown-toggle') as HTMLButtonElement;
         const dropdownContent = document.querySelector('.dropdown-content') as HTMLDivElement;
         const selectedOptionSpan = document.querySelector('.selected-model') as HTMLSpanElement;
-        const autocodeButton = document.getElementById('autocode-button') as HTMLButtonElement;
 
-        // Initial visibility check for autocode button
-        updateAutocodeButtonVisibility(selectedOptionSpan.dataset.modelId || '');
+        // Initial visibility check for autocode button based on data-autocoding
+        updateAutocodeButtonVisibility(selectedOptionSpan.dataset.autocoding === 'true');
 
         dropdownToggle.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -599,12 +598,14 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                 if (optionElement.dataset.option) {
                     const modelId = optionElement.dataset.option;
                     const modelDisplayName = optionElement.textContent?.trim() || modelId;
+                    const supportsAutocoding = optionElement.dataset.autocoding === 'true';
 
                     selectedOptionSpan.textContent = modelDisplayName;
                     selectedOptionSpan.dataset.modelId = modelId;
+                    selectedOptionSpan.dataset.autocoding = String(supportsAutocoding);
 
-                    // Update autocode button visibility
-                    updateAutocodeButtonVisibility(modelId);
+                    // Update autocode button visibility based on data-autocoding
+                    updateAutocodeButtonVisibility(supportsAutocoding);
 
                     // Notify extension about model change
                     vscode.postMessage({
@@ -618,15 +619,14 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
         });
     }
 
-    // Add this new function to handle autocode button visibility
-    function updateAutocodeButtonVisibility(modelId: string) {
+    // Update this function to take a boolean parameter
+    function updateAutocodeButtonVisibility(supportsAutocoding: boolean) {
         const autocodeButton = document.getElementById('autocode-button');
         if (autocodeButton) {
-            const shouldShow = modelId.toLowerCase().includes('gpt');
-            autocodeButton.style.display = shouldShow ? 'flex' : 'none';
+            autocodeButton.style.display = supportsAutocoding ? 'flex' : 'none';
             
             // Set it as active by default when shown
-            if (shouldShow) {
+            if (supportsAutocoding) {
                 autocodeButton.setAttribute('data-active', 'true');
             }
         }

@@ -11,6 +11,7 @@ export interface ProviderConfig {
         endpoint?: string;
         vision?: boolean;
         autocomplete?: boolean;
+        autocoding?: boolean;
     }[];
     visible: boolean;
 }
@@ -24,6 +25,9 @@ export interface ModelInfo {
     displayName?: string;
     provider: string;
     endpoint?: string;
+    vision?: boolean;
+    autocomplete?: boolean;
+    autocoding?: boolean;
 }
 
 export const PROVIDERS_CONFIG_KEY = 'providers';

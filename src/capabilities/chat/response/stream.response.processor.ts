@@ -8,7 +8,7 @@ import MarkdownIt from 'markdown-it';
 import { MarkdownRenderer } from '../../../common/rendering/markdown.renderer';
 import { FileChangesResponseProcessor } from './file.changes.response.processor';
 
-export class ToolResponseProcessor {
+export class StreamResponseProcessor {
     private _isProcessingTool = false;
     private isCapturingExplanation = false;
     private isCapturingChanges = false;
@@ -24,7 +24,11 @@ export class ToolResponseProcessor {
         this.fileChangesProcessor = new FileChangesResponseProcessor(_view, md);
     }
 
-    public processToolChunk(chunkText: string) {
+    public startStream() {
+        this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
+	}
+
+    public processToken(chunkText: string) {
 
         if (!this._isProcessingTool) {
             this._isProcessingTool = true;
@@ -69,7 +73,7 @@ export class ToolResponseProcessor {
         }
     }
 
-    public endToolStream() {
+    public endStream() {
         if (this.isCapturingChanges) {
             this.fileChangesProcessor.endFileChanges();
         }

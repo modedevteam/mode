@@ -4,8 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { TextResponseProcessor } from '../chat/response/text.response.processor';
-import { displayFileChanges } from './display.file.changes';
 
 /*
  * Represents a single change to a file.
@@ -31,7 +29,7 @@ export interface ChangeSet {
 /*
  * The main function that applies the changes. Entry point for the tool call.
  */
-export async function applyFileChanges(toolCallArguments: string | any, handler: TextResponseProcessor): Promise<void> {
+export async function applyFileChanges(toolCallArguments: string | any): Promise<void> {
     try {
         // Handle both string and object inputs
         const changes: ChangeSet = typeof toolCallArguments === 'string'

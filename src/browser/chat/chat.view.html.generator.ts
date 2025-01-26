@@ -84,8 +84,9 @@ export class ChatViewHtmlGenerator {
 		const modelOptions = Object.entries(models)
 			.map(([modelId, modelData]) => {
 				const displayName = modelData.displayName || modelId;
+				const autocoding = modelData.autocoding ?? false;
 				return `
-					<a href="#" data-option="${modelId}">
+					<a href="#" data-option="${modelId}" data-autocoding="${autocoding}">
 						${displayName}
 					</a>
 				`;
@@ -93,11 +94,12 @@ export class ChatViewHtmlGenerator {
 			.join('');
 
 		const defaultDisplayName = models[defaultModel]?.displayName || defaultModel;
+		const autocoding = AIModelUtils.supportsAutocoding(defaultModel);
 
 		return `
 			<div class="dropdown">
 				<button class="dropdown-toggle" title="Select model">
-					<span class="selected-model" data-model-id="${defaultModel}">${defaultDisplayName}</span>
+					<span class="selected-model" data-model-id="${defaultModel}" data-autocoding="${autocoding}">${defaultDisplayName}</span>
 					<i class="codicon codicon-chevron-down"></i>
 				</button>
 				<div class="dropdown-content">
