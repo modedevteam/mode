@@ -116,10 +116,11 @@ export class ChatViewHtmlGenerator {
 	}
 
 	private _getIconContainerHtml(): string {
+		const autocodingEnabled = AIModelUtils.getAutocodingEnabledUserPreference();
 		return `
 			<div id="icon-container">
 				<div class="right-aligned-buttons">
-					<button id="autocode-button" class="icon-button" title="Autocode (click to toggle)" data-active="false"><i class="codicon codicon-lightbulb-autofix"></i></button>
+					<button id="autocode-button" class="icon-button" title="Autocode (click to toggle)" data-active="${autocodingEnabled}"><i class="codicon codicon-lightbulb-autofix"></i></button>
 					<button id="send-button" class="icon-button" disabled title="Send (enter)"><i class="codicon codicon-comment-discussion"></i></button>
 				</div>
 			</div>`;

@@ -74,7 +74,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 							message.fileUrls,
 							message.currentFilePath,
 							message.selectedModel,
-							message.auto
+							message.autoCodingEnabled
 						);
 						break;
 					case 'showQuickPick':
@@ -108,6 +108,9 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 						// save the last used model
 						AIModelUtils.setLastUsedModel(message.model);
 						break;
+					case 'autocodeVisibilityToggled':
+						AIModelUtils.setAutocodingEnabledUserPreference(message.visible);
+						break;
 				}
 			});
 		} catch (error) {
@@ -128,7 +131,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 		fileUrls: string[] = [],
 		currentFilePath: string | null = null,
 		selectedModel: string,
-		auto: boolean
+		autoCodingEnabled: boolean
 	) {
 		// Add the currently opened files to the fileUrls so users don't have to manually add them
 		// Only include files, not output channel, terminal, etc.
@@ -152,7 +155,7 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 				fileUrls,
 				currentFilePath,
 				selectedModel,
-				auto
+				autoCodingEnabled
 			);
 		}
 	}

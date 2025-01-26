@@ -43,7 +43,8 @@ export class ChatMessageHandler {
 		codeSnippets: { fileName: string; range: string; code: string }[] = [],
 		fileUrls: string[] = [],
 		currentFilePath: string | null = null,
-		auto: boolean
+		applyChanges: boolean,
+		supportsAutocoding: boolean
 	): Promise<void> {
 		try {
 			this.isCancelled = false;
@@ -100,7 +101,7 @@ export class ChatMessageHandler {
 					if (this.isCancelled) return;
 
 					if (!streamStarted) {
-						if (auto) {
+						if (supportsAutocoding) {
 							this.autoCodingStreamProcessor.startStream();
 						} else {
 							// Chatv2 stream processordoesn't have this method, so we need to do this manually
@@ -109,7 +110,7 @@ export class ChatMessageHandler {
 						streamStarted = true;
 					}
 
-					if (auto) {
+					if (supportsAutocoding) {
 						// Use the auto coding stream processor because these are models that support strict outputs
 						this.autoCodingStreamProcessor.processToken(token.content);
 					} else {
@@ -124,7 +125,7 @@ export class ChatMessageHandler {
 					lastFullText = fullText;
 
 					// Finalize the stream
-					if (auto) {
+					if (supportsAutocoding) {
 						this.autoCodingStreamProcessor.endStream();
 					} else {
 						this.chatV2ResponseProcessor.finalize();
@@ -133,7 +134,7 @@ export class ChatMessageHandler {
 					this.sessionManager.getCurrentSession().messages.push({
 						role: "assistant",
 						content: fullText,
-						name: auto ? "Mode.AutoCoding" : "Mode.ChatResponse"
+						name: supportsAutocoding ? "Mode.AutoCoding" : "Mode.ChatResponse"
 					});
 				},
 				onToolCall: (toolCall) => {
@@ -147,10 +148,10 @@ export class ChatMessageHandler {
 					this.autoCodingStreamProcessor.endStream();
 				}
 			},
-				auto);
+				supportsAutocoding);
 
 			// if autocoding is enabled, apply the file changes
-			if (auto) {
+			if (applyChanges) {
 				try {
 					const jsonString = lastToolCall 
 						? lastToolCall.function.arguments 

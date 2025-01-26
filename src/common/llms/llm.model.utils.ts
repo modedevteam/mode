@@ -143,11 +143,21 @@ export class AIModelUtils {
         return modelKey;
     }
 
+    //#region auto coding
     public static supportsAutocoding(modelKey: string): boolean {
         const modelInfo = this.getModelInfoFromConfig(modelKey);
         if (!modelInfo) return false;
         return modelInfo.autocoding ?? false;
     }
+
+    public static getAutocodingEnabledUserPreference(): boolean {
+        return this.extensionContext.globalState.get('autocodingEnabled', true);
+    }
+
+    public static setAutocodingEnabledUserPreference(enabled: boolean): void {
+        this.extensionContext.globalState.update('autocodingEnabled', enabled);
+    }
+    //#endregion
 
     public static supportsToolUsage(modelKey: string): boolean {
         return modelKey.toLowerCase().includes('gpt');

@@ -49,7 +49,7 @@ declare function acquireVsCodeApi(): any;
 
         // Get the autocode button state
         const autocodeButton = document.getElementById('autocode-button');
-        const auto = autocodeButton?.getAttribute('data-active') === 'true';
+        const autoCodingEnabled = autocodeButton?.getAttribute('data-active') === 'true';
 
         if (message || currentImages.length > 0 || highlightedCodeSnippets.length > 0) {
             isProcessing = true;
@@ -69,7 +69,7 @@ declare function acquireVsCodeApi(): any;
                 fileUrls: Array.from(addedFileUris),
                 currentFile: currentFilePill?.getAttribute('data-file-uri'),
                 selectedModel: selectedModel,
-                auto: auto // Include the autocode state
+                autoCodingEnabled: autoCodingEnabled // Include the autocode state
             });
 
             // Clear the context after sending
@@ -619,16 +619,20 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
         });
     }
 
-    // Update this function to take a boolean parameter
+    // Update this function to respect the global preference
     function updateAutocodeButtonVisibility(supportsAutocoding: boolean) {
         const autocodeButton = document.getElementById('autocode-button');
         if (autocodeButton) {
             autocodeButton.style.display = supportsAutocoding ? 'flex' : 'none';
             
-            // Set it as active by default when shown
-            if (supportsAutocoding) {
-                autocodeButton.setAttribute('data-active', 'true');
-            }
+            // Remove the automatic activation - let it use the data-active value set by the HTML generator
+            // which reflects the global preference
+
+            // Post a message indicating the visibility status of the autocode button
+            vscode.postMessage({
+                command: 'autocodeVisibilityToggled',
+                visible: supportsAutocoding
+            });
         }
     }
     //#endregion
@@ -915,6 +919,10 @@ function renderMessage(message: string, sender: 'user' | 'assistant') {
                     messageInput.focus();
                     break;
                 }
+                case 'autocodeVisibilityToggled':
+                    console.log(`Autocode Button is now ${message.visible ? 'visible' : 'hidden'}.`);
+                    // Add any additional handling logic here
+                    break;
             }
         });
     }

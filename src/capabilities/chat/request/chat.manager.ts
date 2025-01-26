@@ -95,7 +95,7 @@ export class ChatManager {
 		fileUrls: string[] = [],
 		currentFilePath: string | null = null,
 		selectedModel: string,
-		auto: boolean
+		autoCodingEnabled: boolean
 	): Promise<void> {
 
 		// initialize client
@@ -121,7 +121,7 @@ export class ChatManager {
 			this.md,
 			this.sessionManager
 		);
-		await this.currentHandler.handleMessage(message, images, codeSnippets, fileUrls, currentFilePath, auto);
+		await this.currentHandler.handleMessage(message, images, codeSnippets, fileUrls, currentFilePath, autoCodingEnabled, AIModelUtils.supportsAutocoding(selectedModel));
 		this.sessionManager.saveSessions();
 
 		// Generate overview
@@ -203,6 +203,7 @@ export class ChatManager {
 						this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
 						displayFileChanges(parsedArgs, textProcessor, markdownRenderer);
 						this._view.webview.postMessage({ command: 'chatStream', action: 'endStream' });
+
 					}
 				}
 			});
