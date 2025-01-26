@@ -101,6 +101,11 @@ export class ModeChatViewProvider implements vscode.WebviewViewProvider {
 						}
 						break;
 					case 'modelSelected':
+						// reset the chat session to ensure we don't share system prompts
+						this._sessionManager.saveSessions();
+						this._sessionManager.createNewSession();
+						
+						// save the last used model
 						AIModelUtils.setLastUsedModel(message.model);
 						break;
 				}
