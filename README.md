@@ -12,9 +12,9 @@ Mode writes code automatically with no manual approval or merge steps. It lets y
 
 ### 🌟🌟 Weekly Highlight 🌟🌟
 
-* Mode now supports autonomous coding for OpenAI GPT models! This allows the model to write code without users having to manually approve or merge every single change. Over the course of the next few releases, we will be adding autonomous coding support to more models and features, starting with Anthropic.
+* Mode now supports autonomous coding! OpenAI and Anthropic models have it enabled by default. You can enable it for any model that can reliably return structured JSON outputs.
 
-![AutonomousCoding](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/AutoCode.gif)
+![AutonomousCoding](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/AutoCodeV2.gif)
 
 ## Why Mode?
 

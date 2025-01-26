@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.28] - 2025-01-26
+
+### Added
+- Anthropic models now support autocoding!
+- Added autocoding support as a configurable option, you can choose it for advanced models (that can return structured JSON output reliably) in the settings
+- Save user preferences for autocoding
+
+### Fixed
+- Switching between models now clears chat history to remove previous system prompts
+
+### Removed
+- Direct Cohere and Mistral support - haven't been able to get them to work reliably
+
 ## [1.0.27] - 2025-01-23
 
 ### Fixed
