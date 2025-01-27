@@ -12,17 +12,17 @@ Mode writes code automatically with no manual approval or merge steps. It lets y
 
 ### 🌟🌟 Weekly Highlight 🌟🌟
 
-* Mode now supports autonomous coding! OpenAI and Anthropic models have it enabled by default. You can enable it for any model that can reliably return structured JSON outputs.
+* Deepseek R1 and V3 support is here!
 
-![AutonomousCoding](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/AutoCodeV2.gif)
-
-## Why Mode?
-
-- **Personal and Powerful**: Mode connects directly to providers like Anthropic, OpenAI, Google, Mistral, and more&mdash;your code and interactions stay private. Since there's no middle layer, you can instantly upgrade to the latest models without relying on third-party tools to catch up or pay their upgrade fees.
-
-- **Built for the Enterprise**: Mode is purpose-built for developers who need configurability. You bring your own keys, making it easy to integrate with providers already approved in your organization. With no tracking or servers, Mode is ideal for secure environments that require data privacy and control.
+![Deepseek](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/DeepseekV3Demo.gif)
 
 ## Mode in Action
+
+### Autonomous coding
+
+Mode can code autonomously with OpenAI, Anthropic, and Deepseek models. You can also enable this for any model that can reliably return structured JSON outputs. Join our Reddit [thread](https://www.reddit.com/r/ChatGPTCoding/comments/1i6t40q/mode_launches_autonomous_coding/) or Discord to learn more.
+
+![AutonomousCoding](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/AutoCodeV2.gif)
 
 ### Chat
 Get instant help with understanding code, planning, and choosing the best approach.
@@ -54,6 +54,12 @@ Stay ahead with the latest: customize Mode by upgrading models as they’re rele
 Autocomplete is here! This experimental version is constantly improving—updates are rolling out daily!
 
 ![Autocomplete](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/Autocomplete.gif)
+
+## Why Mode?
+
+- **Personal and Powerful**: Mode connects directly to providers like Anthropic, OpenAI, Google, Mistral, and more&mdash;your code and interactions stay private. Since there's no middle layer, you can instantly upgrade to the latest models without relying on third-party tools to catch up or pay their upgrade fees.
+
+- **Built for the Enterprise**: Mode is purpose-built for developers who need configurability. You bring your own keys, making it easy to integrate with providers already approved in your organization. With no tracking or servers, Mode is ideal for secure environments that require data privacy and control.
 
 ## Be part of the journey!
 

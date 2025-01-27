@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.29] - 2025-01-26
+
+### Added
+- Deepsee models (V3 and R1) are now included by default
+
 ## [1.0.28] - 2025-01-26
 
 ### Added
