@@ -202,17 +202,13 @@
 							"name": "openrouter",
 							"models": [
 								{
-									"name": "anthropic/claude-3.5-haiku-20241022",
-									"displayName": "Claude 3.5 Haiku (OpenRouter)",
-									"autocomplete": true,
+									"name": "deepseek/deepseek-chat",
+									"displayName": "Deepseek V3 (OpenRouter)",
 									"autocoding": true
 								},
 								{
-									"name": "openai/o1"
-								},
-								{
-									"name": "x-ai/grok-2-1212",
-									"displayName": "Grok 2 (OpenRouter)"
+									"name": "deepseek/deepseek-r1",
+									"displayName": "DeepSeek R1 (OpenRouter)"
 								}
 							],
 							"visible": true
@@ -229,10 +225,6 @@
 									"name": "gemini-2.0-flash-thinking-exp",
 									"displayName": "Gemini 2.0 Flash Thinking",
 									"autocomplete": true
-								},
-								{
-									"name": "gemini-1.5-pro",
-									"displayName": "Gemini 1.5 Pro"
 								}
 							],
 							"visible": true
