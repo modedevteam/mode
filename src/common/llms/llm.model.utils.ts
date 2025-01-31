@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { AIClientConfig } from './llm.client';
+import type { AIClientConfig } from './clients/llm.client';
 import * as vscode from 'vscode';
 import { getProviders } from '../config.utils';
 import { ModelConfigMap, ModelInfo, ProviderConfig, PROVIDERS_CONFIG_KEY } from './llm.model';

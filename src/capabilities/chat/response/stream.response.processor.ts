@@ -38,16 +38,16 @@ export class StreamResponseProcessor {
         this.buffer += chunkText;
 
         // Check for explanation in accumulated buffer
-        if (this.buffer.includes('{"explanation":"') && !this.isCapturingExplanation) {
+        if (this.buffer.match(/{"explanation":(\s*)"/) && !this.isCapturingExplanation) {
             this.isCapturingExplanation = true;
             this.markdownRenderer.startMarkdownBlock();
-            this.buffer = this.buffer.replace('{"explanation":"', '');
+            this.buffer = this.buffer.replace(/{"explanation":(\s*)"/, '');
         }
 
         // Check for changes array in accumulated buffer
-        if (this.buffer.includes(',"changes":[') && !this.isCapturingChanges) {
+        if (this.buffer.match(/,(\s*)"changes"(\s*):(\s*)\[/) && !this.isCapturingChanges) {
             this.isCapturingChanges = true;
-            this.buffer = this.buffer.replace(',"changes":[', '');
+            this.buffer = this.buffer.replace(/,(\s*)"changes"(\s*):(\s*)\[/, '');
         }
 
         if (this.isCapturingExplanation) {

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { AIClientFactory } from './llm.client.factory';
+import { AIClientFactory } from './clients/llm.client.factory';
 
 export interface ApiKeyProvider {
     id: string;

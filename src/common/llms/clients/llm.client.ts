@@ -9,7 +9,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CohereClientV2 as Cohere } from 'cohere-ai';
 import { Mistral } from '@mistralai/mistralai';
 import { GoogleAIFileManager } from "@google/generative-ai/server";
-import { LLMChatParams } from './llm.chat.params';
+import { LLMChatParams } from '../llm.chat.params';
 
 export interface AIMessage {
     role: 'user' | 'assistant' | 'system';
@@ -149,6 +149,10 @@ export class AIClient {
         this.isCancelled = false;
         if (!this.anthropicClient) throw new Error('Anthropic client not initialized');
 
+        let fullText = '';
+        let currentToolCall: any = null;
+        let accumulatedArguments = '';
+
         const systemMessage = messages.find(msg => msg.role === 'system')?.content;
         const nonSystemMessages = messages
             .filter(msg => msg.role !== 'system')
@@ -161,14 +165,71 @@ export class AIClient {
                         : [{ type: 'text', text: msg.content as string }]
             }));
 
-        let fullText = '';
         const response = await this.anthropicClient.messages.create({
             model: this.model,
             system: systemMessage,
             messages: nonSystemMessages,
             max_tokens: 8192,
             stream: true,
-            temperature: LLMChatParams.temperature
+            temperature: LLMChatParams.temperature,
+            tool_choice: { type: "tool", name: "apply_file_changes" },
+            tools: [{
+                name: "apply_file_changes",
+                description: "Apply changes to files in the codebase",
+                input_schema: {
+                    type: "object",
+                    properties: {
+                        explanation: {
+                            type: "string",
+                            description: "Overall explanation of the changes being made"
+                        },
+                        changes: {
+                            type: "array",
+                            items: {
+                                type: "object",
+                                properties: {
+                                    filePath: {
+                                        type: "string",
+                                        description: "Path to the file being modified"
+                                    },
+                                    language: {
+                                        type: "string",
+                                        description: "Programming language of the file"
+                                    },
+                                    fileAction: {
+                                        type: "string",
+                                        enum: ["modify", "create", "delete", "rename"],
+                                        description: "Type of action to perform on the file"
+                                    },
+                                    updateAction: {
+                                        type: "string",
+                                        enum: ["replace", "delete"],
+                                        description: "Type of update to perform within the file"
+                                    },
+                                    searchContent: {
+                                        type: "string",
+                                        description: "Original code to be replaced (exact copy)"
+                                    },
+                                    replaceContent: {
+                                        type: "string",
+                                        description: "New code that will replace the search content (not required for delete actions)"
+                                    },
+                                    explanation: {
+                                        type: "string",
+                                        description: "Explanation of why this specific change is being made"
+                                    },
+                                    end_change: {
+                                        type: "string",
+                                        description: "End of the change block"
+                                    }
+                                },
+                                required: ["explanation", "searchContent", "replaceContent", "filePath", "language", "fileAction", "updateAction", "end_change"]
+                            }
+                        }
+                    },
+                    required: ["changes", "explanation"]
+                }
+            }]
         });
 
         try {
@@ -176,14 +237,62 @@ export class AIClient {
                 if (this.isCancelled) {
                     return fullText;
                 }
-                if (chunk.type === 'content_block_delta') {
-                    const text = chunk.delta?.type === 'text_delta' ? chunk.delta.text : '';
-                    if (text) {
-                        fullText += text;
-                        callbacks.onToken({
-                            type: 'text',
-                            content: text
-                        });
+
+                if (chunk.type === 'content_block_start') {
+                    // Start of a new content block - could be text or tool use
+                    if (chunk.content_block?.type === 'tool_use') {
+                        // End any previous tool call
+                        if (currentToolCall && accumulatedArguments) {
+                            callbacks.onToken({
+                                type: 'tool-complete',
+                                content: accumulatedArguments,
+                                toolCall: currentToolCall
+                            });
+                            callbacks.onToolCall?.(currentToolCall);
+                        }
+
+                        // Start new tool call
+                        currentToolCall = {
+                            id: chunk.content_block.id,
+                            type: 'function',
+                            function: {
+                                name: chunk.content_block.name,
+                                arguments: ''
+                            }
+                        };
+                        accumulatedArguments = '';
+                    }
+                } else if (chunk.type === 'content_block_delta') {
+                    if (chunk.delta?.type === 'text_delta') {
+                        // Handle text content
+                        const text = chunk.delta.text || '';
+                        if (text) {
+                            fullText += text;
+                            callbacks.onToken({
+                                type: 'text',
+                                content: text
+                            });
+                        }
+                    } else if (chunk.delta?.type === 'input_json_delta') {
+                        // Handle tool call arguments
+                        const args = chunk.delta.partial_json || '';
+                        if (args && currentToolCall) {
+                            accumulatedArguments += args;
+                            callbacks.onToken({
+                                type: 'tool',
+                                content: args,
+                                toolCall: currentToolCall
+                            });
+                        }
+                    }
+                } else if (chunk.type === 'content_block_stop') {
+                    // End of a content block
+                    if (currentToolCall && accumulatedArguments) {
+                        currentToolCall.function.arguments = accumulatedArguments;
+                        // don't call onToken here because the tool call is already processed
+                        callbacks.onToolCall?.(currentToolCall);
+                        currentToolCall = null;
+                        accumulatedArguments = '';
                     }
                 }
             }
@@ -193,6 +302,13 @@ export class AIClient {
             }
             throw error;
         }
+
+        // Handle any remaining tool call
+        if (currentToolCall && accumulatedArguments) {
+            currentToolCall.function.arguments = accumulatedArguments;
+            callbacks.onToolCall?.(currentToolCall);
+        }
+
         callbacks.onComplete(fullText);
         return fullText;
     }
@@ -339,11 +455,7 @@ export class AIClient {
                 if (chunk.choices[0]?.finish_reason === 'tool_calls') {
                     if (currentToolCall && accumulatedArguments) {
                         currentToolCall.function.arguments = accumulatedArguments;
-                        callbacks.onToken({
-                            type: 'tool-complete',
-                            content: accumulatedArguments,
-                            toolCall: currentToolCall
-                        });
+                        // don't call onToken here because the tool call is already processed
                         callbacks.onToolCall?.(currentToolCall);
                         currentToolCall = null;
                         accumulatedArguments = '';

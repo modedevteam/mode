@@ -17,8 +17,8 @@ import {
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { AIClientFactory } from '../../common/llms/llm.client.factory';
-import { AIClient, StreamToken } from '../../common/llms/llm.client';
+import { AIClientFactory } from '../../common/llms/clients/llm.client.factory';
+import { AIClient, StreamToken } from '../../common/llms/clients/llm.client';
 import { Logger, DEBUG_MODE } from './logging';
 
 // Create a connection for the server

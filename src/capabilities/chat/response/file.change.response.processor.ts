@@ -34,8 +34,8 @@ export class FileChangeResponseProcessor {
 		streaming?: boolean;
 	}> = {
 			filePath: {
-				prefix: '"filePath":"',
-				endPrefix: '","language":',
+				prefix: '"filePath":\\s*"',
+				endPrefix: '",\\s*"language":',
 				onStart: () => {
 					this.textProcessor.processLine(FILE_CHANGE_START);
 				},
@@ -46,8 +46,8 @@ export class FileChangeResponseProcessor {
 				}
 			},
 			language: {
-				prefix: '"language":"',
-				endPrefix: '","fileAction":',
+				prefix: '"language":\\s*"',
+				endPrefix: '",\\s*"fileAction":',
 				onStart: () => { },
 				onToken: () => {},
 				onEnd: (value: string) => {
@@ -55,22 +55,22 @@ export class FileChangeResponseProcessor {
 				}
 			},
 			fileAction: {
-				prefix: '"fileAction":"',
-				endPrefix: '","updateAction":',
+				prefix: '"fileAction":\\s*"',
+				endPrefix: '",\\s*"updateAction":',
 				onStart: () => { },
 				onToken: () => { },
 				onEnd: () => { }
 			},
 			updateAction: {
-				prefix: '"updateAction":"',
-				endPrefix: '","searchContent":',
+				prefix: '"updateAction":\\s*"',
+				endPrefix: '",\\s*"searchContent":',
 				onStart: () => { },
 				onToken: () => { },
 				onEnd: () => { }
 			},
 			searchContent: {
-				prefix: '"searchContent":"',
-				endPrefix: '","replaceContent":',
+				prefix: '"searchContent":\\s*"',
+				endPrefix: '",\\s*"replaceContent":',
 				onStart: () => {
 					this.textProcessor.processLine(SEARCH_START);
 				},
@@ -83,8 +83,8 @@ export class FileChangeResponseProcessor {
 				}
 			},
 			replaceContent: {
-				prefix: '"replaceContent":"',
-				endPrefix: '","explanation":',
+				prefix: '"replaceContent":\\s*"',
+				endPrefix: '",\\s*"explanation":',
 				streaming: true,
 				onStart: (value) => {
 					this.textProcessor.processLine(REPLACE_START);
@@ -100,7 +100,7 @@ export class FileChangeResponseProcessor {
 						true // codeStreaming
 					);
 				},
-				onEnd: (value) => {
+				onEnd: (value: string) => {
 					this.textProcessor.processLine(REPLACE_END,
 						/* codeStreaming = */ true,
 						/* finalCodeBlock = */ value
@@ -120,8 +120,8 @@ export class FileChangeResponseProcessor {
 				}
 			},
 			explanation: {
-				prefix: '"explanation":"',
-				endPrefix: '","end_change":',
+				prefix: '"explanation":\\s*"',
+				endPrefix: '",\\s*"end_change":',
 				streaming: true,
 				onStart: () => {
 					this.markdownRenderer.startMarkdownBlock();
@@ -138,7 +138,7 @@ export class FileChangeResponseProcessor {
 			},
 			end_change: {
 				// This token is just a delimiter to mark the end of a change block - no processing needed
-				prefix: '"end_change":"',
+				prefix: '"end_change":\\s*"',
 				endPrefix: '"',
 				onStart: () => { },
 				onToken: (value: string) => { },
@@ -158,8 +158,10 @@ export class FileChangeResponseProcessor {
 
 	private processTokenStart(token: string): boolean {
 		for (const [type, config] of Object.entries(this.tokenTypes)) {
-			if (this.buffer.includes(config.prefix)) {
-				const start = this.buffer.indexOf(config.prefix) + config.prefix.length;
+			const regex = new RegExp(config.prefix);
+			const match = this.buffer.match(regex);
+			if (match) {
+				const start = match.index! + match[0].length;
 				const initialValue = this.buffer.substring(start);
 				this.buffer = this.buffer.substring(start);
 				this.currentToken = { type, value: initialValue };
@@ -189,8 +191,11 @@ export class FileChangeResponseProcessor {
 				config.onToken?.(token, this.currentToken.value);
 			}
 
-			if (this.currentToken.value.includes(config.endPrefix)) {
-				const endIndex = this.currentToken.value.indexOf(config.endPrefix);
+			const endRegex = new RegExp(config.endPrefix);
+			const endMatch = this.currentToken.value.match(endRegex);
+			
+			if (endMatch) {
+				const endIndex = endMatch.index!;
 
 				// Only parse and call onEnd for non-streaming types
 				if (!config.streaming) {

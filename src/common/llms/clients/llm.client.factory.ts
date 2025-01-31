@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AIClient, AIClientConfig } from './llm.client';
+import { AIClient, AIClientConfig } from '../clients/llm.client';
 
 export class AIClientFactory {
     private static instances: Map<string, AIClient> = new Map();

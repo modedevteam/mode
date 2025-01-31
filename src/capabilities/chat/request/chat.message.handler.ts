@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { AIMessage, StreamToken } from '../../../common/llms/llm.client';
+import { AIMessage, StreamToken } from '../../../common/llms/clients/llm.client';
 import MarkdownIt from 'markdown-it';
 import { TextResponseProcessor } from '../response/text.response.processor';
-import { AIClient } from '../../../common/llms/llm.client';
+import { AIClient } from '../../../common/llms/clients/llm.client';
 import { formatFileContent } from '../../../common/rendering/llm.translation.utils';
 import { ChatSessionManager } from './chat.session.handler';
 import { HIGHLIGHTED_CODE_START, HIGHLIGHTED_CODE_END, CURRENT_FILE_PATH_START, CURRENT_FILE_PATH_END } from '../../../common/llms/llm.prompt';
