@@ -167,7 +167,8 @@ export class ChatMessageHandler {
 			if (this.toolCalls.length > 0) {
 				this.sessionManager.getCurrentSession().messages.push({
 					role: "assistant",
-					content: this.toolCalls,
+					content: JSON.stringify(this.toolCalls),
+					params: this.toolCalls,
 					name: "Mode.FunctionCall"
 				});
 			}

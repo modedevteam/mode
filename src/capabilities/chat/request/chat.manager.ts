@@ -182,17 +182,16 @@ export class ChatManager {
 							}
 							this._view.webview.postMessage({ command: 'chatStream', action: 'endStream' });
 						}
-					} else if (message.name === 'Mode.AutoCoding' || message.name === 'Mode.FunctionCall') {
-
+					} else if (message.name === 'Mode.FunctionCall') {
 						// we parse both auto coding and function calls the same way
 						let parsedArgs: any;
-						if (message.name === 'Mode.AutoCoding') {
-							parsedArgs = JSON.parse(sanitizeJsonString(message.content as string));
-						} else {
-							for (const toolCall of message.content as any[]) {
-								if (toolCall.function.name === 'apply_file_changes') {
-									parsedArgs = toolCall.function.arguments;
-								}
+
+						for (const toolCall of message.params as any[]) {
+							if (toolCall.function.name === 'apply_file_changes') {
+								// Parse the arguments if they're a string, otherwise use as-is
+								parsedArgs = typeof toolCall.function.arguments === 'string' 
+									? JSON.parse(sanitizeJsonString(toolCall.function.arguments))
+									: toolCall.function.arguments;
 							}
 						}
 
@@ -203,7 +202,6 @@ export class ChatManager {
 						this._view.webview.postMessage({ command: 'chatStream', action: 'startStream' });
 						displayFileChanges(parsedArgs, textProcessor, markdownRenderer);
 						this._view.webview.postMessage({ command: 'chatStream', action: 'endStream' });
-
 					}
 				}
 			});

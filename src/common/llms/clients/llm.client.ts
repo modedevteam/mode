@@ -17,6 +17,7 @@ export interface AIMessage {
     content: string | Array<any>;
     name?: string;
     type?: 'image';
+    params?: any;
 }
 
 export interface AIClientConfig {
