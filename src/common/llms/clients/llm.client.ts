@@ -243,11 +243,7 @@ export class AIClient {
                     if (chunk.content_block?.type === 'tool_use') {
                         // End any previous tool call
                         if (currentToolCall && accumulatedArguments) {
-                            callbacks.onToken({
-                                type: 'tool-complete',
-                                content: accumulatedArguments,
-                                toolCall: currentToolCall
-                            });
+                            // don't call onToken here because the tool call is already processed
                             callbacks.onToolCall?.(currentToolCall);
                         }
 
@@ -411,11 +407,7 @@ export class AIClient {
                     if (toolCall.id || toolCall.function?.name) {
                         // End any previous tool call
                         if (currentToolCall && accumulatedArguments) {
-                            callbacks.onToken({
-                                type: 'tool-complete',
-                                content: accumulatedArguments,
-                                toolCall: currentToolCall
-                            });
+                            // don't call onToken here because the tool call is already processed
                             callbacks.onToolCall?.(currentToolCall);
                         }
                         
