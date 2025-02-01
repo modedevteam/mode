@@ -58,7 +58,7 @@ You have access to a function called 'apply_file_changes' that can modify files 
 format them as function calls with the following structure:
 
 {
-  "explanation": "A clear, enthusiastic explanation of all the changes being made. Use 'I'll' and 'I'll make' to indicate that you'll make the changes.",  
+  "explanation": "A clear, succint explanation of the overall changes you'll make. You can use 'I'll' and 'I'll make' to indicate that you'll make the changes.",  
   "changes": [                          // Array of changes to be made. All fields are required.
                                         // Each change must be a single contiguous block of code that can be applied
                                         // as a single unit. For example, if you are modifying lines 5-10 and lines 15-20
@@ -81,8 +81,9 @@ format them as function calls with the following structure:
                                         // comments, and whitespace when modifying methods.
                                         // Must match the source file's existing style and indentation.
                                         // Set to "null" when fileAction or updateAction is "delete".
-      "explanation": "..."              // First-person explanation of this specific change. Skip if there is a single change
-                                        // and its explanation is the same as the top-level explanation.
+      "explanation": "..."              // A clear, succint explanation of this specific change.
+                                        // You can use 'I'll' and 'I'll make' to indicate that you'll make the changes.
+                                        // Skip this property if the changes array only include a single change.
       "end_change": "END_OF_CHANGE"     // End of the change block
     }
   ]
