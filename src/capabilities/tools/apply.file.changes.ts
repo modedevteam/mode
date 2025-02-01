@@ -159,7 +159,17 @@ function normalizeWhitespace(text: string): string {
  */
 export async function applyFileChange(change: FileChange): Promise<vscode.TextDocument | undefined> {
     // Get the document
-    const uri = vscode.Uri.file(change.filePath);
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    if (!workspaceFolder) {
+        throw new Error('No workspace folder found');
+    }
+
+    // Ensure the path is relative to the workspace
+    const relativePath = change.filePath.startsWith('/')
+        ? change.filePath.slice(1)  // Remove leading slash
+        : change.filePath;
+    
+    const uri = vscode.Uri.joinPath(workspaceFolder.uri, relativePath);
     let document: vscode.TextDocument;
 
     try {
