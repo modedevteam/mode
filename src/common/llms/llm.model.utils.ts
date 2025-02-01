@@ -160,6 +160,7 @@ export class AIModelUtils {
     //#endregion
 
     public static supportsToolUsage(modelKey: string): boolean {
-        return modelKey.toLowerCase().includes('gpt');
+        const modelKey_lower = modelKey.toLowerCase();
+        return modelKey_lower.includes('gpt') || modelKey_lower.includes('claude');
     }
 } 
