@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.30] - 2025-02-01
+
+### Added
+- Added tool use for Anthropic models
+
+### Fixed
+- Removed redundant explanation for single user
+
 ## [1.0.29] - 2025-01-26
 
 ### Added
