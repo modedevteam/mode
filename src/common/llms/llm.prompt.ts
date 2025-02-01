@@ -143,8 +143,9 @@ Output Format:
                                         // comments, and whitespace when modifying methods.
                                         // Must match the source file's existing style and indentation.
                                         // Set to "null" when fileAction or updateAction is "delete".
-      "explanation": "..."              // First-person explanation of this specific change. Must be different from the
-                                        // top-level explanation and explanations of other changes.
+      "explanation": "..."              // A clear, succint explanation of this specific change.
+                                        // You can use 'I'll' and 'I'll make' to indicate that you'll make the changes.
+                                        // Skip this property if the changes array only include a single change.
       "end_change": "END_OF_CHANGE"     // End of the change block
     }
   ]

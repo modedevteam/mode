@@ -1,12 +1,10 @@
 # Changelog
 
-## [1.0.30] - 2025-02-01
-
-### Added
-- Added tool use for Anthropic models
+## [1.0.31] - 2025-02-02
 
 ### Fixed
-- Removed redundant explanation for single user
+- Make explanations more succint
+- Improve how tool calls are rendered in chat history
 
 ## [1.0.29] - 2025-01-26
 

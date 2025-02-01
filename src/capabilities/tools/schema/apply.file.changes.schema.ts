@@ -33,20 +33,20 @@ export const anthropicFileChangesTool = {
                         },
                         updateAction: {
                             type: "string",
-                            enum: ["replace", "delete"],
+                            enum: ["update", "replace", "delete"],
                             description: "Type of update to perform within the file"
                         },
                         searchContent: {
                             type: "string",
-                            description: "Original code to be replaced (exact copy)"
+                            description: "The exact code segment (or file name) to be replaced - MUST match the source file lines precisely and include the entire method/function with decorators, comments, and whitespace when modifying methods. Set to 'null' when fileAction is 'create'."
                         },
                         replaceContent: {
                             type: "string",
-                            description: "New code that will replace the search content (not required for delete actions)"
+                            description: "New code (or file name) to replace it. Must include the entire method/function with decorators, comments, and whitespace when modifying methods. Must match the source file's existing style and indentation. Set to 'null' when fileAction or updateAction is 'delete'."
                         },
                         explanation: {
                             type: "string",
-                            description: "Explanation of why this specific change is being made"
+                            description: "A clear, succinct explanation of this specific change. Skip this property if the changes array only includes a single change."
                         },
                         end_change: {
                             type: "string",
@@ -93,20 +93,20 @@ export const openaiFileChangesTool = {
 							},
 							updateAction: {
 								type: "string",
-								enum: ["replace", "delete"],
+								enum: ["update", "replace", "delete"],
 								description: "Type of update to perform within the file"
 							},
 							searchContent: {
 								type: "string",
-								description: "Original code to be replaced (exact copy)"
+								description: "The exact code segment (or file name) to be replaced - MUST match the source file lines precisely and include the entire method/function with decorators, comments, and whitespace when modifying methods. Set to 'null' when fileAction is 'create'."
 							},
 							replaceContent: {
 								type: "string",
-								description: "New code that will replace the search content (not required for delete actions)"
+								description: "New code (or file name) to replace it. Must include the entire method/function with decorators, comments, and whitespace when modifying methods. Must match the source file's existing style and indentation. Set to 'null' when fileAction or updateAction is 'delete'."
 							},
 							explanation: {
 								type: "string",
-								description: "Explanation of why this specific change is being made"
+								description: "A clear, succinct explanation of this specific change. Skip this property if the changes array only includes a single change."
 							},
 							end_change: {
 								type: "string",
