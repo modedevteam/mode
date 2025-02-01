@@ -10,6 +10,7 @@ import { CohereClientV2 as Cohere } from 'cohere-ai';
 import { Mistral } from '@mistralai/mistralai';
 import { GoogleAIFileManager } from "@google/generative-ai/server";
 import { LLMChatParams } from '../llm.chat.params';
+import { anthropicFileChangesTool, openaiFileChangesTool } from '../../../capabilities/tools/schema/apply.file.changes.schema';
 
 export interface AIMessage {
     role: 'user' | 'assistant' | 'system';
@@ -173,63 +174,7 @@ export class AIClient {
             stream: true,
             temperature: LLMChatParams.temperature,
             tool_choice: { type: "tool", name: "apply_file_changes" },
-            tools: [{
-                name: "apply_file_changes",
-                description: "Apply changes to files in the codebase",
-                input_schema: {
-                    type: "object",
-                    properties: {
-                        explanation: {
-                            type: "string",
-                            description: "Overall explanation of the changes being made"
-                        },
-                        changes: {
-                            type: "array",
-                            items: {
-                                type: "object",
-                                properties: {
-                                    filePath: {
-                                        type: "string",
-                                        description: "Path to the file being modified"
-                                    },
-                                    language: {
-                                        type: "string",
-                                        description: "Programming language of the file"
-                                    },
-                                    fileAction: {
-                                        type: "string",
-                                        enum: ["modify", "create", "delete", "rename"],
-                                        description: "Type of action to perform on the file"
-                                    },
-                                    updateAction: {
-                                        type: "string",
-                                        enum: ["replace", "delete"],
-                                        description: "Type of update to perform within the file"
-                                    },
-                                    searchContent: {
-                                        type: "string",
-                                        description: "Original code to be replaced (exact copy)"
-                                    },
-                                    replaceContent: {
-                                        type: "string",
-                                        description: "New code that will replace the search content (not required for delete actions)"
-                                    },
-                                    explanation: {
-                                        type: "string",
-                                        description: "Explanation of why this specific change is being made"
-                                    },
-                                    end_change: {
-                                        type: "string",
-                                        description: "End of the change block"
-                                    }
-                                },
-                                required: ["searchContent", "replaceContent", "filePath", "language", "fileAction", "updateAction", "end_change"]
-                            }
-                        }
-                    },
-                    required: ["changes", "explanation"]
-                }
-            }]
+            tools: [anthropicFileChangesTool]
         });
 
         try {
@@ -331,66 +276,7 @@ export class AIClient {
             stream: true,
             temperature: this.model.startsWith('o') ? 1 : LLMChatParams.temperature,
             tool_choice: { type: "function", function: { name: "apply_file_changes" } },
-            tools: [{
-                type: "function",
-                function: {
-                    name: "apply_file_changes",
-                    description: "Apply changes to files in the codebase",
-                    parameters: {
-                        type: "object",
-                        properties: {
-                            explanation: {
-                                type: "string",
-                                description: "Overall explanation of the changes being made"
-                            },
-                            changes: {
-                                type: "array",
-                                items: {
-                                    type: "object",
-                                    properties: {
-                                        filePath: {
-                                            type: "string",
-                                            description: "Path to the file being modified"
-                                        },
-                                        language: {
-                                            type: "string",
-                                            description: "Programming language of the file"
-                                        },
-                                        fileAction: {
-                                            type: "string",
-                                            enum: ["modify", "create", "delete", "rename"],
-                                            description: "Type of action to perform on the file"
-                                        },
-                                        updateAction: {
-                                            type: "string",
-                                            enum: ["replace", "delete"],
-                                            description: "Type of update to perform within the file"
-                                        },
-                                        searchContent: {
-                                            type: "string",
-                                            description: "Original code to be replaced (exact copy)"
-                                        },
-                                        replaceContent: {
-                                            type: "string",
-                                            description: "New code that will replace the search content (not required for delete actions)"
-                                        },
-                                        explanation: {
-                                            type: "string",
-                                            description: "Explanation of why this specific change is being made"
-                                        },
-                                        end_change: {
-                                            type: "string",
-                                            description: "End of the change block"
-                                        }
-                                    },
-                                    required: ["searchContent", "replaceContent", "filePath", "language", "fileAction", "updateAction", "end_change"]
-                                }
-                            }
-                        },
-                        required: ["changes", "explanation"]
-                    }
-                }
-            }]
+            tools: [openaiFileChangesTool]
         }) as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
 
         try {
