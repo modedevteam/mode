@@ -164,12 +164,21 @@ export async function applyFileChange(change: FileChange): Promise<vscode.TextDo
         throw new Error('No workspace folder found');
     }
 
-    // Ensure the path is relative to the workspace
-    const relativePath = change.filePath.startsWith('/')
-        ? change.filePath.slice(1)  // Remove leading slash
-        : change.filePath;
+    // Get workspace path and ensure it doesn't have trailing slash
+    const workspacePath = workspaceFolder.uri.fsPath.replace(/[/\\]$/, '');
     
+    // Remove any instances of the workspace path from the file path
+    let relativePath = change.filePath;
+    while (relativePath.includes(workspacePath)) {
+        relativePath = relativePath.replace(workspacePath, '');
+    }
+    
+    // Clean up the path by removing leading slashes and drive letters
+    relativePath = relativePath.replace(/^[/\\]+/, '').replace(/^[A-Z]:/, '');
+    
+    // Create URI directly from workspace and relative path
     const uri = vscode.Uri.joinPath(workspaceFolder.uri, relativePath);
+
     let document: vscode.TextDocument;
 
     try {
