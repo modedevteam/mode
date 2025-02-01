@@ -84,7 +84,7 @@ export class FileChangeResponseProcessor {
 			},
 			replaceContent: {
 				prefix: '"replaceContent":\\s*"',
-				endPrefix: '",\\s*"explanation":',
+				endPrefix: '",(?:\\s*"explanation":|\\s*"end_change":)',
 				streaming: true,
 				onStart: (value) => {
 					this.textProcessor.processLine(REPLACE_START);

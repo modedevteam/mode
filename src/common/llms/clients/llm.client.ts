@@ -223,7 +223,7 @@ export class AIClient {
                                         description: "End of the change block"
                                     }
                                 },
-                                required: ["explanation", "searchContent", "replaceContent", "filePath", "language", "fileAction", "updateAction", "end_change"]
+                                required: ["searchContent", "replaceContent", "filePath", "language", "fileAction", "updateAction", "end_change"]
                             }
                         }
                     },
@@ -383,7 +383,7 @@ export class AIClient {
                                             description: "End of the change block"
                                         }
                                     },
-                                    required: ["explanation", "searchContent", "replaceContent", "filePath", "language", "fileAction", "updateAction", "end_change"]
+                                    required: ["searchContent", "replaceContent", "filePath", "language", "fileAction", "updateAction", "end_change"]
                                 }
                             }
                         },

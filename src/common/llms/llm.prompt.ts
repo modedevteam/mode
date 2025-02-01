@@ -81,8 +81,8 @@ format them as function calls with the following structure:
                                         // comments, and whitespace when modifying methods.
                                         // Must match the source file's existing style and indentation.
                                         // Set to "null" when fileAction or updateAction is "delete".
-      "explanation": "..."              // First-person explanation of this specific change. Must be different from the
-                                        // top-level explanation and explanations of other changes.
+      "explanation": "..."              // First-person explanation of this specific change. Skip if there is a single change
+                                        // and its explanation is the same as the top-level explanation.
       "end_change": "END_OF_CHANGE"     // End of the change block
     }
   ]
