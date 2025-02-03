@@ -8,7 +8,7 @@ import MarkdownIt from 'markdown-it';
 import { ChatSessionManager } from './chat.session.handler';
 import { ChatMessageHandler } from './chat.message.handler';
 import { AIClientFactory } from '../../../common/llms/clients/llm.client.factory';
-import { AIClient, AIMessage, StreamToken } from '../../../common/llms/clients/llm.client';
+import { AIClient, AIMessage } from '../../../common/llms/clients/llm.client';
 import { AIModelUtils } from '../../../common/llms/llm.model.utils';
 import { TextResponseProcessor } from '../response/text.response.processor';
 import { ApiKeyManager } from '../../../common/llms/llm.api.key.manager';
@@ -121,7 +121,7 @@ export class ChatManager {
 			this.md,
 			this.sessionManager
 		);
-		await this.currentHandler.handleMessage(message, images, codeSnippets, fileUrls, currentFilePath, autoCodingEnabled, AIModelUtils.supportsAutocoding(selectedModel));
+		await this.currentHandler.handleMessage(message, images, codeSnippets, fileUrls, currentFilePath, autoCodingEnabled, AIModelUtils.supportsAutocoding(selectedModel), selectedModel);
 		this.sessionManager.saveSessions();
 
 		// Generate overview

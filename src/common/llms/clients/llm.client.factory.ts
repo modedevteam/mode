@@ -3,8 +3,9 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as vscode from 'vscode';
 import { AIClient, AIClientConfig } from '../clients/llm.client';
-
+import { ApiKeyManager } from '../llm.api.key.manager';
 export class AIClientFactory {
     private static instances: Map<string, AIClient> = new Map();
 
@@ -18,12 +19,9 @@ export class AIClientFactory {
     ): Promise<{ success: boolean; message?: string; client?: AIClient }> {
         const instanceKey = `${provider}-${model || 'default'}`;
 
-        // Validate API key is provided for non-local providers
-        if (provider.toLowerCase() !== 'local' && !apiKey) {
-            return {
-                success: false,
-                message: `apikey.${provider}.missing`
-            };
+        const validationResult = ApiKeyManager.validateApiKey(provider, apiKey);
+        if (!validationResult.success) {
+            return { success: false, message: validationResult.message };
         }
 
         // Return existing instance if available

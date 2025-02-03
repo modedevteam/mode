@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { AIMessage, StreamToken } from '../../../common/llms/clients/llm.client';
+import { AIMessage } from '../../../common/llms/clients/llm.client';
 import MarkdownIt from 'markdown-it';
 import { TextResponseProcessor } from '../response/text.response.processor';
 import { AIClient } from '../../../common/llms/clients/llm.client';
@@ -44,7 +44,8 @@ export class ChatMessageHandler {
 		fileUrls: string[] = [],
 		currentFilePath: string | null = null,
 		applyChanges: boolean,
-		supportsAutocoding: boolean
+		supportsAutocoding: boolean,
+		selectedModel: string
 	): Promise<void> {
 		try {
 			this.isCancelled = false;
@@ -148,7 +149,8 @@ export class ChatMessageHandler {
 					this.autoCodingStreamProcessor.endStream();
 				}
 			},
-				supportsAutocoding);
+				supportsAutocoding,
+				selectedModel);
 
 			// if autocoding is enabled, apply the file changes
 			if (applyChanges) {

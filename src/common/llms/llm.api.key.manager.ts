@@ -15,6 +15,8 @@ export interface ApiKeyProvider {
 }
 
 export class ApiKeyManager {
+
+    private static readonly LOCAL_PROVIDERS: string[] = ['local', 'copilot'];
     private static readonly API_PROVIDERS: ApiKeyProvider[] = [
         {
             id: 'openai',
@@ -60,7 +62,7 @@ export class ApiKeyManager {
         }
     ];
 
-    constructor(private readonly context: vscode.ExtensionContext) {}
+    constructor(private readonly context: vscode.ExtensionContext) { }
 
     public registerCommands(): vscode.Disposable[] {
         return [
@@ -185,7 +187,7 @@ export class ApiKeyManager {
 
     public async getApiKey(providerId: string): Promise<string | undefined> {
         // We don't need an API key for the local provider
-        if (providerId.toLowerCase() === 'local') {
+        if (ApiKeyManager.LOCAL_PROVIDERS.includes(providerId.toLowerCase())) {
             return undefined;
         }
 
@@ -196,5 +198,17 @@ export class ApiKeyManager {
 
         // Try to get the key from secrets storage
         return await this.context.secrets.get(provider.secretKey);
+    }
+
+    // Validate API key is provided for non-local providers
+    public static validateApiKey(provider: string, apiKey: string | undefined): { success: boolean; message: string } {
+        const isLocalProvider = ApiKeyManager.LOCAL_PROVIDERS.includes(provider.toLowerCase());
+        if (!isLocalProvider && !apiKey) {
+            return {
+                success: false,
+                message: `apikey.${provider}.missing`
+            };
+        }
+        return { success: true, message: '' };
     }
 } 

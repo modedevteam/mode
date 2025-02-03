@@ -160,7 +160,12 @@ export class AIModelUtils {
     //#endregion
 
     public static supportsToolUsage(modelKey: string): boolean {
+        const modelInfo = this.getModelInfoFromConfig(modelKey);
+        if (!modelInfo) return false;
+        
+        const provider_lower = modelInfo.provider.toLowerCase();
         const modelKey_lower = modelKey.toLowerCase();
-        return modelKey_lower.includes('gpt') || modelKey_lower.includes('claude');
+        
+        return provider_lower === 'openai' && modelKey_lower.includes('gpt');
     }
 } 

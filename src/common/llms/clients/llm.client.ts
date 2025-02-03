@@ -11,6 +11,8 @@ import { Mistral } from '@mistralai/mistralai';
 import { GoogleAIFileManager } from "@google/generative-ai/server";
 import { LLMChatParams } from '../llm.chat.params';
 import { anthropicFileChangesTool, openaiFileChangesTool } from '../../../capabilities/tools/schema/apply.file.changes.schema';
+import { CopilotLanguageModelAPIClient } from './copilot';
+
 
 export interface AIMessage {
     role: 'user' | 'assistant' | 'system';
@@ -45,6 +47,7 @@ export class AIClient {
     private googleClient?: GoogleGenerativeAI;
     private cohereClient?: Cohere;
     private mistralClient?: Mistral;
+    private copilot?: CopilotLanguageModelAPIClient;
     private provider: string;
     private model!: string;
     private isCancelled = false;
@@ -91,6 +94,10 @@ export class AIClient {
                 });
                 this.model = config.model;
                 break;
+            case 'copilot':
+                this.copilot = new CopilotLanguageModelAPIClient();
+                this.model = config.model;
+                break;
         }
     }
 
@@ -110,7 +117,12 @@ export class AIClient {
         });
     }
 
-    async chat(messages: AIMessage[], callbacks: StreamCallbacks, auto: boolean = false): Promise<string> {
+    async chat(
+        messages: AIMessage[],
+        callbacks: StreamCallbacks,
+        auto: boolean = false,
+        model: string = this.model
+    ): Promise<string> {
         try {
             const filteredMessages = this.filterDiagnosticMessages(messages);
 
@@ -134,6 +146,8 @@ export class AIClient {
                     return this.openaiChat(filteredMessages, callbacks);
                 case 'openrouter':
                     return this.openaiChat(filteredMessages, callbacks);
+                case 'copilot':
+                    return this.copilot!.chat(model, filteredMessages, callbacks);
                 default:
                     throw new Error(`Unsupported provider: ${this.provider}`);
             }

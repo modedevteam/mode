@@ -123,7 +123,8 @@
 									"anthropic",
 									"openrouter",
 									"google",
-									"local"
+									"local",
+									"copilot"
 								]
 							},
 							"models": {
@@ -172,16 +173,40 @@
 					},
 					"default": [
 						{
-							"name": "openai",
+							"name": "copilot",
 							"models": [
 								{
 									"name": "gpt-4o",
-									"displayName": "GPT-4o",
+									"displayName": "GPT-4o (Copilot)",
 									"vision": true,
 									"autocoding": true
 								},
 								{
-									"name": "o1"
+									"name": "gpt-4o-mini",
+									"displayName": "GPT-4o Mini (Copilot)",
+									"vision": true,
+									"autocoding": true
+								},
+								{
+									"name": "o3-mini",
+									"displayName": "o3-mini (Copilot)",
+									"vision": true,
+									"autocoding": true
+								},
+								{
+									"name": "claude-3.5-sonnet",
+									"displayName": "Claude 3.5 Sonnet (Copilot)",
+									"vision": true,
+									"autocoding": true
+								}
+							],
+							"visible": true
+						},
+						{
+							"name": "openai",
+							"models": [
+								{
+									"name": "o1 (OpenAI)"
 								}
 							],
 							"visible": true
@@ -191,7 +216,7 @@
 							"models": [
 								{
 									"name": "claude-3-5-sonnet-latest",
-									"displayName": "Claude 3.5 Sonnet",
+									"displayName": "Claude 3.5 Sonnet (Anthropic)",
 									"vision": true,
 									"autocoding": true
 								}
@@ -218,12 +243,12 @@
 							"models": [
 								{
 									"name": "gemini-2.0-flash-exp",
-									"displayName": "Gemini 2.0 Flash",
+									"displayName": "Gemini 2.0 Flash (Google)",
 									"autocomplete": true
 								},
 								{
 									"name": "gemini-2.0-flash-thinking-exp",
-									"displayName": "Gemini 2.0 Flash Thinking",
+									"displayName": "Gemini 2.0 Flash Thinking (Google)",
 									"autocomplete": true
 								}
 							],
