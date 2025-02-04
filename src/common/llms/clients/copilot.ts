@@ -64,10 +64,16 @@ export class CopilotLanguageModelAPIClient {
 			// Select the model
             const [selectedModel] = await vscode.lm.selectChatModels({
 				vendor: 'copilot',
-				family: model,
+				family: model.replace('copilot/', ''),
             });
 
             if (!selectedModel) {
+                const infoMessage = 
+                    'Welcome! To use Copilot models with Mode, please install GitHub Copilot from the VS Code marketplace, sign in to your GitHub account to activate Copilot, and return to Mode to try again. Need help? Visit our Discord server or our Github.';
+                
+                // Show warning popup
+                void vscode.window.showInformationMessage(infoMessage);
+                
                 throw new Error(`Model ${model} not available`);
             }
 
@@ -127,10 +133,23 @@ export class CopilotLanguageModelAPIClient {
             callbacks.onComplete(fullResponse);
             return fullResponse;
         } catch (err) {
+            let publishWarning = false;
             if (err instanceof vscode.LanguageModelError) {
+                if (err.code.startsWith('400')) {
+                    publishWarning = true;
+                }
                 console.error(`Language Model Error: ${err.message} (${err.code})`);
             } else {
-                console.error(err instanceof Error ? err : String(err));
+                const errString = String(err);
+                if (errString.includes('400 Bad Request')) {
+                    publishWarning = true;
+                }
+                console.error(err instanceof Error ? err : errString);
+            }
+            if (publishWarning) {
+                const warningMessage = 
+                    'This request could not be completed. This may be because the model is restricted to a higher tier. Please verify your access or try a different model.';
+                void vscode.window.showWarningMessage(warningMessage);
             }
             throw err;
         }
