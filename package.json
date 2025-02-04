@@ -2,7 +2,7 @@
 	"name": "mode",
 	"displayName": "Mode: Superhuman coding without compromise",
 	"description": "Personal and autonomous coding agent that lets you code, refactor, fix issues, and build apps—all with a single prompt. No third-party servers, token limits, or hidden upgrade fees.",
-	"version": "1.0.31",
+	"version": "1.0.32",
 	"publisher": "aruna-labs",
 	"license": "MIT",
 	"homepage": "https://www.getmode.dev",
@@ -174,27 +174,28 @@
 					"default": [
 						{
 							"name": "copilot",
+							"markdownDescription": "Copilot models are provided by Github Copilot. The prefix `copilot/` is needed to avoid conflicts with other providers.",
 							"models": [
 								{
-									"name": "gpt-4o",
+									"name": "copilot/gpt-4o",
 									"displayName": "GPT-4o (Copilot)",
 									"vision": true,
 									"autocoding": true
 								},
 								{
-									"name": "gpt-4o-mini",
+									"name": "copilot/gpt-4o-mini",
 									"displayName": "GPT-4o Mini (Copilot)",
 									"vision": true,
 									"autocoding": true
 								},
 								{
-									"name": "o3-mini",
+									"name": "copilot/o3-mini",
 									"displayName": "o3-mini (Copilot)",
 									"vision": true,
 									"autocoding": true
 								},
 								{
-									"name": "claude-3.5-sonnet",
+									"name": "copilot/claude-3.5-sonnet",
 									"displayName": "Claude 3.5 Sonnet (Copilot)",
 									"vision": true,
 									"autocoding": true
@@ -205,6 +206,12 @@
 						{
 							"name": "openai",
 							"models": [
+								{
+									"name": "gpt-4o",
+									"displayName": "GPT-4o (OpenAI)",
+									"vision": true,
+									"autocoding": true
+								},
 								{
 									"name": "o1 (OpenAI)"
 								}

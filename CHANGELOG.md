@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.32] - 2025-02-04
+
+### Added
+- Added support for Github Copilot models
+
 ## [1.0.31] - 2025-02-02
 
 ### Fixed

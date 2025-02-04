@@ -12,6 +12,10 @@ Mode writes code automatically with no manual approval or merge steps. It lets y
 
 ### 🌟🌟 Weekly Highlight 🌟🌟
 
+* **New: GitHub Copilot Integration!** Mode now supports GitHub Copilot's language models through the [VS Code Language Model API](https://code.visualstudio.com/api/extension-guides/language-model). If you have a GitHub Copilot subscription, you can make unlimited Mode requests without any additional API keys or setup.
+
+![Copilot](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/CopilotModels.gif)
+
 * Deepseek R1 and V3 support is here!
 
 ![Deepseek](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/DeepseekV3Demo.gif)
@@ -45,7 +49,7 @@ Quickly resolve issues with intelligent debugging support.
 ![Debug](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/Context.gif)
 
 ### Easy Upgrades
-Stay ahead with the latest: customize Mode by upgrading models as they’re released, without waiting on us.
+Stay ahead with the latest: customize Mode by upgrading models as they're released, without waiting on us.
 
 ![AdjustModels](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/AdjustModels.gif)
 
