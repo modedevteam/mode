@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.33] - 2025-02-05
+
+### Added
+- Telemetry
+
+### Removed
+- Unnecessary logging (mode.log)
+
 ## [1.0.32] - 2025-02-04
 
 ### Added
