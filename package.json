@@ -335,18 +335,6 @@
 						"**/.cache/**"
 					],
 					"description": "Patterns to exclude when searching for source files"
-				},
-				"mode.logging.enabled": {
-					"order": 7,
-					"type": "boolean",
-					"default": false,
-					"markdownDescription": "Enable storing streamed logs in global storage for debugging purposes"
-				},
-				"mode.logging.maxFileSize": {
-					"order": 8,
-					"type": "number",
-					"default": 10,
-					"markdownDescription": "Maximum size of log file in MB before rotation"
 				}
 			}
 		}

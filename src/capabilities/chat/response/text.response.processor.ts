@@ -19,7 +19,6 @@ import {
 	FILE_PATH_END,
 	LANGUAGE_MATCH
 } from '../../../common/llms/llm.prompt';
-import { Logger } from '../../../common/logging/logger';
 
 // New StreamProcessor class
 export class TextResponseProcessor {
@@ -40,7 +39,6 @@ export class TextResponseProcessor {
 	private collectedMarkdownLines: string[] = [];
 	private collectedSearchLines: string[] = [];
 	private collectedReplaceLines: string[] = [];
-	private readonly logger = Logger.getInstance();
 
 	constructor(
 		private readonly _view: vscode.WebviewView,
@@ -78,7 +76,6 @@ export class TextResponseProcessor {
 	 * when suggesting changes to code.
 	 */
 	public processLine(line: string, codeStreaming: boolean = false, finalCodeBlock: string = ''): void {
-		this.logger.log(line);
 		if (this.ignoreAnalysisBlocks(line)) {
 			return;
 		}
