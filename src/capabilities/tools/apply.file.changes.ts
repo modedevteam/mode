@@ -42,6 +42,11 @@ export async function applyFileChanges(toolCallArguments: string | any): Promise
         // Track modified documents
         const modifiedDocuments = new Set<vscode.TextDocument>();
 
+        // Return if changes are not iterable
+        if (!Array.isArray(changes.changes)) {
+            return;
+        }
+
         for (const change of changes.changes) {
             const document = await applyFileChange(change);
             if (document) {
