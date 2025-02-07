@@ -54,14 +54,18 @@ export class StreamResponseProcessor {
             const quoteIndex = this.buffer.indexOf('"');
             if (quoteIndex !== -1) {
                 if (quoteIndex > 0) {
-                    this.markdownRenderer.processMarkdownToken(this.buffer.substring(0, quoteIndex));
+                    // Convert escaped newlines to actual newlines before processing
+                    const processedText = this.buffer.substring(0, quoteIndex).replace(/\\n/g, '\n');
+                    this.markdownRenderer.processMarkdownToken(processedText);
                 }
                 this.isCapturingExplanation = false;
                 this.markdownRenderer.endMarkdownBlock();
                 this.buffer = this.buffer.substring(quoteIndex + 1);
                 return;
             }
-            this.markdownRenderer.processMarkdownToken(this.buffer);
+            // Convert escaped newlines for the buffer too
+            const processedBuffer = this.buffer.replace(/\\n/g, '\n');
+            this.markdownRenderer.processMarkdownToken(processedBuffer);
             this.buffer = '';
         }
 

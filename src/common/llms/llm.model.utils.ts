@@ -160,12 +160,16 @@ export class AIModelUtils {
     //#endregion
 
     public static supportsToolUsage(modelKey: string): boolean {
-        const modelInfo = this.getModelInfoFromConfig(modelKey);
-        if (!modelInfo) return false;
+        return false;
         
-        const provider_lower = modelInfo.provider.toLowerCase();
-        const modelKey_lower = modelKey.toLowerCase();
+        // @todo: switching back to autocoding prompt without explicit tool usage to enable chat functionality
+        // const modelInfo = this.getModelInfoFromConfig(modelKey);
+        // if (!modelInfo) return false;
         
-        return provider_lower === 'openai' && modelKey_lower.includes('gpt');
+        // const provider_lower = modelInfo.provider.toLowerCase();
+        // const modelKey_lower = modelKey.toLowerCase();
+        
+        // return provider_lower === 'openai' && modelKey_lower.includes('gpt');
+        
     }
 } 
