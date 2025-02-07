@@ -6,17 +6,44 @@
 import * as vscode from 'vscode';
 import fetch from 'node-fetch';
 
-const GA_TRACKING_ID = "G-4859MSHZE4"; // Replace with your Google Analytics Measurement ID
+const GA_MEASUREMENT_ID = 'G-4859MSHZE4';
 
-export function trackUsage(eventName: string): void {
-    // Check if telemetry is enabled
-    if (vscode.env.isTelemetryEnabled) {
-        const clientId = vscode.env.machineId; // Unique per user
+export async function trackExtensionActivation(): Promise<void> {
+    try {
+        // Check if telemetry is enabled
+        if (!vscode.env.isTelemetryEnabled) {
+            return;
+        }
 
-        const url = `https://www.google-analytics.com/g/collect?v=2&tid=${GA_TRACKING_ID}&cid=${clientId}&t=event&en=${eventName}`;
+        const machineId = vscode.env.machineId;
 
-        fetch(url, { method: "GET" })
-            .then(response => console.log("GA Event Sent:", eventName))
-            .catch(error => console.error("GA Error:", error));
+        const payload = {
+            client_id: machineId,
+            events: [{
+                name: 'extension_activated',
+                params: {
+                    machine_id: machineId,
+                    timestamp: new Date().toISOString()
+                }
+            }]
+        };
+
+        const response = await fetch(
+            `https://www.google-analytics.com/g/collect?v=2&tid=${GA_MEASUREMENT_ID}`,
+            {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'VSCode-Extension'
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`GA4 request failed: ${response.statusText}`);
+        }
+    } catch (error) {
+        console.error('Failed to track extension activation:', error);
     }
 }
