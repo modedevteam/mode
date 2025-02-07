@@ -1,12 +1,10 @@
 # Changelog
 
-## [1.0.33] - 2025-02-05
+## [1.0.34] - 2025-02-07
 
 ### Added
-- Telemetry
-
-### Removed
-- Unnecessary logging (mode.log)
+- Chat capability
+- Better telemetry (attempt #2)
 
 ## [1.0.32] - 2025-02-04
 
