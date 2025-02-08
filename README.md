@@ -69,4 +69,4 @@ Autocomplete is here! This experimental version is constantly improving—update
 
 We created Mode because we love building, just like you. Our journey is just beginning – we're continuously improving and have an exciting roadmap ahead: smart autocompletion, automating routine tasks, collaborating across files, and supporting even more language models and providers.
 
-Have questions? Reach out (hi@getmode.dev) or drop by our [Discord](https://discord.gg/FRDxms57pG). You can also submit feature requests, report bugs, and share your ideas here. Give Mode a try, and let's build something amazing together!
+Have questions? Reach out (hi@getmode.dev) or drop by our [Discord](https://discord.gg/FRDxms57pG). For more information on how to use Mode, read our [user manual](https://github.com/modedevteam/mode/blob/main/docs/usermanual.md#welcome-to-mode). Submit feature requests, report bugs, and share your ideas [here](https://github.com/modedevteam/mode/issues). Give Mode a try, and let's build something amazing together!
