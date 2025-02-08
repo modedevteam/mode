@@ -69,7 +69,7 @@ Mode intelligently applies suggestions, without breaking your changes, giving yo
 
 ## Settings and Configuration
 
-1. **VSCode Language Model API**
+### VSCode Language Model API
    - Mode supports VSCode's built-in language model API, allowing you to use AI features without external API keys
    - To enable this:
      1. Install the [GitHub Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat) extension
@@ -79,7 +79,7 @@ Mode intelligently applies suggestions, without breaking your changes, giving yo
 
 ![CopilotModels](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/CopilotModels.gif)
 
-2. **Providers**:
+### Providers
    - Mode supports a variety of hosted providers, including OpenAI, Anthropic, OpenRouter, Google, Mistral, Cohere, and local options like Ollama or LM Studio.
    - Models within these providers are user-configurable.
    - **Configuration**:
@@ -96,7 +96,7 @@ Mode intelligently applies suggestions, without breaking your changes, giving yo
      - You can add or update models as they become available, ensuring that Mode is always using the latest and most suitable models for your needs.
      - To set up API keys, click the key icon in the Mode interface or use the 'Mode: Manage API Keys' command.
 
-3. **Prompt Customization**:
+### Prompt Customization
    - Tailor Mode's system prompt to suite your needs.
    - **Custom Prompt Settings**:
      - Use these settings to personalize Mode's behavior or completely override the default prompts with your own. This allows you to customize how Mode interacts with you, ensuring it aligns with your specific needs and preferences.
