@@ -79,6 +79,10 @@ Mode intelligently applies suggestions, without breaking your changes, giving yo
      2. Sign in with your GitHub account that has Copilot access
      3. Go back to Mode, and select any model that has ends with 'Copilot' in the name. VSCode will ask you to approve the use of the Copilot model for the first time.
         - Note: This requires an active GitHub Copilot subscription
+        - Note 2: If you don't see the Copilot models,
+          - Install the latest version of Mode
+          - Remove the `mode.providers` setting in User Settings (JSON) either through the UI (Code -> Preferences -> Settings -> User -> Extensions -> Mode -> Providers) or through the command palette (Cmd+Shift+P -> Preferences: Open Settings (JSON))
+          - Restart VSCode, Mode will reload default providers and you should see the Copilot models.
 
 ### Providers
    - Mode supports a variety of hosted providers, including OpenAI, Anthropic, OpenRouter, Google, Mistral, Cohere, and local options like Ollama or LM Studio.
