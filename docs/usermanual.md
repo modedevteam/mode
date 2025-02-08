@@ -70,14 +70,15 @@ Mode intelligently applies suggestions, without breaking your changes, giving yo
 ## Settings and Configuration
 
 ### VSCode Language Model API
+
+![CopilotModels](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/CopilotModels.gif)
+
    - Mode supports VSCode's built-in language model API, allowing you to use AI features without external API keys
    - To enable this:
      1. Install the [GitHub Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat) extension
      2. Sign in with your GitHub account that has Copilot access
      3. Go back to Mode, and select any model that has ends with 'Copilot' in the name. VSCode will ask you to approve the use of the Copilot model for the first time.
         - Note: This requires an active GitHub Copilot subscription
-
-![CopilotModels](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/CopilotModels.gif)
 
 ### Providers
    - Mode supports a variety of hosted providers, including OpenAI, Anthropic, OpenRouter, Google, Mistral, Cohere, and local options like Ollama or LM Studio.
