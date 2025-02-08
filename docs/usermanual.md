@@ -6,6 +6,7 @@
   - [Auto Merge](#auto-merge)
   - [Autocomplete](#autocomplete)
 - [Settings and Configuration](#settings-and-configuration)
+  - [VSCode Language Model API](#vscode-language-model-api)
   - [Providers](#providers)
   - [Prompt Customization](#prompt-customization)
 - [Common Use Cases](#common-use-cases)
@@ -68,7 +69,17 @@ Mode intelligently applies suggestions, without breaking your changes, giving yo
 
 ## Settings and Configuration
 
-1. **Providers**:
+1. **VSCode Language Model API**
+   - Mode supports VSCode's built-in language model API, allowing you to use AI features without external API keys
+   - To enable this:
+     1. Install the [GitHub Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat) extension
+     2. Sign in with your GitHub account that has Copilot access
+     3. Go back to Mode, and select any model that has ends with 'Copilot' in the name. VSCode will ask you to approve the use of the Copilot model for the first time.
+        - Note: This requires an active GitHub Copilot subscription
+
+![CopilotModels](https://cdn.jsdelivr.net/gh/modedevteam/mode-assets/CopilotModels.gif)
+
+2. **Providers**:
    - Mode supports a variety of hosted providers, including OpenAI, Anthropic, OpenRouter, Google, Mistral, Cohere, and local options like Ollama or LM Studio.
    - Models within these providers are user-configurable.
    - **Configuration**:
@@ -85,7 +96,7 @@ Mode intelligently applies suggestions, without breaking your changes, giving yo
      - You can add or update models as they become available, ensuring that Mode is always using the latest and most suitable models for your needs.
      - To set up API keys, click the key icon in the Mode interface or use the 'Mode: Manage API Keys' command.
 
-2. **Prompt Customization**:
+3. **Prompt Customization**:
    - Tailor Mode's system prompt to suite your needs.
    - **Custom Prompt Settings**:
      - Use these settings to personalize Mode's behavior or completely override the default prompts with your own. This allows you to customize how Mode interacts with you, ensuring it aligns with your specific needs and preferences.
@@ -162,7 +173,7 @@ Example configuration of two local models hosted on Ollama and LM Studio:
   - Reach us at [hi@getmode.dev](mailto:hi@getmode.dev)
 ---
 
-Thank you for choosing Mode! We’re excited to help you code smarter and faster.
+Thank you for choosing Mode! We're excited to help you code smarter and faster.
 
 We will continue to add to this documentation to ensure you have the most up-to-date information and support.
 
